@@ -118,7 +118,9 @@ In this aggregated example:
 * The input is subsequently piped to the awk script to convert it to a LEMON compatible format.
 * Finally, the testcase is piped to `mathtrader++`, where we also request to hide no trades.
 
-    wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | gawk -f want2mt.awk | ./mathtrader++ --hide-no-trades > 207635-results.txt
+```
+wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | gawk -f want2mt.awk | ./mathtrader++ --hide-no-trades > 207635-results.txt
+```
 
 ## Future Tasks
 
