@@ -38,7 +38,7 @@ BEGIN {
 	# - Left "(", anything not a ")", and a final ")"
 	# - Note: parentheses have to be escaped TWICE
 	##
-	FPAT = "([^[:blank:]]*)|(\"[^\"]+\")|(\\([^\\)]+\\))"
+	FPAT = "([^[:blank:]]+)|(\"[^\"]+\")|(\\([^\\)]+\\))"
 
 	official_nodes = 1
 	n_arcs = 0
