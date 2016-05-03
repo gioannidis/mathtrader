@@ -23,7 +23,7 @@ CXX	 = g++
 DEBUG    = #-g
 OPTIM	 = -O3
 INCLUDE  =
-CXXFLAGS = $(DEBUG) $(OPTIM) $(INCLUDE) -Wall -Wextra -std==c++11
+CXXFLAGS = $(DEBUG) $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11
 LDFLAGS  = -lemon
 
 ECHO	= echo
