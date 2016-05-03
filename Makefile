@@ -19,11 +19,11 @@
 # You should have received a copy of the GNU General Public License
 # along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
 
-CXX	 = g++ -std=c++11
+CXX	 = g++
 DEBUG    = #-g
 OPTIM	 = -O3
 INCLUDE  =
-CXXFLAGS = $(DEBUG) $(OPTIM) $(INCLUDE) -Wall
+CXXFLAGS = $(DEBUG) $(OPTIM) $(INCLUDE) -Wall -Wextra -std==c++11
 LDFLAGS  = -lemon
 
 ECHO	= echo
@@ -33,7 +33,7 @@ SOURCES=main.cpp mathtrader.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=mathtrader++
 
-all: $(SOURCES) $(EXECUTABLE)
+all: $(EXECUTABLE)
 
 
 #===============================#
