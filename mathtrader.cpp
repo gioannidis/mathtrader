@@ -27,8 +27,6 @@
 #include <stdexcept>
 #include <unordered_map>
 
-#include <lemon/time_measure.h>
-
 MathTrader::MathTrader() :
 	_priority_scheme( NO_PRIORITIES ),
 	_hide_no_trades( false ),
@@ -117,7 +115,7 @@ MathTrader::showNoTrades() {
 void
 MathTrader::run() {
 
-#if 1
+#if 0
 	const InputGraph & input_graph = this->_input_graph;
 
 	/**
@@ -155,7 +153,6 @@ MathTrader::run() {
 	}
 
 	for ( unsigned i = 0; i < component_vector.size(); ++ i ) {
-		lemon::TimeReport t("Execution, iteration: " + i);
 		const BoolMap & filter = *(component_vector[i]);
 		this->_runFlowAlgorithm( filter );
 	}
