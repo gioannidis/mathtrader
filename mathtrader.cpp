@@ -54,6 +54,15 @@ MathTrader::graphReader( std::istream & is ) {
 		arcMap( "rank", _rank ).
 		run();
 
+	/**
+	 * Create username-to-item map
+	 */
+	const InputGraph & g = this->_input_graph;
+	for ( InputGraph::NodeIt n(g); n != lemon::INVALID; ++ n ) {
+		_username_to_item.emplace( _username[n], g.id(n) );
+	}
+
+
 	return *this;
 }
 
@@ -234,7 +243,9 @@ MathTrader::printResults( std::ostream & os ) const {
 	}
 	os << "n_cycles: " << n_cycles << " counted_cycles: " << counted_cycles
 		<< std::endl;
-	os << "trades: " << countArcs( output_graph ) << std::endl;
+
+	const int total_trades = countArcs( output_graph );
+	os << "trades: " << total_trades << std::endl;
 
 	/**
 	 * Users trading
@@ -280,6 +291,39 @@ MathTrader::printResults( std::ostream & os ) const {
 		os << std::endl;
 	}
 	os << "Users trading: " << users_trading.size() << std::endl;
+
+	/**
+	 * Print item summary,
+	 * sorted by username.
+	 */
+	os << "ITEM SUMMARY (" << total_trades << " total trades):" << std::endl;
+	os << std::endl;
+
+	for ( auto username_map : _username_to_item ) {
+
+		const InputGraph::Node & n = _input_graph.nodeFromId(username_map.second);
+		if ( !_dummy[n] ) {
+			if ( _trade[n] ) {
+				os << "(" << _username[n] << ") "
+					<< _name[n]
+					<< "\t"
+					<< "receives "
+					<< "(" << _username[ _receive[n] ] << ") "
+					<< _name[ _receive[n] ]
+					<< "\t"
+					<< "and sends to "
+					<< "(" << _username[ _send[n] ] << ") "
+					<< _name[ _send[n] ]
+					<< std::endl;
+			} else if ( !_hide_no_trades ) {
+				os << "(" << _username[n] << ") "
+					<< _name[n]
+					<< "\t"
+					<< "does not trade"
+					<< std::endl;
+			}
+		}
+	}
 
 	return *this;
 }

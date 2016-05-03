@@ -24,6 +24,7 @@
 
 #include <lemon/smart_graph.h>
 #include <lemon/network_simplex.h>
+#include <map>
 
 class MathTrader {
 
@@ -183,6 +184,11 @@ private:
 	 */
 	InputGraph::ArcMap< int > _rank;
 	InputGraph::ArcMap< bool > _chosen_arc;
+
+	/**
+	 * @brief Username-to-item map
+	 */
+	std::multimap< std::string, int > _username_to_item;
 
 	/**
 	 * @brief Run math trade algorithm.
