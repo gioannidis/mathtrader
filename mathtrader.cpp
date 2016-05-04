@@ -21,6 +21,7 @@
  */
 #include "mathtrader.hpp"
 
+#include <iomanip>
 #include <lemon/adaptors.h>
 #include <lemon/connectivity.h>
 #include <lemon/lgf_reader.h>
@@ -184,6 +185,8 @@ MathTrader::processResults() {
 const MathTrader &
 MathTrader::printResults( std::ostream & os ) const {
 
+#define TABWIDTH 50
+
 	/**
 	 * FILTERS
 	 * 1. Hide dummies.
@@ -274,17 +277,22 @@ MathTrader::printResults( std::ostream & os ) const {
 
 				auto const next_node = _receive[cur_node];
 
-				os << "(" << _username[cur_node] << ") "
-					<< _name[cur_node] << "\t\t"
-					<< "receives (" << _username[next_node] << ") "
-					<< _name[next_node]
+				os << std::left
+					<< std::setw(TABWIDTH)
+					<< "(" + _username[cur_node] + ") "
+					+ _name[cur_node]
+					<< "receives (" + _username[next_node] + ") "
+					+ _name[next_node]
 					<< std::endl;
 
 				cur_node = next_node;
 
 			} while ( cur_node != start_node );
 		} else {
-			os << _name[start_node] << "\t\t"
+			os << std::left
+				<< std::setw(TABWIDTH)
+				<< "(" + _username[start_node] + ") "
+				+ _name[start_node]
 				<< "does not trade"
 				<< std::endl;
 		}
@@ -304,21 +312,26 @@ MathTrader::printResults( std::ostream & os ) const {
 		const InputGraph::Node & n = _input_graph.nodeFromId(username_map.second);
 		if ( !_dummy[n] ) {
 			if ( _trade[n] ) {
-				os << "(" << _username[n] << ") "
-					<< _name[n]
-					<< "\t"
-					<< "receives "
-					<< "(" << _username[ _receive[n] ] << ") "
-					<< _name[ _receive[n] ]
-					<< "\t"
-					<< "and sends to "
-					<< "(" << _username[ _send[n] ] << ") "
-					<< _name[ _send[n] ]
+
+				os << std::left
+					<< std::setw(TABWIDTH)
+					<< "(" + _username[n] + ") "
+					+ _name[n]
+					<< std::setw(TABWIDTH)
+					<< "receives ("
+					+ _username[ _receive[n] ] + ") "
+					+ _name[ _receive[n] ]
+					<< "and sends to ("
+					+ _username[ _send[n] ] + ") "
+					+ _name[ _send[n] ]
 					<< std::endl;
+
 			} else if ( !_hide_no_trades ) {
-				os << "(" << _username[n] << ") "
-					<< _name[n]
-					<< "\t"
+
+				os << std::left
+					<< std::setw(TABWIDTH)
+					<< "(" + _username[n] + ") "
+					+ _name[n]
 					<< "does not trade"
 					<< std::endl;
 			}
@@ -326,6 +339,7 @@ MathTrader::printResults( std::ostream & os ) const {
 	}
 
 	return *this;
+#undef TABWIDTH
 }
 
 const MathTrader &
