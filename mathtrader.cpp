@@ -422,6 +422,7 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
 	}
 
+#if 0
 	/**
 	 * Iterate arcs of SplitDirect.
 	 * All arcs have a capacity of 1.
@@ -434,6 +435,22 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 		cost_map[a] = (split_graph.origArc(a)) ? _getCost(rank) : 1e9 ;
 		reverse_map[a] = (split_graph.origArc(a)) ? true : false;
 	}
+#else
+	for ( StronglyConnected::NodeIt n(strong_graph); n != lemon::INVALID; ++ n ) {
+
+		auto const & self_arc = split_graph.arc(n);
+		cost_map[ self_arc ] = ( _dummy[n] ) ? 1e7 : 1e9;
+		reverse_map[ self_arc ] = false;
+	}
+	for ( StronglyConnected::ArcIt a(strong_graph); a != lemon::INVALID; ++ a ) {
+
+		auto const & match_arc = split_graph.arc(a);
+		const int rank = _rank[a];
+
+		cost_map[ match_arc ] = _getCost(rank);
+		reverse_map[ match_arc ] = true;
+	}
+#endif
 
 
 	/**
@@ -524,12 +541,13 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	std::cout << "n_strong: " << n_strong
 		<< " trades: " << trades
 		<< " total_trades: " << total_trades
-		<< " trading: " << trading
+		<< " trading (all+dummies): " << trading + dummies_trading
 		<< " not_trading: " << not_trading
 		<< " dummies_trading: " << dummies_trading
 		<< " cost: " << total_cost
 		<< std::endl;
-	if ( n_strong == 218 && false ) {
+#if 0
+	if ( n_strong == 218 ) {
 		auto g = filterNodes(strong_graph,_trade);
 		digraphWriter(g).
 			nodeMap("trade", _trade).
@@ -540,6 +558,7 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 			skipArcs().
 			run();
 	}
+#endif
 }
 
 template < typename DGR >
