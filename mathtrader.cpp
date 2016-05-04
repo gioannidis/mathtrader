@@ -466,10 +466,15 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	for ( InputGraph::ArcIt a(g); a != lemon::INVALID; ++a ) {
 
 		bool chosen = flow_map[split_graph.arc(a)];
-		this->_chosen_arc[a] = chosen;
-
-		const InputGraph::Node &receiver = g.source(a), &sender = g.target(a);
 		if ( chosen ) {
+
+			if ( _chosen_arc[a] ) {
+				throw std::runtime_error("Arc already chosen");
+			}
+			this->_chosen_arc[a] = chosen;
+
+			const InputGraph::Node &receiver = g.source(a), &sender = g.target(a);
+
 			total_cost += cost_map[split_graph.arc(a)];
 			if ( ! _trade[receiver] ) {
 				_trade[receiver] = true;
@@ -535,26 +540,49 @@ MathTrader &
 MathTrader::_mergeDummies() {
 
 	InputGraph & g = this->_input_graph;
+	InputGraph::NodeMap< bool > iterated(g,false);
+
+	/**
+	 * Iterate all nodes and check if they are dummies.
+	 */
 	for ( InputGraph::NodeIt n(g); n != lemon::INVALID; ++ n ) {
 
-		if ( _dummy[n] ) {
+		/**
+		 * Parse a dummy if it's trading and it hasn't been iterated yet.
+		 * A dummy may have been already iterated if it's part of a larger dummy chain.
+		 * Some users may specify multiple dummies in a chain, like A -> D1 -> D2 -> B.
+		 */
+		if ( _dummy[n] && _trade[n] && !iterated[n] ) {
+
+			const InputGraph::Node *receiver = &n, *sender = &n;
 
 			/**
-			 * Update _send & _receive maps, if needed.
+			 * Move to next receiver/sender until a non-dummy is found.
 			 */
-			if ( _trade[n] ) {
-				const InputGraph::Node &receiver = _send[n], &sender = _receive[n];
-				_receive[ receiver ] = sender;
-				_send[ sender ] = receiver;
-
-				/**
-				 * Add corresponding arc.
-				 * The rank value is irrelevant.
-				 */
-				auto arc = g.addArc( receiver, sender );
-				this->_rank[arc] = 0;
-				this->_chosen_arc[arc] = true;
+			while (( receiver != NULL ) && ( _dummy[*receiver] )) {
+				iterated[*receiver] = true;
+				receiver = &( _send[*receiver] );
 			}
+			while (( sender != NULL ) && ( _dummy[*sender] )) {
+				iterated[*sender] = true;
+				sender = &( _receive[*sender] );
+			}
+
+			/**
+			 * We have found the real items of this chain.
+			 * Updated send/receive maps.
+			 */
+			_receive[ *receiver ] = *sender;
+			_send[ *sender ] = *receiver;
+
+			/**
+			 * Add corresponding arc.
+			 * The rank value is irrelevant.
+			 * TODO cost?
+			 */
+			auto arc = g.addArc( *receiver, *sender );
+			this->_rank[arc] = 0;
+			this->_chosen_arc[arc] = true;
 		}
 	}
 
