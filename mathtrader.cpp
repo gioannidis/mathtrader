@@ -28,6 +28,11 @@
 #include <stdexcept>
 #include <unordered_map>
 
+
+/************************************//*
+ * 	PUBLIC METHODS - CONSTRUCTORS
+ **************************************/
+
 MathTrader::MathTrader() :
 	_priority_scheme( NO_PRIORITIES ),
 	_hide_no_trades( false ),
@@ -66,6 +71,11 @@ MathTrader::graphReader( std::istream & is ) {
 
 	return *this;
 }
+
+
+/************************************//*
+ * 	PUBLIC METHODS - INPUT
+ **************************************/
 
 MathTrader &
 MathTrader::graphReader( const std::string & fn ) {
@@ -122,6 +132,11 @@ MathTrader::showNoTrades() {
 	return *this;
 }
 
+
+/************************************//*
+ * 	PUBLIC METHODS - RUNNABLE
+ **************************************/
+
 void
 MathTrader::run() {
 
@@ -170,6 +185,11 @@ MathTrader::run() {
 	this->_runFlowAlgorithm();
 #endif
 }
+
+
+/************************************//*
+ * 	PUBLIC METHODS - OUTPUT
+ **************************************/
 
 MathTrader &
 MathTrader::processResults() {
@@ -359,6 +379,11 @@ MathTrader::printResults( const char * fn ) const {
 }
 
 
+
+/************************************//*
+ * 	PRIVATE METHODS - Flows
+ **************************************/
+
 void
 MathTrader::_runFlowAlgorithm() {
 	const InputGraph &g = _input_graph;
@@ -516,6 +541,11 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	}
 }
 
+
+/************************************//*
+ * 	PRIVATE METHODS - Utilities
+ **************************************/
+
 template < typename DGR >
 void
 MathTrader::exportToDot( const DGR & g,
@@ -537,12 +567,17 @@ MathTrader::exportToDot( const DGR & g,
 	std::cout << "}" << std::endl;
 }
 
-/**
- * Source: https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4
- */
+
+/************************************//*
+ * 	PRIVATE METHODS - Parameters
+ **************************************/
+
 MathTrader::bigint_t
 MathTrader::_getCost( int rank ) const {
 
+	/**
+	 * Source: https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4
+	 */
 	switch ( this->_priority_scheme ) {
 		case NO_PRIORITIES:
 			return 1;
