@@ -354,8 +354,6 @@ MathTrader::_runFlowAlgorithm() {
 
 void
 MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
-	static int n_strong = 0;
-	n_strong ++ ;
 
 	const InputGraph & input_graph = this->_input_graph;
 	/**
@@ -413,35 +411,25 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	SplitOrient split_orient( split_undirect, reverse_map );
 
 	/**
-	 * Iterate nodes of SplitDirect.
-	 * In-nodes have a supply of +1
-	 * Out-nodes have a supply of -1
+	 * Iterate nodes of original graph.
+	 * Get corresponding bind-arcs.
+	 * Cost: c >> 1, but lower if it's a dummy node, by 1-2 orders of magnitude,
+	 * so as to inherently prefer a dummy self-arc over a real item's self-arc.
+	 * Mark self-arc to reverse its direction.
 	 */
-	for ( SplitDirect::NodeIt n( split_graph ); n != lemon::INVALID; ++ n ) {
-
-		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
-	}
-
-#if 0
-	/**
-	 * Iterate arcs of SplitDirect.
-	 * All arcs have a capacity of 1.
-	 * Original capacity have a cost of 1.
-	 * Bind (virtual/self) capacities have a cost of INF.
-	 */
-	for ( SplitDirect::ArcIt a( split_graph ); a != lemon::INVALID; ++ a ) {
-
-		int rank = _rank[a];
-		cost_map[a] = (split_graph.origArc(a)) ? _getCost(rank) : 1e9 ;
-		reverse_map[a] = (split_graph.origArc(a)) ? true : false;
-	}
-#else
 	for ( StronglyConnected::NodeIt n(strong_graph); n != lemon::INVALID; ++ n ) {
 
 		auto const & self_arc = split_graph.arc(n);
 		cost_map[ self_arc ] = ( _dummy[n] ) ? 1e7 : 1e9;
 		reverse_map[ self_arc ] = false;
 	}
+
+	/**
+	 * Iterate arcs of original graph.
+	 * Get corresponding match-arcs.
+	 * Cost: depends on rank and priority scheme.
+	 * Mark match-arc to keep its direction.
+	 */
 	for ( StronglyConnected::ArcIt a(strong_graph); a != lemon::INVALID; ++ a ) {
 
 		auto const & match_arc = split_graph.arc(a);
@@ -450,8 +438,16 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 		cost_map[ match_arc ] = _getCost(rank);
 		reverse_map[ match_arc ] = true;
 	}
-#endif
 
+	/**
+	 * Iterate nodes of SplitDirect.
+	 * In-nodes have a supply of +1
+	 * Out-nodes have a supply of -1
+	 */
+	for ( SplitDirect::NodeIt n( split_graph ); n != lemon::INVALID; ++ n ) {
+
+		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
+	}
 
 	/**
 	 * Define and apply the solver
