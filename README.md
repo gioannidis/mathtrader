@@ -79,6 +79,8 @@ as it provides additional options that standard `awk` does not support.
 ## Compiling
 
 * On Linux systems, running `make` on the top directory will compile the project.
+* Optionally, you may also run `make html` to create the html documentation.
+This requires the `doxygen` package.
 * On Windows systems, you will have to pass the compiling options
 found in the `Makefile` to your IDE's compiler.
 
@@ -118,9 +120,7 @@ In this aggregated example:
 * The input is subsequently piped to the awk script to convert it to a LEMON compatible format.
 * Finally, the testcase is piped to `mathtrader++`, where we also request to hide no trades.
 
-```
-wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | gawk -f want2mt.awk | ./mathtrader++ --hide-no-trades > 207635-results.txt
-```
+    wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | gawk -f want2mt.awk | ./mathtrader++ --hide-no-trades > 207635-results.txt
 
 ## Future Tasks
 
