@@ -469,17 +469,19 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	const StronglyConnected & g = strong_graph;
 	for ( StronglyConnected::ArcIt a(g); a != lemon::INVALID; ++a ) {
 
-		bool chosen = flow_map[split_graph.arc(a)];
+		auto const & want_arc = split_graph.arc(a);
+		const bool chosen = flow_map[ want_arc ];
+
 		if ( chosen ) {
 
-			if ( _chosen_arc[a] ) {
+			if ( this->_chosen_arc[a] ) {
 				throw std::runtime_error("Arc already chosen");
 			}
 			this->_chosen_arc[a] = chosen;
 
+			total_cost += cost_map[ want_arc ];
 			const InputGraph::Node &receiver = g.source(a), &sender = g.target(a);
 
-			total_cost += cost_map[split_graph.arc(a)];
 			if ( ! _trade[receiver] ) {
 				_trade[receiver] = true;
 				_receive[ receiver ] = sender;
@@ -493,12 +495,49 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 			}
 		}
 	}
-	//std::cout << "cost: " << total_cost << std::endl;
+	int not_trading = 0;
+	int trading = 0;
+	int dummies_trading = 0;
+	for ( StronglyConnected::NodeIt n(g); n != lemon::INVALID; ++ n ) {
+		auto const & self_arc = split_graph.arc(n);
+		const bool chosen = flow_map[ self_arc ];
+		if ( chosen ) {
+			not_trading ++ ;
+			total_cost += cost_map[ self_arc ];
+			if ( _trade[n] ) {
+				throw std::runtime_error("Trading, but self arc chosen");
+			}
+		} else {
+			if ( ! _trade[n] ) {
+				throw std::runtime_error("Not trading, but self arc not chosen");
+			}
+			if ( !_dummy[n] ) {
+				trading ++ ;
+			} else {
+				dummies_trading ++ ;
+			}
+		}
+	}
 	total_trades += trades;
 	std::cout << "n_strong: " << n_strong
 		<< " trades: " << trades
 		<< " total_trades: " << total_trades
+		<< " trading: " << trading
+		<< " not_trading: " << not_trading
+		<< " dummies_trading: " << dummies_trading
+		<< " cost: " << total_cost
 		<< std::endl;
+	if ( n_strong == 218 && false ) {
+		auto g = filterNodes(strong_graph,_trade);
+		digraphWriter(g).
+			nodeMap("trade", _trade).
+			nodeMap("name", _name).
+			nodeMap("receive", composeMap(_name,_receive)).
+			nodeMap("send", composeMap(_name,_send)).
+			arcMap("chosen", _chosen_arc).
+			skipArcs().
+			run();
+	}
 }
 
 template < typename DGR >
