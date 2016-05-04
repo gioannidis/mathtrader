@@ -480,6 +480,7 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 			this->_chosen_arc[a] = chosen;
 
 			total_cost += cost_map[ want_arc ];
+
 			const InputGraph::Node &receiver = g.source(a), &sender = g.target(a);
 
 			if ( ! _trade[receiver] ) {
@@ -518,6 +519,7 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 			}
 		}
 	}
+
 	total_trades += trades;
 	std::cout << "n_strong: " << n_strong
 		<< " trades: " << trades
