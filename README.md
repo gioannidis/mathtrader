@@ -121,14 +121,14 @@ In the following aggregated example:
 * Finally, the testcase is piped to `mathtrader++`, where we also request to hide no trades.
 
 
-    wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | gawk -f want2mt.awk | ./mathtrader++ --hide-no-trades > 207635-results.txt
+     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | gawk -f want2mt.awk | ./mathtrader++ --hide-no-trades > 207635-results.txt
 
 ## Future Tasks
 
-- [ ] Investigate possible algorithm bug, as it does not maximize the trading items on larger inputs.
+- [x] Investigate possible algorithm bug, as it does not maximize the trading items on larger inputs.
 - [ ] Implement scaled priority schemes.
 - [ ] Implement BIG-STEP and SMALL-STEP.
 - [ ] Convert the source code to the C++03 standard.
-- [ ] Add Doxygen documentation.
+- [x] Add Doxygen documentation.
 - [ ] Add _users-trading_ as a metric.
 - [ ] Integrate the file conversion with the main program.
