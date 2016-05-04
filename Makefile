@@ -33,6 +33,10 @@ SOURCES=main.cpp mathtrader.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=mathtrader++
 
+DOXYGEN	 = doxygen
+DOXYFILE = doxyfile.cfg
+DOXYDIR  = doc
+
 all: $(EXECUTABLE)
 
 
@@ -53,9 +57,20 @@ $(EXECUTABLE): $(OBJECTS)
 
 
 #===============================#
+#	    Documentation	#
+#===============================#
+
+html:
+	$(DOXYGEN) $(DOXYFILE)
+
+#===============================#
 #	    Cleaning		#
 #===============================#
 
 .PHONY: clean
 clean:
 	-$(RM) -f $(OBJECTS) $(EXECUTABLE)
+
+.PHONY: purge
+purge: clean
+	-$(RM) -rf $(DOXYDIR)
