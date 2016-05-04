@@ -60,6 +60,7 @@ $(EXECUTABLE): $(OBJECTS)
 #	    Documentation	#
 #===============================#
 
+.PHONY: html
 html:
 	$(DOXYGEN) $(DOXYFILE)
 
