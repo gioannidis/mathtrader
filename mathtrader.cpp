@@ -124,7 +124,7 @@ MathTrader::showNoTrades() {
 void
 MathTrader::run() {
 
-#if 0
+#if 1
 	const InputGraph & input_graph = this->_input_graph;
 
 	/**
@@ -354,6 +354,8 @@ MathTrader::_runFlowAlgorithm() {
 
 void
 MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
+	static int n_strong = 0;
+	n_strong ++ ;
 
 	const InputGraph & input_graph = this->_input_graph;
 	/**
@@ -462,10 +464,15 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	 * Map it back to the original graph.
 	 */
 	uint64_t total_cost = 0;
-	const InputGraph & g = input_graph;
-	for ( InputGraph::ArcIt a(g); a != lemon::INVALID; ++a ) {
+	int trades = 0;
+	static int total_trades = 0;
+	const StronglyConnected & g = strong_graph;
+	for ( StronglyConnected::ArcIt a(g); a != lemon::INVALID; ++a ) {
 
 		bool chosen = flow_map[split_graph.arc(a)];
+		if ( this->_chosen_arc[a] ) {
+			throw std::runtime_error("Arc already chosen");
+		}
 		this->_chosen_arc[a] = chosen;
 
 		const InputGraph::Node &receiver = g.source(a), &sender = g.target(a);
@@ -479,9 +486,17 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 				throw std::runtime_error("Multiple trades for item "
 						+ _name[ receiver ]);
 			}
+			if ( !_dummy[receiver] ) {
+				trades ++ ;
+			}
 		}
 	}
-	std::cout << "cost: " << total_cost << std::endl;
+	//std::cout << "cost: " << total_cost << std::endl;
+	total_trades += trades;
+	std::cout << "n_strong: " << n_strong
+		<< " trades: " << trades
+		<< " total_trades: " << total_trades
+		<< std::endl;
 }
 
 template < typename DGR >
