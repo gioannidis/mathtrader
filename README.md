@@ -115,10 +115,11 @@ You may redirect the output to a file:
     ./mathtrader++ < 207635-results.txt > 207635-results.txt
     ./mathtrader++ --input-file 207635-results.txt --output-file 207635-results.txt
 
-In this aggregated example:
+In the following aggregated example:
 * The input file is downloaded from OLWLG and saved to the standard output.
 * The input is subsequently piped to the awk script to convert it to a LEMON compatible format.
 * Finally, the testcase is piped to `mathtrader++`, where we also request to hide no trades.
+
 
     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | gawk -f want2mt.awk | ./mathtrader++ --hide-no-trades > 207635-results.txt
 
