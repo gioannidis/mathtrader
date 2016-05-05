@@ -616,35 +616,50 @@ MathTrader::_mergeDummies() {
 		 */
 		if ( _dummy[n] && _trade[n] && !iterated[n] ) {
 
+			iterated[n] = true;
+
 			const InputGraph::Node *receiver = &n, *sender = &n;
+			const int start = g.id(n);
 
 			/**
-			 * Move to next receiver/sender until a non-dummy is found.
+			 * Move to next receiver/sender until a non-dummy is found
+			 * or until we detect a cycle of dummies.
 			 */
-			while (( receiver != NULL ) && ( _dummy[*receiver] )) {
-				iterated[*receiver] = true;
+			do {
 				receiver = &( _send[*receiver] );
+				iterated[*receiver] = true;
 			}
-			while (( sender != NULL ) && ( _dummy[*sender] )) {
-				iterated[*sender] = true;
+			while (( receiver != NULL ) && ( _dummy[*receiver] ) && ( g.id(*receiver) != start ));
+
+			do {
 				sender = &( _receive[*sender] );
+				iterated[*sender] = true;
 			}
+			while (( sender != NULL ) && ( _dummy[*sender] ) && ( g.id(*sender) != start ));
+
 
 			/**
-			 * We have found the real items of this chain.
-			 * Updated send/receive maps.
+			 * Found a cycle of dummies? Ignore it.
 			 */
-			_receive[ *receiver ] = *sender;
-			_send[ *sender ] = *receiver;
+			if (( sender != NULL ) && ( receiver != NULL )
+					&& ( g.id(*sender) != start ) && ( g.id(*receiver) != start )) {
 
-			/**
-			 * Add corresponding arc.
-			 * The rank value is irrelevant.
-			 * TODO cost?
-			 */
-			auto arc = g.addArc( *receiver, *sender );
-			this->_rank[arc] = 0;
-			this->_chosen_arc[arc] = true;
+				/**
+				 * We have found the real items of this chain.
+				 * Updated send/receive maps.
+				 */
+				_receive[ *receiver ] = *sender;
+				_send[ *sender ] = *receiver;
+
+				/**
+				 * Add corresponding arc.
+				 * The rank value is irrelevant.
+				 * TODO cost?
+				 */
+				auto arc = g.addArc( *receiver, *sender );
+				this->_rank[arc] = 0;
+				this->_chosen_arc[arc] = true;
+			}
 		}
 	}
 
