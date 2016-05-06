@@ -70,10 +70,21 @@ void
 WantParser::parse() {
 
 	/**
+	 * Read buffer
+	 */
+	const size_t BUFSIZE = (1<<10);
+	char buffer[ BUFSIZE ];
+
+	/**
 	 * Input stream:
 	 * Given file, if applicable.
 	 * Else, std::cin.
 	 */
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
 
+	while ( !is.eof() ) {
+
+		is.read( buffer, BUFSIZE );
+		std::cout << buffer << std::endl;
+	}
 }
