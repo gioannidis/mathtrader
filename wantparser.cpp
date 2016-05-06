@@ -21,17 +21,25 @@
  */
 #include "wantparser.hpp"
 
-#include <fstream>
+#include <stdexcept>
 
 
 /************************************//*
  * 	PUBLIC METHODS - CONSTRUCTORS
  **************************************/
 
-WantParser::WantParser() {
+WantParser::WantParser()
+{
 }
 
 WantParser::~WantParser() {
+
+	/**
+	 * Close file stream, if applicable.
+	 */
+	if ( _fs.is_open() ) {
+		_fs.close();
+	}
 }
 
 
@@ -40,24 +48,16 @@ WantParser::~WantParser() {
  **************************************/
 	
 WantParser &
-WantParser::wantListReader( std::istream & is ) {
+WantParser::setInputFile( const std::string & fn ) {
 
-	return *this;
-}
-
-WantParser &
-WantParser::wantListReader( const std::string & fn ) {
-	return wantListReader( fn.c_str() );
-}
-
-WantParser &
-WantParser::wantListReader( const char * fn ) {
-
-	std::filebuf fb;
-	fb.open(fn, std::ios::in);
-	std::istream is(&fb);
-	wantListReader(is);
-	fb.close();
+	/**
+	 * Open file for reading
+	 */
+	_fs.open(fn, std::ios_base::in);
+	if ( _fs.fail() ) {
+		throw std::runtime_error("Could not open file "
+				+ fn + " for reading");
+	}
 	return *this;
 }
 
@@ -66,3 +66,14 @@ WantParser::wantListReader( const char * fn ) {
  * 	PUBLIC METHODS - OUTPUT
  **************************************/
 
+void
+WantParser::parse() {
+
+	/**
+	 * Input stream:
+	 * Given file, if applicable.
+	 * Else, std::cin.
+	 */
+	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
+
+}

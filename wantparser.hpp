@@ -23,6 +23,7 @@
 #define _WANTPARSER_HPP_
 
 #include <iostream>
+#include <fstream>
 
 class WantParser {
 
@@ -40,37 +41,30 @@ public:
 	~WantParser();
 
 	/**
-	 * @brief Parse want list from istream.
-	 * Parses a want list
-	 * from the given input stream.
-	 * @param is input stream (default: stdin)
-	 * @return *this
-	 */
-	WantParser & wantListReader( std::istream & is = std::cin );
-
-	/**
-	 * @brief Parse want list graph from file.
-	 * Parses a want list
-	 * from the given file.
+	 * @brief Set wantlist input file.
+	 * Sets the input file where the wantlist
+	 * will be read from.
+	 * If not called, std::cin will be used, instead.
 	 * @param fn file name
 	 * @return *this
 	 */
-	WantParser & wantListReader( const std::string & fn );
+	WantParser & setInputFile( const std::string & fn );
 
 	/**
-	 * @brief Parse want list graph from file.
-	 * Parses a want list
-	 * from the given file.
-	 * @param fn file name
-	 * @return *this
+	 * @brief Parse the wantlist.
+	 * Parses the wantlist from either
+	 * a previously given input file
+	 * or from std::cin.
 	 */
-	WantParser & wantListReader( const char * fn );
-
-	/**
-	 */
-	void run();
+	void parse();
 
 private:
+	/**
+	 * @brief File Stream
+	 * File stream to read the want list from,
+	 * when applicable.
+	 */
+	std::ifstream _fs;
 
 };
 

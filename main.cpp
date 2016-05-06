@@ -19,6 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "wantparser.hpp"
 #include "mathtrader.hpp"
 
 #include <exception>
@@ -52,6 +53,15 @@ int main(int argc, char **argv) {
 		ap.parse();
 	} catch ( lemon::ArgParserException & error ) {
 		return 1;
+	}
+
+	WantParser want_parser;
+	try {
+		want_parser.setInputFile("ss");
+	} catch ( std::exception & error ) {
+		std::cerr << "WantParser error: " << error.what()
+			<< std::endl;
+		return -1;
 	}
 
 	MathTrader math_trader;
