@@ -21,6 +21,7 @@
  */
 #include "wantparser.hpp"
 
+#include <regex>
 #include <stdexcept>
 
 
@@ -85,6 +86,26 @@ WantParser::parse() {
 	while ( !is.eof() ) {
 
 		is.read( buffer, BUFSIZE );
-		std::cout << buffer << std::endl;
+		//std::cout << buffer << std::endl;
+
+		std::smatch m;
+		std::regex e("([^[:blank:]]+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
+		std::string s(buffer);
+
+
+		if ( s.compare(0, 1, "#") == 0 ) {
+			continue ;
+		}
+
+		std::cout << s << std::endl;
+		continue ;
+
+
+		while ( std::regex_search(s,m,e) ) {
+			for ( auto const & x : m ) {
+				std::cout << x << std::endl;
+			}
+		}
+
 	}
 }
