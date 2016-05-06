@@ -29,7 +29,7 @@ LDFLAGS  = -lemon
 ECHO	= echo
 RM	= rm
 
-SOURCES=main.cpp mathtrader.cpp
+SOURCES=main.cpp mathtrader.cpp wantparser.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=mathtrader++
 
