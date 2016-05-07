@@ -83,19 +83,25 @@ WantParser::parse() {
 	 * Else, std::cin.
 	 */
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
-	std::regex FPAT("(\\S+)|(\"([^\"]+)\")");
+	std::regex FPAT("(\\S+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
 
 	while (std::getline( is, buffer )) {
 
 		/**
 		 * Ignore comments
 		 */
-		if ( buffer.compare(0, 2, "#!") == 0 ) {
+		if ( buffer.empty() ) {
+
+			/**
+			 * Empty line
+			 */
+			continue ;
+
+		} else if ( buffer.compare(0, 2, "#!") == 0 ) {
 
 			/**
 			 * Option line
 			 */
-
 			continue ;
 
 		} else if ( buffer.compare(0, 1, "#") == 0 ) {
@@ -124,15 +130,11 @@ WantParser::parse() {
 
 		std::cout << buffer << std::endl;
 
-#if 1
 		auto match = _split( buffer, FPAT );
-		std::cout << "n = " << match.size() << std::endl;
 		int i = 0;
 		for ( auto const & x : match ) {
 			std::cout << (++i) << ": " << x << std::endl;
 		}
-#endif
-
 	}
 }
 
