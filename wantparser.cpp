@@ -233,6 +233,12 @@ WantParser::_parseOfficialName( const std::string & line ) {
 		&from_username = match[3];
 
 	/**
+	 * TODO
+	 * Escape nested quotation marks in official_name
+	 * or replace them with '
+	 */
+
+	/**
 	 * from_username is in format:
 	 * 	(from user name)
 	 * Change to:
@@ -245,6 +251,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 
 	/**
 	 * Emplace official name.
+	 * Emplace username.
 	 */
 	auto rv1 = this->_official_name.emplace( item, official_name );
 	auto rv2 = this->_username.emplace( item, username );
