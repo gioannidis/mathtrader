@@ -133,9 +133,8 @@ private:
 	 * Node & Arc maps; the key is the item reference name,
 	 * e.g., 0042-PUERTO
 	 */
-	std::unordered_map< std::string , std::string >
-		_official_name, /**< Official item name */
-		_username;	/**< Owner username */
+	std::unordered_map< std::string , _Node_t > _node_map;
+	std::unordered_map< std::string , _Arc_t >  _arc_map;
 
 	/**
 	 * @brief File Stream

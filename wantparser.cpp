@@ -160,8 +160,8 @@ WantParser &
 WantParser::clear() {
 
 	_status = PARSE_ARCS;
-	_official_name.clear();
-	_username.clear();
+	_node_map.clear();
+	_arc_map.clear();
 
 	if ( _fs.is_open() ) {
 		_fs.close();
@@ -187,12 +187,12 @@ WantParser::printNodes( std::ostream &os ) const {
 		<< "dummy"
 		<< std::endl;
 
-	for ( auto const & x : _official_name ) {
+	for ( auto const & node : _node_map ) {
 
 		const std::string
-			&item = x.first,
-			&official_name = x.second,
-			&username = _username.find(item)->second;
+			&item = node.second.item,
+			&official_name = node.second.official_name,
+			&username = node.second.username;
 
 		os << item << "\t"	/**< item also used as label */
 			<< item << "\t"
@@ -255,13 +255,12 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 * Emplace official name.
 	 * Emplace username.
 	 */
-	auto rv1 = this->_official_name.emplace( item, official_name );
-	auto rv2 = this->_username.emplace( item, username );
+	auto rv = this->_node_map.emplace( item, _Node_s(item,official_name,username) );
 
 	/**
 	 * Throw if already there.
 	 */
-	if ( !rv1.second || !rv2.second ) {
+	if ( !rv.second ) {
 		throw std::runtime_error("Existing entry for item "
 				+ item);
 	}
