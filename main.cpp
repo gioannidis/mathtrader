@@ -112,8 +112,10 @@ int main(int argc, char **argv) {
 		 */
 		try {
 			lemon::TimeReport t("Reading time: ");
-			if ( ap.given("f") ) {
-				math_trader.graphReader(ap["f"]);
+
+			const std::string & fn = ap["-input-lgf-file"];
+			if ( fn.length() > 0 ) {
+				math_trader.graphReader(fn);
 			} else {
 				math_trader.graphReader();
 			}
