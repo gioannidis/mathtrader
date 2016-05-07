@@ -83,9 +83,7 @@ WantParser::parse() {
 	 * Else, std::cin.
 	 */
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
-
-	//std::regex e("([^[:blank:]]+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
-	std::regex e("(\\s+)");
+	std::regex FPAT("(\\S+)|(\"([^\"]+)\")");
 
 	while (std::getline( is, buffer )) {
 
@@ -127,9 +125,11 @@ WantParser::parse() {
 		std::cout << buffer << std::endl;
 
 #if 1
-		auto match = _split( buffer, e );
+		auto match = _split( buffer, FPAT );
+		std::cout << "n = " << match.size() << std::endl;
+		int i = 0;
 		for ( auto const & x : match ) {
-			std::cout << x << std::endl;
+			std::cout << (++i) << ": " << x << std::endl;
 		}
 #endif
 
@@ -140,7 +140,6 @@ WantParser::parse() {
 std::vector<std::string>
 WantParser::_split( const std::string & input, const std::string & regex ) {
 
-	// passing -1 as the submatch index parameter performs splitting
 	std::regex re(regex);
 	return _split( input, re );
 }
@@ -148,8 +147,9 @@ WantParser::_split( const std::string & input, const std::string & regex ) {
 std::vector<std::string>
 WantParser::_split( const std::string & input, const std::regex & regex ) {
 
+	// passing -1 as the submatch index parameter performs splitting
 	std::sregex_token_iterator
-		first{input.begin(), input.end(), regex, -1},
+		first{input.begin(), input.end(), regex, 0},
 		last;
 
 	return {first, last};
