@@ -246,6 +246,7 @@ WantParser::clear() {
 	_status = PARSE_WANTS;
 	_node_map.clear();
 	_arc_map.clear();
+	_unknown_item_map.clear();
 
 	if ( _fs.is_open() ) {
 		_fs.close();
@@ -452,6 +453,8 @@ WantParser::_parseWantList( const std::string & line ) {
 WantParser &
 WantParser::_markUnknownItems() {
 
+	_unknown_item_map.clear();
+
 	for ( auto & it : _arc_map ) {
 
 		auto & arc_vector = it.second;
@@ -460,8 +463,16 @@ WantParser::_markUnknownItems() {
 			/**
 			 * Target not found?
 			 */
-			if ( _node_map.find(arc.item_t) == _node_map.end() ) {
+			const std::string & item = arc.item_t;
+			if ( _node_map.find(item) == _node_map.end() ) {
 				arc.unknown = true;
+
+				auto it = _unknown_item_map.find(item);
+				if ( it != _unknown_item_map.end()) {
+					it->second ++ ;
+				} else {
+					_unknown_item_map.emplace(item,1);
+				}
 			}
 		}
 	}
