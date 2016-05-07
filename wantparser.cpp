@@ -30,7 +30,7 @@
  **************************************/
 
 WantParser::WantParser() :
-	_status( PARSE_ARCS )
+	_status( PARSE_WANTS )
 {
 }
 
@@ -124,8 +124,7 @@ WantParser::parse() {
 
 			} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
 
-				_status = PARSE_ARCS;
-				break ;	//FIXME remove
+				_status = PARSE_WANTS;
 				continue ;
 
 			} else {
@@ -142,7 +141,9 @@ WantParser::parse() {
 			case PARSE_NAMES:
 				_parseOfficialName( buffer );
 				break;
-			case PARSE_ARCS:
+			case PARSE_WANTS:
+				_parseWantList( buffer );
+				break;
 			default:
 				throw std::runtime_error("Unknown handler for status "
 						+ std::to_string(_status));
@@ -159,7 +160,7 @@ WantParser::parse() {
 WantParser &
 WantParser::clear() {
 
-	_status = PARSE_ARCS;
+	_status = PARSE_WANTS;
 	_node_map.clear();
 	_arc_map.clear();
 
@@ -205,6 +206,31 @@ WantParser::printNodes( std::ostream &os ) const {
 	return *this;
 }
 
+const WantParser &
+WantParser::printArcs( std::ostream &os ) const {
+
+	os << "@arcs"
+		<< std:: endl
+		<< "\t" << "\t"
+		<< "rank" << "\t"
+		<< std::endl;
+
+	for ( auto const & it : _arc_map ) {
+
+		auto const & arc_vector = it.second;
+
+		for ( auto const & arc : arc_vector ) {
+
+			os << arc.item_s << "\t"
+				<< arc.item_t << "\t"
+				<< arc.rank
+				<< std::endl;
+		}
+	}
+
+	return *this;
+}
+
 
 /************************************//*
  * 	PRIVATE METHODS - PARSING
@@ -216,7 +242,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	/**
 	 * Tokenize the line
 	 */
-	auto match = _split( line, _FPAT );
+	auto match = _split( line );
 
 	/**
 	 * Sanity check for minimum number of matches
@@ -264,6 +290,101 @@ WantParser::_parseOfficialName( const std::string & line ) {
 		throw std::runtime_error("Existing entry for item "
 				+ item);
 	}
+
+	return *this;
+}
+
+WantParser &
+WantParser::_parseWantList( const std::string & line ) {
+
+	/**
+	 * Tokenize the line
+	 */
+	auto match = _split( line );
+
+	/**
+	 * Sanity check for minimum number of matches
+	 */
+	if (( match.size() < 3 ) || ( match[2].compare(":") != 0 )) {
+		throw std::runtime_error("Bad format of wantlist line:"
+				+ line);
+	}
+
+	const std::string
+		&username_p = match[0],
+		&source = match[1];
+
+	/**
+	 * Is it a dummy node?
+	 * If so, append the username to the name.
+	 */
+	std::string item( source );
+	bool dummy = false;
+
+	if ( item.compare(0, 1, "%") == 0 ) {
+		dummy = true;
+		item.push_back('-');
+		item.append(username_p);
+	}
+
+	/**
+	 * Append quotation marks to item name.
+	 */
+	item = "\"" + item + "\"";
+
+	/**
+	 * Create ArcMap entry with empty vector.
+	 */
+	auto rv_a = _arc_map.emplace( item, std::vector< _Arc_t >() );
+
+	/**
+	 * Failed to emplace arc list?
+	 */
+	if ( !rv_a.second ) {
+		throw std::runtime_error("Want list for item "
+				+ item + " exists");
+	}
+
+	/**
+	 * Optimization: reserve adequate space.
+	 */
+	const int max_arcs = match.size() - 3;
+	_arc_map[item].reserve( max_arcs );
+
+	/**
+	 * Initialize rank
+	 */
+	int rank = 1;
+	int _SMALL_STEP = 1;
+	int _BIG_STEP = 9;
+
+	/**
+	 * Parse every single wanted item.
+	 */
+	for ( unsigned i = 3; i < match.size(); ++ i ) {
+
+		std::string target = match[i];
+
+		/**
+		 * Cases:
+		 * 1. Semicolon: just advance the rank by _BIG_STEP.
+		 * 2. Missing items: ignore them.
+		 * 	TODO report
+		 * 	TODO rank?
+		 * 3. Actual wanted item.
+		 */
+		if ( target.compare(";") == 0 ) {
+			rank += _BIG_STEP;
+		} else if ( false ) {
+
+		} else {
+			//TODO dummy?
+
+			_arc_map[item].push_back(_Arc_t( item, target, rank ));
+			rank += _SMALL_STEP;
+		}
+	}
+
 
 	return *this;
 }

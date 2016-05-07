@@ -71,6 +71,14 @@ public:
 	const WantParser & printNodes( std::ostream & os = std::cout ) const ;
 
 	/**
+	 * @brief Print Arcs.
+	 * Prints the arcs in a lemon-LGF format.
+	 * @param os The output stream (default: std::cout).
+	 * @return *this
+	 */
+	const WantParser & printArcs( std::ostream & os = std::cout ) const ;
+
+	/**
 	 * @brief Clear the parser.
 	 * Clears all data and resets variables.
 	 */
@@ -81,7 +89,7 @@ private:
 	 * Enum of current status
 	 */
 	enum Status {
-		PARSE_ARCS,
+		PARSE_WANTS,
 		PARSE_NAMES,
 		UNKNOWN,
 	};
@@ -132,9 +140,11 @@ private:
 	/**
 	 * Node & Arc maps; the key is the item reference name,
 	 * e.g., 0042-PUERTO
+	 * The Arc Map maps to a vector of arcs.
 	 */
 	std::unordered_map< std::string , _Node_t > _node_map;
-	std::unordered_map< std::string , _Arc_t >  _arc_map;
+	std::unordered_map< std::string ,
+		std::vector< _Arc_t > >  _arc_map;
 
 	/**
 	 * @brief File Stream
@@ -145,9 +155,16 @@ private:
 
 	/**
 	 * @brief Parse official name
+	 * Parses lines giving the official names of nodes.
 	 * @param line line to be parsed
 	 */
 	WantParser & _parseOfficialName( const std::string & line );
+
+	/**
+	 * @brief Parse want list
+	 * Parses lines giving the want lists.
+	 */
+	WantParser & _parseWantList( const std::string & line );
 
 	/**
 	 * Regex to define fields.
@@ -167,7 +184,7 @@ private:
 	static std::vector<std::string> _split( const std::string & input,
 			const std::string & regex);
 	static std::vector<std::string> _split( const std::string & input,
-			const std::regex & regex);
+			const std::regex & regex = _FPAT );
 
 };
 

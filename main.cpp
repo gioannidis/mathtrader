@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 	want_parser.printNodes();
+	want_parser.printArcs();
 	return 0;
 
 	MathTrader math_trader;
