@@ -49,7 +49,7 @@ WantParser::~WantParser() {
  **************************************/
 	
 WantParser &
-WantParser::setInputFile( const std::string & fn ) {
+WantParser::wantlist( const std::string & fn ) {
 
 	/**
 	 * Open file for reading

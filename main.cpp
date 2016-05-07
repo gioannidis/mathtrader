@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
 	WantParser want_parser;
 	try {
-		//want_parser.setInputFile("ss");
+		//want_parser.wantlist("ss");
 		want_parser.parse();
 	} catch ( std::exception & error ) {
 		std::cerr << "WantParser error: " << error.what()

@@ -51,7 +51,7 @@ public:
 	 * @param fn file name
 	 * @return *this
 	 */
-	WantParser & setInputFile( const std::string & fn );
+	WantParser & wantlist( const std::string & fn );
 
 	/**
 	 * @brief Parse the wantlist.
