@@ -83,7 +83,37 @@ WantParser::parse() {
 	 * Else, std::cin.
 	 */
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
-	std::regex FPAT("(\\S+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
+
+	/**
+	 * Regular expression to separate fields.
+	 *
+	 * Example of an official name:
+	 * 0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
+	 *
+	 * $1	0042-PUERTO
+	 * $2	==>
+	 * $3	"Puerto Rico"
+	 * $4	(from username)
+	 * $5	[copy 1 of 2]
+	 */
+	std::regex FPAT("(\\S+)"		// Group 1: any non-whitespace
+			"|"
+			"(\""			// Group 2: opening quotation mark
+				"("
+				"[^\"]"			// Subgroup 2.1:
+							// anything not a quotation mark
+				"|"
+				"(\"[^\"]*\")"		// Subgroup 2.2:
+							// two nested quotation marks
+							// with any non-quotation mark
+							// character between them
+				")*"
+			"\")"			// Group 2: closing quotation mark
+			"|"
+			"(\\([^\\)]+\\))"	// Group 3: parentheses
+			"|"
+			"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
+		       );
 
 	while (std::getline( is, buffer )) {
 
