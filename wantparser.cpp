@@ -74,7 +74,8 @@ WantParser::parse() {
 	 * Read buffer
 	 */
 	const size_t BUFSIZE = (1<<10);
-	char buffer[ BUFSIZE ];
+	std::string buffer;
+	buffer.reserve(BUFSIZE);
 
 	/**
 	 * Input stream:
@@ -83,29 +84,27 @@ WantParser::parse() {
 	 */
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
 
-	while ( !is.eof() ) {
+	while (std::getline( is, buffer )) {
 
-		is.read( buffer, BUFSIZE );
-		//std::cout << buffer << std::endl;
-
-		std::smatch m;
-		std::regex e("([^[:blank:]]+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
-		std::string s(buffer);
-
-
-		if ( s.compare(0, 1, "#") == 0 ) {
+		/**
+		 * Ignore comments
+		 */
+		if ( buffer.compare(0, 1, "#") == 0 ) {
 			continue ;
 		}
 
-		std::cout << s << std::endl;
-		continue ;
+		std::cout << buffer << std::endl;
 
-
+#if 0
+		std::smatch m;
+		std::regex e("([^[:blank:]]+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
+		std::string s(buffer);
 		while ( std::regex_search(s,m,e) ) {
 			for ( auto const & x : m ) {
 				std::cout << x << std::endl;
 			}
 		}
+#endif
 
 	}
 }
