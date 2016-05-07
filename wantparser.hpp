@@ -186,6 +186,22 @@ private:
 	static std::vector<std::string> _split( const std::string & input,
 			const std::regex & regex = _FPAT );
 
+	/**
+	 * @brief Check if item is dummy.
+	 * Parses the given item and checks if it's dummy (begins with '%').
+	 * @param item The item to be checked.
+	 * @return true if it's dummy, false otherwise.
+	 */
+	static bool _dummy( const std::string & item );
+
+	/**
+	 * @brief Append username if dummy.
+	 * Appends the username to the item name, if it's dummy.
+	 * @param item The item to be parsed.
+	 * @return Item name with appended username if needed, enclosed in quotation marks.
+	 */
+	static std::string _appendIfDummy( const std::string & item,
+			const std::string & username );
 };
 
 #endif /* _WANTPARSER_HPP_ */

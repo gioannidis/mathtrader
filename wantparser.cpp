@@ -315,22 +315,9 @@ WantParser::_parseWantList( const std::string & line ) {
 		&source = match[1];
 
 	/**
-	 * Is it a dummy node?
-	 * If so, append the username to the name.
+	 * Append username on item name, if dummy.
 	 */
-	std::string item( source );
-	bool dummy = false;
-
-	if ( item.compare(0, 1, "%") == 0 ) {
-		dummy = true;
-		item.push_back('-');
-		item.append(username_p);
-	}
-
-	/**
-	 * Append quotation marks to item name.
-	 */
-	item = "\"" + item + "\"";
+	std::string item = _appendIfDummy( source, username_p );
 
 	/**
 	 * Create ArcMap entry with empty vector.
@@ -367,7 +354,9 @@ WantParser::_parseWantList( const std::string & line ) {
 
 		/**
 		 * Cases:
-		 * 1. Semicolon: just advance the rank by _BIG_STEP.
+		 * 1. Semicolon:
+		 * 	"increase the rank of the next item by the big-step value"
+		 * 	NOTE: the small-step of the previous item will also be applied.
 		 * 2. Missing items: ignore them.
 		 * 	TODO report
 		 * 	TODO rank?
@@ -378,13 +367,23 @@ WantParser::_parseWantList( const std::string & line ) {
 		} else if ( false ) {
 
 		} else {
-			//TODO dummy?
 
+			/**
+			 * Append username at target, if dummy.
+			 */
+			target = _appendIfDummy( target, username_p );
+
+			/**
+			 * Push target to map.
+			 */
 			_arc_map[item].push_back(_Arc_t( item, target, rank ));
+
+			/**
+			 * Increase rank by SMALL_STEP
+			 */
 			rank += _SMALL_STEP;
 		}
 	}
-
 
 	return *this;
 }
@@ -409,6 +408,58 @@ WantParser::_split( const std::string & input, const std::regex & regex ) {
 		last;
 
 	return {first, last};
+}
+
+bool
+WantParser::_dummy( const std::string & item ) {
+
+	int offset = 0;
+
+	/**
+	 * Is the first character a quotation mark?
+	 * Then offset by 1.
+	 */
+	if ( item.front() == '"' ) {
+		offset = 1;
+	}
+
+	return ( item.compare(0 + offset, 1 + offset, "%") == 0 );
+}
+
+std::string
+WantParser::_appendIfDummy( const std::string & orig_item,
+		const std::string & username ) {
+
+	std::string item( orig_item );
+
+	/**
+	 * Strip closing quotation mark, if there.
+	 */
+	if ( item.back() == '"' ) {
+		item.pop_back();
+	}
+
+	/**
+	 * Append username, if needed.
+	 */
+	if ( _dummy( item ) ) {
+		item.push_back('-');
+		item.append(username);
+	}
+
+	/**
+	 * Add leading quotation mark, if needed.
+	 */
+	if ( item.front() != '"' ) {
+		item = "\"" + item;
+	}
+
+	/**
+	 * Add closing quotation mark
+	 */
+	item.push_back('"');
+
+	return item;
 }
 
 
