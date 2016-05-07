@@ -90,6 +90,10 @@ int main(int argc, char **argv) {
 	 * INPUT OPERATIONS
 	 ****************************************/
 
+	/* Encountered any exceptions? */
+	bool exception_risen = false;
+
+
 	/**
 	 * The Math Trader object.
 	 */
@@ -168,9 +172,7 @@ int main(int argc, char **argv) {
 		 * forward them to Math Trader.
 		 */
 		std::stringstream ss;
-		want_parser.
-			printNodes(ss).
-			printArcs(ss);
+		want_parser.print(ss);
 
 		try {
 			lemon::TimeReport t("Reading the produced"
@@ -182,7 +184,8 @@ int main(int argc, char **argv) {
 				" the produced LGF file: "
 				<< error.what()
 				<< std::endl;
-			return -1;
+
+			exception_risen = true;
 		}
 	}
 
@@ -191,17 +194,20 @@ int main(int argc, char **argv) {
 	 * PARAMETER CONFIGURATION
 	 ****************************************/
 
-	try {
-		if ( ap.given("p") ) {
-			math_trader.setPriorities(ap["p"]);
+	if ( !exception_risen ) {
+		try {
+			if ( ap.given("p") ) {
+				math_trader.setPriorities(ap["p"]);
+			}
+			if ( ap.given("-hide-no-trades") ) {
+				math_trader.hideNoTrades();
+			}
+		} catch ( std::exception & error ) {
+			std::cerr << "Error during initialization: " << error.what()
+				<< std::endl;
+
+			exception_risen = true;
 		}
-		if ( ap.given("-hide-no-trades") ) {
-			math_trader.hideNoTrades();
-		}
-	} catch ( std::exception & error ) {
-		std::cerr << "Error during initialization: " << error.what()
-			<< std::endl;
-		return -1;
 	}
 
 
@@ -211,15 +217,20 @@ int main(int argc, char **argv) {
 	 ****************************************/
 
 	/**
-	 * Run the math trading algorithm
+	 * Run the math trading algorithm.
+	 * Do not exit on error; there might be pending
+	 * output operations.
 	 */
-	try {
-		lemon::TimeReport t("Execution time: ");
-		math_trader.run();
-	} catch ( std::exception & error ) {
-		std::cerr << "Error during execution: " << error.what()
-			<< std::endl;
-		return -1;
+	if ( !exception_risen ) {
+		try {
+			lemon::TimeReport t("Execution time: ");
+			math_trader.run();
+		} catch ( std::exception & error ) {
+			std::cerr << "Error during execution: " << error.what()
+				<< std::endl;
+
+			exception_risen = true;
+		}
 	}
 
 
@@ -228,20 +239,37 @@ int main(int argc, char **argv) {
 	 ****************************************/
 
 	/**
-	 * Print the results to file or stdout
+	 * Print the results to file or stdout.
+	 * Skip if the algorithm has failed.
 	 */
-	try {
-		lemon::TimeReport t("Results time: ");
-		math_trader.processResults();
-		if ( ap.given("o") ) {
-			math_trader.printResults(ap["o"]);
-		} else {
-			math_trader.printResults();
+	if ( !exception_risen ) {
+		try {
+			lemon::TimeReport t("Results time: ");
+			math_trader.processResults();
+			if ( ap.given("o") ) {
+				math_trader.printResults(ap["o"]);
+			} else {
+				math_trader.printResults();
+			}
+		} catch ( std::exception & error ) {
+			std::cerr << "Error during printing the results: " << error.what()
+				<< std::endl;
+			return -1;
 		}
-	} catch ( std::exception & error ) {
-		std::cerr << "Error during printing the results: " << error.what()
-			<< std::endl;
-		return -1;
+	}
+
+
+	/**
+	 * Print the produced lgf file, if requested.
+	 */
+	if ( ap.given("-output-lgf-file") ) {
+
+		const std::string &fn = ap["-output-lgf-file"];
+		if ( fn.length() > 0 ) {
+			want_parser.print(fn);
+		} else {
+			want_parser.print();
+		}
 	}
 
 	return 0;
