@@ -81,11 +81,6 @@ private:
 	Status _status;
 
 	/**
-	 * regex to separate fields.
-	 */
-	static const std::regex _FPAT;
-
-	/**
 	 * Maps; the key is the item reference name,
 	 * e.g., 0042-PUERTO
 	 */
@@ -107,7 +102,19 @@ private:
 	WantParser & _parseOfficialName( const std::string & line );
 
 	/**
+	 * Regex to define fields.
+	 * The regular expression defines what the fields **are**,
+	 * therefore it's not a field separator.
+	 * It's used like FPAT from gawk.
+	 */
+	static const std::regex _FPAT;
+
+	/**
 	 * @brief Split string.
+	 * Splits the string based on a regular expression.
+	 * @param input The input string.
+	 * @param regex Regular expression defining the fields.
+	 * @return Vector with matches.
 	 */
 	static std::vector<std::string> _split( const std::string & input,
 			const std::string & regex);

@@ -266,7 +266,6 @@ WantParser::_split( const std::string & input, const std::string & regex ) {
 std::vector<std::string>
 WantParser::_split( const std::string & input, const std::regex & regex ) {
 
-	// passing -1 as the submatch index parameter performs splitting
 	std::sregex_token_iterator
 		first{input.begin(), input.end(), regex, 0},
 		last;
