@@ -128,11 +128,44 @@ WantParser::parse() {
 			continue ;
 		}
 
-		std::cout << buffer << std::endl;
-
 		_parseOfficialName( buffer );
-
 	}
+}
+
+
+/************************************//*
+ * 	PRIVATE METHODS - OUTPUT
+ **************************************/
+
+const WantParser &
+WantParser::printNodes() const {
+
+	std::cout << "@nodes"
+		<< std::endl
+		<< "label" << "\t"
+		<< "item" << "\t"
+		<< "official_name" << "\t"
+		<< "username" << "\t"
+		<< "dummy"
+		<< std::endl;
+
+	for ( auto const & x : _official_name ) {
+
+		const std::string
+			&item = x.first,
+			&official_name = x.second,
+			&username = _username.find(item)->second;
+
+		std::cout
+			<< item << "\t"	/**< item also used as label */
+			<< item << "\t"
+			<< official_name << "\t"
+			<< username << "\t"
+			<< 0 << "\t"
+			<< std::endl;
+	}
+
+	return *this;
 }
 
 
@@ -156,7 +189,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 * $5	[copy 1 of 2]
 	 *
 	 * We may also parse single-nested quotation marks, e.g.:
-	 * 0042-PUERTO ==> "Puerto "good" Rico" (from username)
+	 * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
 	 */
 	static const std::regex FPAT(
 			"(\\S+)"		// Group 1: any non-whitespace
@@ -178,14 +211,59 @@ WantParser::_parseOfficialName( const std::string & line ) {
 			"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
 		       );
 
+	/**
+	 * Tokenize the line
+	 */
 	auto match = _split( line, FPAT );
-	int i = 0;
-	for ( auto const & x : match ) {
-		std::cout << (++i) << ": " << x << std::endl;
+
+	/**
+	 * Sanity check for minimum number of matches
+	 */
+	if ( match.size() < 4 ) {
+		throw std::runtime_error("Bad format of official name line:"
+				+ line);
+	}
+
+	/**
+	 * Item name: to be used as a hash key.
+	 */
+	const std::string
+		&item = match[0],
+		&official_name = match[2],
+		&from_username = match[3];
+
+	/**
+	 * from_username is in format:
+	 * 	(from user name)
+	 * Change to:
+	 * 	"user name"
+	 */
+	std::string username =
+		from_username.substr(6, std::string::npos); /**< remove "(from " */
+	username.pop_back(); /**< remove last ')' */
+	username = "\"" + username + "\"";	/**< append quotation marks */
+
+	/**
+	 * Emplace official name.
+	 */
+	auto rv1 = this->_official_name.emplace( item, official_name );
+	auto rv2 = this->_username.emplace( item, username );
+
+	/**
+	 * Throw if already there.
+	 */
+	if ( !rv1.second || !rv2.second ) {
+		throw std::runtime_error("Existing entry for item "
+				+ item);
 	}
 
 	return *this;
 }
+
+
+/************************************//*
+ * 	PRIVATE METHODS - UTILS
+ **************************************/
 
 std::vector<std::string>
 WantParser::_split( const std::string & input, const std::string & regex ) {

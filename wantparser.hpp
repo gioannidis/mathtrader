@@ -26,6 +26,7 @@
 #include <fstream>
 #include <regex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class WantParser {
@@ -61,7 +62,22 @@ public:
 	 */
 	void parse();
 
+	/**
+	 * @brief Print Nodes.
+	 * Prints the nodes in a lemon-LGF format.
+	 * @return *this
+	 */
+	const WantParser & printNodes() const ;
+
 private:
+	/**
+	 * Maps; the key is the item reference name,
+	 * e.g., 0042-PUERTO
+	 */
+	std::unordered_map< std::string , std::string >
+		_official_name, /**< Official item name */
+		_username;	/**< Owner username */
+
 	/**
 	 * @brief File Stream
 	 * File stream to read the want list from,

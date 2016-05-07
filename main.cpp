@@ -64,6 +64,7 @@ int main(int argc, char **argv) {
 			<< std::endl;
 		return -1;
 	}
+	want_parser.printNodes();
 	return 0;
 
 	MathTrader math_trader;
