@@ -58,12 +58,12 @@ int main(int argc, char **argv) {
 	WantParser want_parser;
 	try {
 		//want_parser.setInputFile("ss");
+		want_parser.parse();
 	} catch ( std::exception & error ) {
 		std::cerr << "WantParser error: " << error.what()
 			<< std::endl;
 		return -1;
 	}
-	want_parser.parse();
 	return 0;
 
 	MathTrader math_trader;
