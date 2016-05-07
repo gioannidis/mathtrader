@@ -84,21 +84,52 @@ WantParser::parse() {
 	 */
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
 
+	//std::regex e("([^[:blank:]]+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
+	std::regex e("([^[:blank:]])");
+
 	while (std::getline( is, buffer )) {
 
 		/**
 		 * Ignore comments
 		 */
-		if ( buffer.compare(0, 1, "#") == 0 ) {
+		if ( buffer.compare(0, 1, "#!") == 0 ) {
+
+			/**
+			 * Option line
+			 */
+
+			continue ;
+
+		} else if ( buffer.compare(0, 2, "#") == 0 ) {
+
+			/**
+			 * Comment line
+			 */
+			if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
+
+				continue ;
+
+			} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
+
+				break ;
+
+			} else {
+				throw std::runtime_error("Unrecognized directive: "
+						+ buffer);
+			}
+
+			continue ;
+
+		}
+		else if ( buffer.compare(0, 1, "!") == 0 ) {
 			continue ;
 		}
 
 		std::cout << buffer << std::endl;
 
-#if 0
 		std::smatch m;
-		std::regex e("([^[:blank:]]+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
 		std::string s(buffer);
+#if 0
 		while ( std::regex_search(s,m,e) ) {
 			for ( auto const & x : m ) {
 				std::cout << x << std::endl;
