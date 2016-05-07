@@ -270,7 +270,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 */
 	const std::string
 		&orig_item = match[0],
-		&official_name = match[2],
+		&orig_official_name = match[2],
 		&from_username = match[3];
 
 	/**
@@ -280,10 +280,17 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	std::string item = _quotationMarks( orig_item );
 
 	/**
-	 * TODO
-	 * Escape nested quotation marks in official_name
-	 * or replace them with '
+	 * Replace nested quotation marks in official_name with "'".
+	 * Ignore the first and the last position of the string.
 	 */
+	std::string official_name( orig_official_name );
+	size_t pos = 1;
+	while ((( pos = official_name.find( "\"", pos )) != std::string::npos )
+			&& ( pos != official_name.length()-1 )) {
+
+		official_name.replace( pos, 1, "'");
+		pos += 1;
+	}
 
 	/**
 	 * from_username is in format:
