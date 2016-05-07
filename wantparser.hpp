@@ -127,13 +127,15 @@ private:
 		std::string item_s;	/**< Item name; source */
 		std::string item_t;	/**< Item name; target */
 		int rank;		/**< Rank of arc */
+		bool unknown;		/**< Unknown item; node is missing */
 
 		inline _Arc_s ( const std::string & _source,
 				const std::string & _target,
 				int _rank ) :
 			item_s( _source ),
 			item_t( _target ),
-			rank( _rank ) {}
+			rank( _rank ),
+			unknown( false ){}
 
 	} _Arc_t;
 
@@ -167,17 +169,20 @@ private:
 	WantParser & _parseWantList( const std::string & line );
 
 	/**
+	 * @brief Mark unknown items.
+	 * Parses all the arcs and checks
+	 * whether any target nodes are missing (unknown).
+	 * These won't be appended to the results.
+	 */
+	WantParser & _markUnknownItems();
+
+	/**
 	 * Regex to define fields.
 	 * The regular expression defines what the fields **are**,
 	 * therefore it's not a field separator.
 	 * It's used like FPAT from gawk.
 	 */
 	static const std::regex _FPAT;
-
-	/**
-	 * Regex to define missing items.
-	 */
-	static const std::regex _REGEX_MISSING;
 
 	/**
 	 * @brief Split string.

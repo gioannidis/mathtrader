@@ -150,6 +150,11 @@ WantParser::parse() {
 				break;
 		}
 	}
+
+	/**
+	 * Mark unknown items
+	 */
+	_markUnknownItems();
 }
 
 
@@ -204,10 +209,15 @@ WantParser::print( std::ostream &os ) const {
 
 		for ( auto const & arc : arc_vector ) {
 
-			os << arc.item_s << "\t"
-				<< arc.item_t << "\t"
-				<< arc.rank
-				<< std::endl;
+			/**
+			 * Skip unknown items.
+			 */
+			if ( !arc.unknown ) {
+				os << arc.item_s << "\t"
+					<< arc.item_t << "\t"
+					<< arc.rank
+					<< std::endl;
+			}
 		}
 	}
 
@@ -412,8 +422,6 @@ WantParser::_parseWantList( const std::string & line ) {
 		 */
 		if ( target.compare(";") == 0 ) {
 			rank += _BIG_STEP;
-		} else if (std::regex_search( target, _REGEX_MISSING )) {
-			//TODO report?
 		} else {
 
 			/**
@@ -425,10 +433,6 @@ WantParser::_parseWantList( const std::string & line ) {
 			 * Push target to map.
 			 */
 			_arc_map[item].push_back(_Arc_t( item, target, rank ));
-
-			/**
-			 * Increase rank by SMALL_STEP
-			 */
 		}
 
 		/**
@@ -444,6 +448,26 @@ WantParser::_parseWantList( const std::string & line ) {
 /************************************//*
  * 	PRIVATE METHODS - UTILS
  **************************************/
+
+WantParser &
+WantParser::_markUnknownItems() {
+
+	for ( auto & it : _arc_map ) {
+
+		auto & arc_vector = it.second;
+		for ( auto & arc : arc_vector ) {
+
+			/**
+			 * Target not found?
+			 */
+			if ( _node_map.find(arc.item_t) == _node_map.end() ) {
+				arc.unknown = true;
+			}
+		}
+	}
+
+	return *this;
+}
 
 std::vector<std::string>
 WantParser::_split( const std::string & input, const std::string & regex ) {
@@ -577,7 +601,3 @@ WantParser::_FPAT(
 	"|"
 	"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
 );
-
-const std::regex
-WantParser::_REGEX_MISSING("^MISSING-OFFICIAL-",
-		std::regex_constants::icase);
