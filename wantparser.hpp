@@ -65,9 +65,10 @@ public:
 	/**
 	 * @brief Print Nodes.
 	 * Prints the nodes in a lemon-LGF format.
+	 * @param os The output stream (default: std::cout).
 	 * @return *this
 	 */
-	const WantParser & printNodes() const ;
+	const WantParser & printNodes( std::ostream & os = std::cout ) const ;
 
 private:
 	/**

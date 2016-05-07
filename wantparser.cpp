@@ -157,9 +157,9 @@ WantParser::parse() {
  **************************************/
 
 const WantParser &
-WantParser::printNodes() const {
+WantParser::printNodes( std::ostream &os ) const {
 
-	std::cout << "@nodes"
+	os << "@nodes"
 		<< std::endl
 		<< "label" << "\t"
 		<< "item" << "\t"
@@ -175,8 +175,7 @@ WantParser::printNodes() const {
 			&official_name = x.second,
 			&username = _username.find(item)->second;
 
-		std::cout
-			<< item << "\t"	/**< item also used as label */
+		os << item << "\t"	/**< item also used as label */
 			<< item << "\t"
 			<< official_name << "\t"
 			<< username << "\t"
