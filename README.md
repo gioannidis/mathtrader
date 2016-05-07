@@ -108,10 +108,9 @@ You may redirect the output to a file:
     ./mathtrader++ < 207635-results.txt > 207635-results.txt
     ./mathtrader++ --input-file 207635-results.txt --output-file 207635-results.txt
 
-In the following aggregated example:
-* The input file is downloaded from OLWLG and saved to the standard output.
-* Subsequently, the wantlist is piped to `mathtrader++`, where we also request to hide no trades.
-
+In the following example,
+the input file is downloaded from OLWLG and saved to the standard output
+and subsequently the wantlist is piped to `mathtrader++`, where we also request to hide non-trading items.
 
      wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | ./mathtrader++ --hide-no-trades > 207635-results.txt
 
