@@ -26,6 +26,8 @@
 #include <iostream>
 #include <lemon/arg_parser.h>
 #include <lemon/time_measure.h>
+#include <sstream>
+
 
 int main(int argc, char **argv) {
 
@@ -54,6 +56,10 @@ int main(int argc, char **argv) {
 	ap.stringOption("-input-lgf-file",
 			"input lemon graph format (LGF) file"
 			" (default: stdin)");
+
+	ap.stringOption("-output-lgf-file",
+			"print the lemon graph format (LGF) file"
+			" (default: stdout)");
 
 	/**
 	 * Overriding options from want file
@@ -120,7 +126,9 @@ int main(int argc, char **argv) {
 				math_trader.graphReader();
 			}
 		} catch ( std::exception & error ) {
-			std::cerr << "Error during reading: " << error.what()
+			std::cerr << "Error during reading"
+				" the LGF file: "
+				<< error.what()
 				<< std::endl;
 			return -1;
 		}
@@ -128,6 +136,8 @@ int main(int argc, char **argv) {
 	} else {
 
 		try {
+			lemon::TimeReport t("Wantlist parsing time: ");
+
 			//want_parser.wantlist("ss");
 			want_parser.parse();
 		} catch ( std::exception & error ) {
@@ -135,11 +145,30 @@ int main(int argc, char **argv) {
 				<< std::endl;
 			return -1;
 		}
-		want_parser.printNodes();
-		want_parser.printArcs();
-	}
-	return 0;
 
+
+		/**
+		 * Print the Nodes & Arcs;
+		 * forward them to Math Trader.
+		 */
+		std::stringstream ss;
+		want_parser.
+			printNodes(ss).
+			printArcs(ss);
+
+		try {
+			lemon::TimeReport t("Reading the produced"
+					" LGF file time: ");
+
+			math_trader.graphReader(ss);
+		} catch ( std::exception & error ) {
+			std::cerr << "Error during reading "
+				" the produced LGF file: "
+				<< error.what()
+				<< std::endl;
+			return -1;
+		}
+	}
 
 
 	/**************************************//*
