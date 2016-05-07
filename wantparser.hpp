@@ -175,6 +175,11 @@ private:
 	static const std::regex _FPAT;
 
 	/**
+	 * Regex to define missing items.
+	 */
+	static const std::regex _REGEX_MISSING;
+
+	/**
 	 * @brief Split string.
 	 * Splits the string based on a regular expression.
 	 * @param input The input string.

@@ -408,14 +408,12 @@ WantParser::_parseWantList( const std::string & line ) {
 		 * 	"increase the rank of the next item by the big-step value"
 		 * 	NOTE: the small-step of the previous item will also be applied.
 		 * 2. Missing items: ignore them.
-		 * 	TODO report
-		 * 	TODO rank?
 		 * 3. Actual wanted item.
 		 */
 		if ( target.compare(";") == 0 ) {
 			rank += _BIG_STEP;
-		} else if ( false ) {
-
+		} else if (std::regex_search( target, _REGEX_MISSING )) {
+			//TODO report?
 		} else {
 
 			/**
@@ -431,8 +429,12 @@ WantParser::_parseWantList( const std::string & line ) {
 			/**
 			 * Increase rank by SMALL_STEP
 			 */
-			rank += _SMALL_STEP;
 		}
+
+		/**
+		 * Advance always the rank by small-step
+		 */
+		rank += _SMALL_STEP;
 	}
 
 	return *this;
@@ -575,3 +577,7 @@ WantParser::_FPAT(
 	"|"
 	"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
 );
+
+const std::regex
+WantParser::_REGEX_MISSING("^MISSING-OFFICIAL-",
+		std::regex_constants::icase);
