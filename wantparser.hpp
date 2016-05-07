@@ -24,9 +24,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <map>
 #include <regex>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 class WantParser {
@@ -142,8 +142,8 @@ private:
 	 * e.g., 0042-PUERTO
 	 * The Arc Map maps to a vector of arcs.
 	 */
-	std::unordered_map< std::string , _Node_t > _node_map;
-	std::unordered_map< std::string ,
+	std::map< std::string , _Node_t > _node_map;
+	std::map< std::string ,
 		std::vector< _Arc_t > >  _arc_map;
 
 	/**
