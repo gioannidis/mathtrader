@@ -158,8 +158,11 @@ WantParser::parse() {
  **************************************/
 
 const WantParser &
-WantParser::printNodes( std::ostream &os ) const {
+WantParser::print( std::ostream &os ) const {
 
+	/**
+	 * Print Nodes
+	 */
 	os << "@nodes"
 		<< std::endl
 		<< "label" << "\t"
@@ -185,23 +188,10 @@ WantParser::printNodes( std::ostream &os ) const {
 			<< std::endl;
 	}
 
-	return *this;
-}
 
-const WantParser &
-WantParser::printNodes( const std::string & fn ) const {
-
-	std::filebuf fb;
-	fb.open(fn, std::ios::out);
-	std::ostream os(&fb);
-	printNodes(os);
-	fb.close();
-	return *this;
-}
-
-const WantParser &
-WantParser::printArcs( std::ostream &os ) const {
-
+	/**
+	 * Print Arcs
+	 */
 	os << "@arcs"
 		<< std:: endl
 		<< "\t" << "\t"
@@ -225,12 +215,12 @@ WantParser::printArcs( std::ostream &os ) const {
 }
 
 const WantParser &
-WantParser::printArcs( const std::string & fn ) const {
+WantParser::print( const std::string & fn ) const {
 
 	std::filebuf fb;
 	fb.open(fn, std::ios::out);
 	std::ostream os(&fb);
-	printArcs(os);
+	print(os);
 	fb.close();
 	return *this;
 }
