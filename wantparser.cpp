@@ -153,6 +153,25 @@ WantParser::parse() {
 
 
 /************************************//*
+ * 	PUBLIC METHODS - UTILITIES
+ **************************************/
+
+WantParser &
+WantParser::clear() {
+
+	_status = PARSE_ARCS;
+	_official_name.clear();
+	_username.clear();
+
+	if ( _fs.is_open() ) {
+		_fs.close();
+	}
+
+	return *this;
+}
+
+
+/************************************//*
  * 	PRIVATE METHODS - OUTPUT
  **************************************/
 

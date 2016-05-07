@@ -70,6 +70,12 @@ public:
 	 */
 	const WantParser & printNodes( std::ostream & os = std::cout ) const ;
 
+	/**
+	 * @brief Clear the parser.
+	 * Clears all data and resets variables.
+	 */
+	WantParser & clear();
+
 private:
 	/**
 	 * Enum of current status
@@ -82,7 +88,49 @@ private:
 	Status _status;
 
 	/**
-	 * Maps; the key is the item reference name,
+	 * @brief Node struct
+	 * Structure to hold node information
+	 */
+	typedef struct _Node_s {
+
+		std::string item;		/**< Item name; 0001-PUERTO */
+		std::string official_name;	/**< Official name; "Puerto Rico" */
+		std::string username;		/**< Username; "Aldie" */
+		bool dummy;			/**< Dummy node */
+
+		inline _Node_s ( const std::string & _item,
+				const std::string & _official,
+				const std::string & _user,
+				bool _dummy = false
+				) :
+			item( _item ),
+			official_name( _official ),
+			username( _user ),
+			dummy( _dummy ) {}
+
+	} _Node_t;
+
+	/**
+	 * @brief Arc struct
+	 * Structure to hold arc information
+	 */
+	typedef struct _Arc_s {
+
+		std::string item_s;	/**< Item name; source */
+		std::string item_t;	/**< Item name; target */
+		int rank;		/**< Rank of arc */
+
+		inline _Arc_s ( const std::string & _source,
+				const std::string & _target,
+				int _rank ) :
+			item_s( _source ),
+			item_t( _target ),
+			rank( _rank ) {}
+
+	} _Arc_t;
+
+	/**
+	 * Node & Arc maps; the key is the item reference name,
 	 * e.g., 0042-PUERTO
 	 */
 	std::unordered_map< std::string , std::string >
