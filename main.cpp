@@ -29,46 +29,121 @@
 
 int main(int argc, char **argv) {
 
+
+	/**************************************//*
+	 * COMMAND LINE ARGUMENT PARSING
+	 ****************************************/
+
 	/**
-	 * Argument parser
-	 * - Initializer
+	 * Argument parser object.
+	 * Will parse the command line options.
 	 */
 	lemon::ArgParser ap(argc,argv);
-	ap.stringOption("f", "input file (default: stdin)");
+	ap.throwOnProblems();
+
+	/**
+	 * Input/Output
+	 */
+	ap.stringOption("f", "input want list file (default: stdin)");
 	ap.synonym("-input-file", "f");
+	ap.synonym("-official-wants", "f");
+
 	ap.stringOption("o", "output file (default: stdout)");
 	ap.synonym("-output-file", "o");
+
+	ap.stringOption("-input-lgf-file",
+			"input lemon graph format (LGF) file"
+			" (default: stdin)");
+
+	/**
+	 * Overriding options from want file
+	 */
 	ap.stringOption("p", "set the priorities:"
 			" LINEAR-PRIORITIES"
 			" TRIANGLE-PRIORITIES"
 			" SQUARE-PRIORITIES"
 			" SCALED-PRIORITIES");
 	ap.synonym("-priorities", "p");
+
 	ap.boolOption("-hide-no-trades",
 			"do not show non-trading items",
 			true);
 
-	ap.throwOnProblems();
+	/**
+	 * Run the argument parser.
+	 */
 	try {
 		ap.parse();
 	} catch ( lemon::ArgParserException & error ) {
 		return 1;
 	}
 
+
+
+	/**************************************//*
+	 * INPUT OPERATIONS
+	 ****************************************/
+
+	/**
+	 * The Math Trader object.
+	 */
+	MathTrader math_trader;
+
+	/*
+	 * Want List parser.
+	 * Will parse the wantlist and configure
+	 * the Math Trader.
+	 * Make it throw in problems.
+	 */
 	WantParser want_parser;
-	try {
-		//want_parser.wantlist("ss");
-		want_parser.parse();
-	} catch ( std::exception & error ) {
-		std::cerr << "WantParser error: " << error.what()
-			<< std::endl;
-		return -1;
+
+	/**
+	 * Input File Operations
+	 * - If "--input-lgf-file" is given
+	 *   we will skip the wantlist parser
+	 *   and directly read the graph.
+	 *
+	 * - Otherwise, we will invoke the wantlist parser.
+	 */
+	if ( ap.given("-input-lgf-file") ) {
+
+		/**
+		 * Read LGF from file or stdin
+		 */
+		try {
+			lemon::TimeReport t("Reading time: ");
+			if ( ap.given("f") ) {
+				math_trader.graphReader(ap["f"]);
+			} else {
+				math_trader.graphReader();
+			}
+		} catch ( std::exception & error ) {
+			std::cerr << "Error during reading: " << error.what()
+				<< std::endl;
+			return -1;
+		}
+
+	} else {
+
+		try {
+			//want_parser.wantlist("ss");
+			want_parser.parse();
+		} catch ( std::exception & error ) {
+			std::cerr << "WantParser error: " << error.what()
+				<< std::endl;
+			return -1;
+		}
+		want_parser.printNodes();
+		want_parser.printArcs();
 	}
-	want_parser.printNodes();
-	want_parser.printArcs();
 	return 0;
 
-	MathTrader math_trader;
+
+
+	/**************************************//*
+	 * PARAMETER CONFIGURATION
+	 ****************************************/
+
 	try {
 		if ( ap.given("p") ) {
 			math_trader.setPriorities(ap["p"]);
@@ -82,21 +157,11 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	/**
-	 * Read input graph from file or stdin
-	 */
-	try {
-		lemon::TimeReport t("Reading time: ");
-		if ( ap.given("f") ) {
-			math_trader.graphReader(ap["f"]);
-		} else {
-			math_trader.graphReader();
-		}
-	} catch ( std::exception & error ) {
-		std::cerr << "Error during reading: " << error.what()
-			<< std::endl;
-		return -1;
-	}
+
+
+	/**************************************//*
+	 * MATH TRADING EXECUTION
+	 ****************************************/
 
 	/**
 	 * Run the math trading algorithm
@@ -109,6 +174,11 @@ int main(int argc, char **argv) {
 			<< std::endl;
 		return -1;
 	}
+
+
+	/**************************************//*
+	 * OUTPUT OPERATIONS
+	 ****************************************/
 
 	/**
 	 * Print the results to file or stdout
