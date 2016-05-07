@@ -29,7 +29,8 @@
  * 	PUBLIC METHODS - CONSTRUCTORS
  **************************************/
 
-WantParser::WantParser()
+WantParser::WantParser() :
+	_status( PARSE_ARCS )
 {
 }
 
@@ -113,13 +114,19 @@ WantParser::parse() {
 
 		} else if ( buffer.compare(0, 1, "!") == 0 ) {
 
+			/**
+			 * Directives
+			 */
 			if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
 
+				_status = PARSE_NAMES;
 				continue ;
 
 			} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
 
-				break ;
+				_status = PARSE_ARCS;
+				break ;	//FIXME remove
+				continue ;
 
 			} else {
 				throw std::runtime_error("Unrecognized directive: "
@@ -128,7 +135,19 @@ WantParser::parse() {
 			continue ;
 		}
 
-		_parseOfficialName( buffer );
+		/**
+		 * Use appropriate handler for current status
+		 */
+		switch ( _status ) {
+			case PARSE_NAMES:
+				_parseOfficialName( buffer );
+				break;
+			case PARSE_ARCS:
+			default:
+				throw std::runtime_error("Unknown handler for status "
+						+ std::to_string(_status));
+				break;
+		}
 	}
 }
 

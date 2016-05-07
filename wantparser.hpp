@@ -71,6 +71,16 @@ public:
 
 private:
 	/**
+	 * Enum of current status
+	 */
+	enum Status {
+		PARSE_ARCS,
+		PARSE_NAMES,
+		UNKNOWN,
+	};
+	Status _status;
+
+	/**
 	 * Maps; the key is the item reference name,
 	 * e.g., 0042-PUERTO
 	 */
