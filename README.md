@@ -73,8 +73,6 @@ On Linux systems the latest `g++` version provides support of the standard, e.g.
 Many IDE on Windows systems support the C++11 standard,
 e.g., [Code::Blocks](http://www.codeblocks.org/).
 You might have to appropriately configure your IDE to enable C++11 support.
-* [GNU awk (Gawk)](https://www.gnu.org/software/gawk/),
-as it provides additional options that standard `awk` does not support.
 
 ## Compiling
 
@@ -97,11 +95,6 @@ On a terminal, you may download it using `wget`, e.g.:
 
     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt
 
-The want list has to be converted to a graph format that the LEMON library can understand.
-An awk script, `want2mt.awk` is provided to handle the conversion.
-
-    gawk -f want2mt.awk < 207635-officialwants.txt > 207635-testcase.txt
-
 You may see the options of `mathtrader++` by running `./mathtrader++ -h`.
 The testcase file may be provided either from the standard input
 or as a file:
@@ -117,18 +110,16 @@ You may redirect the output to a file:
 
 In the following aggregated example:
 * The input file is downloaded from OLWLG and saved to the standard output.
-* The input is subsequently piped to the awk script to convert it to a LEMON compatible format.
-* Finally, the testcase is piped to `mathtrader++`, where we also request to hide no trades.
+* Subsequently, the wantlist is piped to `mathtrader++`, where we also request to hide no trades.
 
 
-     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | gawk -f want2mt.awk | ./mathtrader++ --hide-no-trades > 207635-results.txt
+     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | ./mathtrader++ --hide-no-trades > 207635-results.txt
 
 ## Future Tasks
 
 - [x] Investigate possible algorithm bug, as it does not maximize the trading items on larger inputs.
 - [ ] Implement scaled priority schemes.
-- [ ] Implement BIG-STEP and SMALL-STEP.
-- [ ] Convert the source code to the C++03 standard.
+- [x] Implement BIG-STEP and SMALL-STEP.
 - [x] Add Doxygen documentation.
 - [ ] Add _users-trading_ as a metric.
-- [ ] Integrate the file conversion with the main program.
+- [x] Integrate the file conversion with the main program.
