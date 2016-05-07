@@ -135,11 +135,27 @@ int main(int argc, char **argv) {
 
 	} else {
 
+		/**
+		 * Read file from wantlist
+		 */
 		try {
 			lemon::TimeReport t("Wantlist parsing time: ");
 
-			//want_parser.wantlist("ss");
+			/**
+			 * Configure input file
+			 */
+			if ( ap.given("f") ) {
+				const std::string & fn = ap["f"];
+				if ( fn.length() > 0 ) {
+					want_parser.wantlist(fn);
+				}
+			}
+
+			/**
+			 * Run the parser
+			 */
 			want_parser.parse();
+
 		} catch ( std::exception & error ) {
 			std::cerr << "WantParser error: " << error.what()
 				<< std::endl;
