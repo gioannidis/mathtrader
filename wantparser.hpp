@@ -24,6 +24,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <regex>
+#include <string>
+#include <vector>
 
 class WantParser {
 
@@ -65,6 +68,11 @@ private:
 	 * when applicable.
 	 */
 	std::ifstream _fs;
+
+	static std::vector<std::string> _split( const std::string & input,
+			const std::string & regex);
+	static std::vector<std::string> _split( const std::string & input,
+			const std::regex & regex);
 
 };
 

@@ -85,14 +85,14 @@ WantParser::parse() {
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
 
 	//std::regex e("([^[:blank:]]+)|(\"[^\"]+\")|(\\([^\\)]+\\))");
-	std::regex e("([^[:blank:]])");
+	std::regex e("(\\s+)");
 
 	while (std::getline( is, buffer )) {
 
 		/**
 		 * Ignore comments
 		 */
-		if ( buffer.compare(0, 1, "#!") == 0 ) {
+		if ( buffer.compare(0, 2, "#!") == 0 ) {
 
 			/**
 			 * Option line
@@ -100,11 +100,15 @@ WantParser::parse() {
 
 			continue ;
 
-		} else if ( buffer.compare(0, 2, "#") == 0 ) {
+		} else if ( buffer.compare(0, 1, "#") == 0 ) {
 
 			/**
 			 * Comment line
 			 */
+			continue ;
+
+		} else if ( buffer.compare(0, 1, "!") == 0 ) {
+
 			if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
 
 				continue ;
@@ -117,25 +121,36 @@ WantParser::parse() {
 				throw std::runtime_error("Unrecognized directive: "
 						+ buffer);
 			}
-
-			continue ;
-
-		}
-		else if ( buffer.compare(0, 1, "!") == 0 ) {
 			continue ;
 		}
 
 		std::cout << buffer << std::endl;
 
-		std::smatch m;
-		std::string s(buffer);
-#if 0
-		while ( std::regex_search(s,m,e) ) {
-			for ( auto const & x : m ) {
-				std::cout << x << std::endl;
-			}
+#if 1
+		auto match = _split( buffer, e );
+		for ( auto const & x : match ) {
+			std::cout << x << std::endl;
 		}
 #endif
 
 	}
+}
+
+
+std::vector<std::string>
+WantParser::_split( const std::string & input, const std::string & regex ) {
+
+	// passing -1 as the submatch index parameter performs splitting
+	std::regex re(regex);
+	return _split( input, re );
+}
+
+std::vector<std::string>
+WantParser::_split( const std::string & input, const std::regex & regex ) {
+
+	std::sregex_token_iterator
+		first{input.begin(), input.end(), regex, -1},
+		last;
+
+	return {first, last};
 }
