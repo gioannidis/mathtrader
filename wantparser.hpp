@@ -71,12 +71,28 @@ public:
 	const WantParser & printNodes( std::ostream & os = std::cout ) const ;
 
 	/**
+	 * @brief Print Nodes.
+	 * Prints the nodes in a lemon-LGF format.
+	 * @param fn The file output name.
+	 * @return *this
+	 */
+	const WantParser & printNodes( const std::string & fn ) const ;
+
+	/**
 	 * @brief Print Arcs.
 	 * Prints the arcs in a lemon-LGF format.
 	 * @param os The output stream (default: std::cout).
 	 * @return *this
 	 */
 	const WantParser & printArcs( std::ostream & os = std::cout ) const ;
+
+	/**
+	 * @brief Print Arcs.
+	 * Prints the arcs in a lemon-LGF format.
+	 * @param fn The file output name.
+	 * @return *this
+	 */
+	const WantParser & printArcs( const std::string & fn ) const ;
 
 	/**
 	 * @brief Clear the parser.

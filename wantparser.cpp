@@ -65,7 +65,7 @@ WantParser::wantlist( const std::string & fn ) {
 
 
 /************************************//*
- * 	PUBLIC METHODS - OUTPUT
+ * 	PUBLIC METHODS - PARSING
  **************************************/
 
 void
@@ -154,26 +154,7 @@ WantParser::parse() {
 
 
 /************************************//*
- * 	PUBLIC METHODS - UTILITIES
- **************************************/
-
-WantParser &
-WantParser::clear() {
-
-	_status = PARSE_WANTS;
-	_node_map.clear();
-	_arc_map.clear();
-
-	if ( _fs.is_open() ) {
-		_fs.close();
-	}
-
-	return *this;
-}
-
-
-/************************************//*
- * 	PRIVATE METHODS - OUTPUT
+ * 	PUBLIC METHODS - OUTPUT
  **************************************/
 
 const WantParser &
@@ -208,6 +189,17 @@ WantParser::printNodes( std::ostream &os ) const {
 }
 
 const WantParser &
+WantParser::printNodes( const std::string & fn ) const {
+
+	std::filebuf fb;
+	fb.open(fn, std::ios::out);
+	std::ostream os(&fb);
+	printNodes(os);
+	fb.close();
+	return *this;
+}
+
+const WantParser &
 WantParser::printArcs( std::ostream &os ) const {
 
 	os << "@arcs"
@@ -227,6 +219,36 @@ WantParser::printArcs( std::ostream &os ) const {
 				<< arc.rank
 				<< std::endl;
 		}
+	}
+
+	return *this;
+}
+
+const WantParser &
+WantParser::printArcs( const std::string & fn ) const {
+
+	std::filebuf fb;
+	fb.open(fn, std::ios::out);
+	std::ostream os(&fb);
+	printArcs(os);
+	fb.close();
+	return *this;
+}
+
+
+/************************************//*
+ * 	PUBLIC METHODS - UTILITIES
+ **************************************/
+
+WantParser &
+WantParser::clear() {
+
+	_status = PARSE_WANTS;
+	_node_map.clear();
+	_arc_map.clear();
+
+	if ( _fs.is_open() ) {
+		_fs.close();
 	}
 
 	return *this;
