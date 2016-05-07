@@ -196,44 +196,9 @@ WantParser &
 WantParser::_parseOfficialName( const std::string & line ) {
 
 	/**
-	 * Regular expression to separate fields.
-	 *
-	 * Example of an official name line:
-	 * 0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
-	 *
-	 * $1	0042-PUERTO
-	 * $2	==>
-	 * $3	"Puerto Rico"
-	 * $4	(from username)
-	 * $5	[copy 1 of 2]
-	 *
-	 * We may also parse single-nested quotation marks, e.g.:
-	 * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
-	 */
-	static const std::regex FPAT(
-			"(\\S+)"		// Group 1: any non-whitespace
-			"|"
-			"(\""			// Group 2: opening quotation mark
-				"("
-				"[^\"]"			// Subgroup 2.1:
-							// anything not a quotation mark
-				"|"
-				"(\"[^\"]*\")"		// Subgroup 2.2:
-							// two nested quotation marks
-							// with any non-quotation mark
-							// character between them
-				")*"
-			"\")"			// Group 2: closing quotation mark
-			"|"
-			"(\\([^\\)]+\\))"	// Group 3: parentheses
-			"|"
-			"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
-		       );
-
-	/**
 	 * Tokenize the line
 	 */
-	auto match = _split( line, FPAT );
+	auto match = _split( line, _FPAT );
 
 	/**
 	 * Sanity check for minimum number of matches
@@ -308,3 +273,44 @@ WantParser::_split( const std::string & input, const std::regex & regex ) {
 
 	return {first, last};
 }
+
+
+/************************************//*
+ * 	PRIVATE STATIC MEMBERS
+ **************************************/
+
+/**
+ * Regular expression to separate fields.
+ *
+ * Example of an official name line:
+ * 0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
+ *
+ * $1	0042-PUERTO
+ * $2	==>
+ * $3	"Puerto Rico"
+ * $4	(from username)
+ * $5	[copy 1 of 2]
+ *
+ * We may also parse single-nested quotation marks, e.g.:
+ * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
+ */
+const std::regex
+WantParser::_FPAT(
+	"(\\S+)"		// Group 1: any non-whitespace
+	"|"
+	"(\""			// Group 2: opening quotation mark
+		"("
+		"[^\"]"			// Subgroup 2.1:
+					// anything not a quotation mark
+		"|"
+		"(\"[^\"]*\")"		// Subgroup 2.2:
+					// two nested quotation marks
+					// with any non-quotation mark
+					// character between them
+		")*"
+	"\")"			// Group 2: closing quotation mark
+	"|"
+	"(\\([^\\)]+\\))"	// Group 3: parentheses
+	"|"
+	"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
+);

@@ -81,6 +81,11 @@ private:
 	Status _status;
 
 	/**
+	 * regex to separate fields.
+	 */
+	static const std::regex _FPAT;
+
+	/**
 	 * Maps; the key is the item reference name,
 	 * e.g., 0042-PUERTO
 	 */
