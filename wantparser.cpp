@@ -194,12 +194,13 @@ WantParser::printNodes( std::ostream &os ) const {
 			&item = node.second.item,
 			&official_name = node.second.official_name,
 			&username = node.second.username;
+		bool dummy = node.second.dummy;
 
 		os << item << "\t"	/**< item also used as label */
 			<< item << "\t"
 			<< official_name << "\t"
 			<< username << "\t"
-			<< 0 << "\t"
+			<< dummy << "\t"
 			<< std::endl;
 	}
 
@@ -256,9 +257,15 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 * Item name: to be used as a hash key.
 	 */
 	const std::string
-		&item = match[0],
+		&orig_item = match[0],
 		&official_name = match[2],
 		&from_username = match[3];
+
+	/**
+	 * Append quotation marks to item name,
+	 * if not already there.
+	 */
+	const std::string item = _quotationMarks( orig_item );
 
 	/**
 	 * TODO
@@ -275,16 +282,18 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	std::string username =
 		from_username.substr(6, std::string::npos); /**< remove "(from " */
 	username.pop_back(); /**< remove last ')' */
-	username = "\"" + username + "\"";	/**< append quotation marks */
+	username = _quotationMarks( username );
 
 	/**
 	 * Emplace official name.
 	 * Emplace username.
+	 * May override previous entry, if already present.
 	 */
 	auto rv = this->_node_map.emplace( item, _Node_s(item,official_name,username) );
 
 	/**
 	 * Throw if already there.
+	 * TODO necessary?
 	 */
 	if ( !rv.second ) {
 		throw std::runtime_error("Existing entry for item "
@@ -310,6 +319,10 @@ WantParser::_parseWantList( const std::string & line ) {
 				+ line);
 	}
 
+	/**
+	 * Sample line:
+	 * (user name) ITEM_A : ITEM_B ITEM_C ; ITEM_D %DUMMY1 %DUMMY2 ITEM_E
+	 */
 	const std::string
 		&username_p = match[0],
 		&source = match[1];
@@ -318,6 +331,24 @@ WantParser::_parseWantList( const std::string & line ) {
 	 * Append username on item name, if dummy.
 	 */
 	std::string item = _appendIfDummy( source, username_p );
+
+	/**
+	 * Remove parentheses from username: first and last character.
+	 * Add quotation marks.
+	 */
+	std::string username = username_p.substr(1, std::string::npos);
+	username.pop_back();
+	username = "\"" + username + "\"";
+
+	/**
+	 * Insert node if not already present.
+	 * Normally, non-dummy nodes will have already been inserted
+	 * if the official names are given.
+	 * Item name is used as official name.
+	 */
+	if ( _node_map.find(item) == _node_map.end() ) {
+		this->_node_map.emplace( item, _Node_s(item,item,username,_dummy(item)) );
+	}
 
 	/**
 	 * Create ArcMap entry with empty vector.
@@ -329,7 +360,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	 */
 	if ( !rv_a.second ) {
 		throw std::runtime_error("Want list for item "
-				+ item + " exists");
+				+ item + " already exists");
 	}
 
 	/**
@@ -423,7 +454,7 @@ WantParser::_dummy( const std::string & item ) {
 		offset = 1;
 	}
 
-	return ( item.compare(0 + offset, 1 + offset, "%") == 0 );
+	return ( item.compare(0 + offset, 1, "%") == 0 );
 }
 
 std::string
@@ -446,6 +477,19 @@ WantParser::_appendIfDummy( const std::string & orig_item,
 		item.push_back('-');
 		item.append(username);
 	}
+
+	/**
+	 * Append quotation markes.
+	 */
+	item = _quotationMarks(item);
+
+	return item;
+}
+
+std::string
+WantParser::_quotationMarks( const std::string & str ) {
+
+	std::string item( str );
 
 	/**
 	 * Add leading quotation mark, if needed.

@@ -202,6 +202,16 @@ private:
 	 */
 	static std::string _appendIfDummy( const std::string & item,
 			const std::string & username );
+
+
+	/**
+	 * @brief Append quotation marks.
+	 * Appends quotation marks to str, if not there.
+	 * Does not append a second one.
+	 * @str Input string.
+	 * @return String with quotation marks.
+	 */
+	static std::string _quotationMarks( const std::string & str );
 };
 
 #endif /* _WANTPARSER_HPP_ */
