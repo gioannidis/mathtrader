@@ -84,36 +84,6 @@ WantParser::parse() {
 	 */
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
 
-	/**
-	 * Regular expression to separate fields.
-	 *
-	 * Example of an official name:
-	 * 0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
-	 *
-	 * $1	0042-PUERTO
-	 * $2	==>
-	 * $3	"Puerto Rico"
-	 * $4	(from username)
-	 * $5	[copy 1 of 2]
-	 */
-	std::regex FPAT("(\\S+)"		// Group 1: any non-whitespace
-			"|"
-			"(\""			// Group 2: opening quotation mark
-				"("
-				"[^\"]"			// Subgroup 2.1:
-							// anything not a quotation mark
-				"|"
-				"(\"[^\"]*\")"		// Subgroup 2.2:
-							// two nested quotation marks
-							// with any non-quotation mark
-							// character between them
-				")*"
-			"\")"			// Group 2: closing quotation mark
-			"|"
-			"(\\([^\\)]+\\))"	// Group 3: parentheses
-			"|"
-			"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
-		       );
 
 	while (std::getline( is, buffer )) {
 
@@ -160,14 +130,62 @@ WantParser::parse() {
 
 		std::cout << buffer << std::endl;
 
-		auto match = _split( buffer, FPAT );
-		int i = 0;
-		for ( auto const & x : match ) {
-			std::cout << (++i) << ": " << x << std::endl;
-		}
+		_parseOfficialName( buffer );
+
 	}
 }
 
+
+/************************************//*
+ * 	PRIVATE METHODS - PARSING
+ **************************************/
+
+WantParser &
+WantParser::_parseOfficialName( const std::string & line ) {
+
+	/**
+	 * Regular expression to separate fields.
+	 *
+	 * Example of an official name line:
+	 * 0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
+	 *
+	 * $1	0042-PUERTO
+	 * $2	==>
+	 * $3	"Puerto Rico"
+	 * $4	(from username)
+	 * $5	[copy 1 of 2]
+	 *
+	 * We may also parse single-nested quotation marks, e.g.:
+	 * 0042-PUERTO ==> "Puerto "good" Rico" (from username)
+	 */
+	static const std::regex FPAT(
+			"(\\S+)"		// Group 1: any non-whitespace
+			"|"
+			"(\""			// Group 2: opening quotation mark
+				"("
+				"[^\"]"			// Subgroup 2.1:
+							// anything not a quotation mark
+				"|"
+				"(\"[^\"]*\")"		// Subgroup 2.2:
+							// two nested quotation marks
+							// with any non-quotation mark
+							// character between them
+				")*"
+			"\")"			// Group 2: closing quotation mark
+			"|"
+			"(\\([^\\)]+\\))"	// Group 3: parentheses
+			"|"
+			"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
+		       );
+
+	auto match = _split( line, FPAT );
+	int i = 0;
+	for ( auto const & x : match ) {
+		std::cout << (++i) << ": " << x << std::endl;
+	}
+
+	return *this;
+}
 
 std::vector<std::string>
 WantParser::_split( const std::string & input, const std::string & regex ) {

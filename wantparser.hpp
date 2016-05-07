@@ -69,6 +69,15 @@ private:
 	 */
 	std::ifstream _fs;
 
+	/**
+	 * @brief Parse official name
+	 * @param line line to be parsed
+	 */
+	WantParser & _parseOfficialName( const std::string & line );
+
+	/**
+	 * @brief Split string.
+	 */
 	static std::vector<std::string> _split( const std::string & input,
 			const std::string & regex);
 	static std::vector<std::string> _split( const std::string & input,
