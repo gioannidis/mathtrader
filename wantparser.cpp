@@ -388,6 +388,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 
 	/**
 	 * Sanity check for minimum number of matches
+	 * TODO the description (4th item) is optional.
 	 */
 	if ( match.size() < 4 ) {
 		throw std::runtime_error("Bad format of official name line:"
@@ -403,11 +404,12 @@ WantParser::_parseOfficialName( const std::string & line ) {
 		&from_username = match[3];
 
 	/**
-	 * Append quotation marks to item name,
-	 * if not already there.
+	 * Parse item name (quotation marks, uppercase).
+	 * As we're not providing a username,
+	 * it will raise an error if it's dummy.
 	 */
 	std::string item( orig_item );
-	_quotationMarks( item );
+	_parseItemName( item );
 
 	/**
 	 * Replace nested quotation marks in official_name with "'".
@@ -427,16 +429,16 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 * 	(from user name)
 	 * Change to:
 	 * 	"user name"
+	 * TODO it might not be a username;
+	 * match with "(from xxx)" and ignore otherwise.
 	 */
 	std::string username =
 		from_username.substr(6, std::string::npos); /**< remove "(from " */
 	username.pop_back(); /**< remove last ')' */
-	_quotationMarks( username );
+	_quotationMarks( username ); /**< add quotation marks */
 
 	/**
-	 * Emplace official name.
-	 * Emplace username.
-	 * May override previous entry, if already present.
+	 * Emplace the item. It should not exist in the node_map.
 	 */
 	auto rv = this->_node_map.emplace( item, _Node_s(item,official_name,username) );
 
@@ -540,7 +542,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	 */
 	std::string username = username_p.substr(1, std::string::npos);
 	username.pop_back();
-	_quotationMarks(username);
+	_quotationMarks( username );
 
 	/**
 	 * Insert node if not already present.
