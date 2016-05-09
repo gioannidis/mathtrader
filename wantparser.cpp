@@ -32,7 +32,7 @@
 WantParser::WantParser() :
 	_small_step(1),
 	_big_step(9),
-	_options( MAX_OPTIONS, false ),
+	_bool_options( MAX_OPTIONS, false ),
 	_status( PARSE_WANTS )
 {
 }
@@ -284,16 +284,24 @@ WantParser::_parseOption( const std::string & option ) {
 		bool_option_map = {
 			{"ALLOW-DUMMIES",	ALLOW_DUMMIES},
 			{"REQUIRE-COLONS",	REQUIRE_COLONS},
+			{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},
 			{"HIDE-LOOPS",		HIDE_LOOPS},
 			{"HIDE-SUMMARY",	HIDE_SUMMARY},
 			{"HIDE-NONTRADES",	HIDE_NONTRADES},
 			{"HIDE-ERRORS",		HIDE_ERRORS},
 			{"HIDE-REPEATS",	HIDE_REPEATS},
+			{"HIDE-STATS",		HIDE_STATS},
 			{"SORT-BY-ITEM",	SORT_BY_ITEM},
 			{"HIDE-REPEATS",	CASE_SENSITIVE},
 			{"SHOW-MISSING",	SHOW_MISSING},
 			{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},
 		};
+
+	auto it = bool_option_map.find(option);
+	if ( it != bool_option_map.end() ) {
+		BoolOption option = it->second;
+		_bool_options[ option ] = true;
+	}
 
 	return *this;
 }

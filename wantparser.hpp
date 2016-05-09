@@ -109,7 +109,7 @@ private:
 		SHOW_ELAPSED_TIME,
 		MAX_OPTIONS
 	};
-	std::vector< bool > _options;
+	std::vector< bool > _bool_options;
 
 	/**
 	 * Enum of current status
