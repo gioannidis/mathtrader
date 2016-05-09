@@ -866,13 +866,13 @@ WantParser::_FPAT(
 	"|"
 	"(\""			// Group 2: opening quotation mark
 		"("
-		"[^\"]"			// Subgroup 2.1:
-					// anything not a quotation mark
-		"|"
-		"(\"[^\"]*\")"		// Subgroup 2.2:
+		"(\"[^\"]*\")"		// Subgroup 2.1:
 					// two nested quotation marks
 					// with any non-quotation mark
 					// character between them
+		"|"
+		"[^\"]"			// Subgroup 2.2:
+					// anything not a quotation mark
 		")*"
 	"\")"			// Group 2: closing quotation mark
 	"|"
