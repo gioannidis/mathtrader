@@ -89,33 +89,43 @@ WantParser::parse() {
 	while (std::getline( is, buffer )) {
 
 		/**
-		 * Ignore comments
+		 * Parse line by content:
+		 * - Empty lines
+		 * - Options: "#!"
+		 * - Other directives
+		 * - Comments
+		 * - Items
 		 */
 		if ( buffer.empty() ) {
 
 			/**
-			 * Empty line
+			 * Empty line; do nothing.
 			 */
-			continue ;
 
 		} else if ( buffer.compare(0, 2, "#!") == 0 ) {
 
 			/**
 			 * Option line
 			 */
-			continue ;
+
+		} else if ( buffer.compare(0, 7, "#pragma") == 0 ) {
+
+			/**
+			 * No current implementation for #pragma
+			 */
 
 		} else if ( buffer.compare(0, 1, "#") == 0 ) {
 
 			/**
-			 * Comment line
+			 * Comment line; do nothing.
+			 * NOTE: parsing any directive beginning with
+			 * "#" should go before this.
 			 */
-			continue ;
 
 		} else if ( buffer.compare(0, 1, "!") == 0 ) {
 
 			/**
-			 * Directives
+			 * Directives.
 			 */
 			if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
 
@@ -131,23 +141,24 @@ WantParser::parse() {
 				throw std::runtime_error("Unrecognized directive: "
 						+ buffer);
 			}
-			continue ;
-		}
-
-		/**
-		 * Use appropriate handler for current status
-		 */
-		switch ( _status ) {
-			case PARSE_NAMES:
-				_parseOfficialName( buffer );
-				break;
-			case PARSE_WANTS:
-				_parseWantList( buffer );
-				break;
-			default:
-				throw std::runtime_error("Unknown handler for status "
-						+ std::to_string(_status));
-				break;
+		} else {
+			/**
+			 * Item to be parsed. This is the default option
+			 * and should be handled last.
+			 * Use appropriate handler for current status.
+			 */
+			switch ( _status ) {
+				case PARSE_NAMES:
+					_parseOfficialName( buffer );
+					break;
+				case PARSE_WANTS:
+					_parseWantList( buffer );
+					break;
+				default:
+					throw std::runtime_error("Unknown handler for status "
+							+ std::to_string(_status));
+					break;
+			}
 		}
 	}
 
