@@ -406,7 +406,8 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 * Append quotation marks to item name,
 	 * if not already there.
 	 */
-	std::string item = _quotationMarks( orig_item );
+	std::string item( orig_item );
+	_quotationMarks( item );
 
 	/**
 	 * Replace nested quotation marks in official_name with "'".
@@ -430,7 +431,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	std::string username =
 		from_username.substr(6, std::string::npos); /**< remove "(from " */
 	username.pop_back(); /**< remove last ')' */
-	username = _quotationMarks( username );
+	_quotationMarks( username );
 
 	/**
 	 * Emplace official name.
@@ -539,7 +540,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	 */
 	std::string username = username_p.substr(1, std::string::npos);
 	username.pop_back();
-	username = _quotationMarks(username);
+	_quotationMarks(username);
 
 	/**
 	 * Insert node if not already present.
@@ -698,7 +699,7 @@ WantParser::_parseItemName( std::string & item,
 	/**
 	 * Enclose in quotation marks
 	 */
-	item = _quotationMarks(item);
+	_quotationMarks(item);
 
 	return *this;
 }
@@ -771,29 +772,20 @@ WantParser::_dummy( const std::string & item ) {
 	return ( item.compare(0 + offset, 1, "%") == 0 );
 }
 
-std::string
-WantParser::_quotationMarks( const std::string & str ) {
-
-	std::string item( str );
+void
+WantParser::_quotationMarks( std::string & str ) {
 
 	/**
 	 * Add leading quotation mark, if needed.
 	 */
-	if ( item.front() != '"' ) {
-		item = "\"" + item;
+	if ( str.front() != '"' ) {
+		str = "\"" + str;
 	}
 
 	/**
 	 * Add closing quotation mark
 	 */
-	item.push_back('"');
-
-	/**
-	 * Convert to uppercase.
-	 */
-	_toUpper( item );
-
-	return item;
+	str.push_back('"');
 }
 
 void

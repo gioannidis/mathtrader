@@ -308,12 +308,11 @@ private:
 
 	/**
 	 * @brief Append quotation marks.
-	 * Appends quotation marks to str, if not there.
-	 * Does not append a second one.
-	 * @str Input string.
-	 * @return String with quotation marks.
+	 * Appends quotation marks to string,
+	 * except if there are opening/closing quotation marks.
+	 * @str Input string to modify.
 	 */
-	static std::string _quotationMarks( const std::string & str );
+	static void _quotationMarks( std::string & str );
 
 	/**
 	 * @brief Convert to uppercase.
