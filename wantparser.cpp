@@ -440,7 +440,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	auto rv = this->_node_map.emplace( item, _Node_s(item,official_name,username) );
 
 	/**
-	 * Throw if already there.
+	 * Throw if it's already in the map.
 	 * TODO necessary?
 	 */
 	if ( !rv.second ) {
@@ -455,25 +455,69 @@ WantParser &
 WantParser::_parseWantList( const std::string & line ) {
 
 	/**
-	 * Tokenize the line
+	 * Summary:
+	 * 1. Tokenize the line.
+	 * 2. Parse username.
+	 * 3. Parse offering item name (source).
+	 * 4. Parse colon.
+	 * 5. Parse wanted items (targets).
+	 *
+	 * Full want list format:
+	 * (user name) ITEM_A : ITEM_B ITEM_C ; ITEM_D %DUMMY1 %DUMMY2 ITEM_E
+	 *
+	 * REQUIRE-USERNAMES: "(user name)" are mandatories; optional otherwise.
+	 * REQUIRE-COLONS: ":" are mandatories; optional otherwise.
+	 * ALLOW-DUMMIES: not possible if REQUIRE-USERNAMES not set.
 	 */
-	auto match = _split( line );
 
 	/**
-	 * Sanity check for minimum number of matches
+	 * Tokenize the line
 	 */
-	if (( match.size() < 3 ) || ( match[2].compare(":") != 0 )) {
-		throw std::runtime_error("Bad format of wantlist line:"
+	auto const match = _split( line );
+	if ( match.empty() ) {
+		throw std::runtime_error("Bad format of want list: "
 				+ line);
 	}
 
+
+	/**********************************//*
+	 *	USERNAME
+	 *************************************/
+
 	/**
-	 * Sample line:
-	 * (user name) ITEM_A : ITEM_B ITEM_C ; ITEM_D %DUMMY1 %DUMMY2 ITEM_E
+	 * Check if there is a username;
+	 * first & last characters should be '(' && ')'.
+	 * It should be the first token.
 	 */
-	const std::string
-		&username_p = match[0],
-		&source = match[1];
+	unsigned n_pos = 0;
+	const std::string &username_p = match[n_pos];
+
+	const bool has_username = (( username_p.front() == '(' )
+			&& ( username_p.back() == ')' ));
+
+	/**
+	 * Advance n_pos if we have a username.
+	 */
+	if ( has_username ) {
+		++ n_pos ;
+	} else if (  _bool_options[ REQUIRE_USERNAMES ] ) {
+		throw std::runtime_error("Missing username from want list: "
+				+ line);
+	}
+
+
+	/**********************************//*
+	 *	OFFERING ITEM NAME (source)
+	 *************************************/
+
+	/**
+	 * Check whether there is a wanted item name.
+	 */
+	if ( match.size() < (n_pos + 1) ) {
+		throw std::runtime_error("Missing offering item from want list: "
+				+ line);
+	}
+	const std::string &source = match[n_pos];
 
 	/**
 	 * Append username on item name, if dummy.
@@ -499,6 +543,34 @@ WantParser::_parseWantList( const std::string & line ) {
 	}
 
 	/**
+	 * Finally, advance n_pos.
+	 * We should always have an offering item.
+	 */
+	++ n_pos;
+
+
+	/**********************************//*
+	 *	CHECK COLONS
+	 *************************************/
+
+	bool has_colon = ((match.size() >= (n_pos + 1)) && (match[n_pos].compare(":") == 0));
+
+	/**
+	 * Advance n_pos if we have a colon
+	 */
+	if ( has_colon ) {
+		++ n_pos;
+	} else if ( _bool_options[REQUIRE_COLONS] ) {
+		throw std::runtime_error("Missing colon from want list: "
+				+ line);
+	}
+
+
+	/**********************************//*
+	 *	WANTED ITEMS (targets)
+	 *************************************/
+
+	/**
 	 * Create ArcMap entry with empty vector.
 	 */
 	auto rv_a = _arc_map.emplace( item, std::vector< _Arc_t >() );
@@ -513,8 +585,10 @@ WantParser::_parseWantList( const std::string & line ) {
 
 	/**
 	 * Optimization: reserve adequate space.
+	 * The first n_pos elems were not wanted items.
 	 */
-	const int max_arcs = match.size() - 3;
+	const unsigned first_wanted_pos = n_pos;
+	const unsigned max_arcs = match.size() - first_wanted_pos;
 	_arc_map[item].reserve( max_arcs );
 
 	/**
@@ -522,10 +596,12 @@ WantParser::_parseWantList( const std::string & line ) {
 	 */
 	int rank = 1;
 
-	/**
-	 * Parse every single wanted item.
-	 */
-	for ( unsigned i = 3; i < match.size(); ++ i ) {
+
+	/**********************************//*
+	 *	WANTED ITEMS ITERATOR
+	 *************************************/
+
+	for ( unsigned i = first_wanted_pos; i < match.size(); ++ i ) {
 
 		auto const & small_step = _int_options[SMALL_STEP];
 		auto const & big_step   = _int_options[BIG_STEP];
@@ -542,6 +618,9 @@ WantParser::_parseWantList( const std::string & line ) {
 		 */
 		if ( target.compare(";") == 0 ) {
 			rank += big_step;
+		} else if ( target.compare(":") == 0 ) {
+			throw std::runtime_error("Wrong position for semicolon in want list: "
+					+ line);
 		} else {
 
 			/**
