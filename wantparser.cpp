@@ -30,10 +30,14 @@
  **************************************/
 
 WantParser::WantParser() :
-	_int_options( MAX_INT_OPTIONS ),
 	_bool_options( MAX_BOOL_OPTIONS, false ),
+	_int_options( MAX_INT_OPTIONS ),
+	_priority_scheme( "" ),
 	_status( PARSE_WANTS )
 {
+	/**
+	 * Default integer options.
+	 */
 	_int_options[SMALL_STEP] = 1;
 	_int_options[BIG_STEP] = 9;
 	_int_options[NONTRADE_COST] = 1e9;
@@ -254,6 +258,16 @@ WantParser::print( const std::string & fn ) const {
 	return *this;
 }
 
+const WantParser &
+WantParser::showOptions( std::ostream & os ) const {
+
+	os << "Options: ";
+	for ( auto it : _int_options ) {
+	}
+
+	return *this;
+}
+
 
 /************************************//*
  * 	PUBLIC METHODS - UTILITIES
@@ -282,29 +296,6 @@ WantParser::clear() {
 WantParser &
 WantParser::_parseOption( const std::string & option_line ) {
 
-	static const std::unordered_map< std::string, BoolOption  >
-		bool_option_map = {
-			{"ALLOW-DUMMIES",	ALLOW_DUMMIES},
-			{"REQUIRE-COLONS",	REQUIRE_COLONS},
-			{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},
-			{"HIDE-LOOPS",		HIDE_LOOPS},
-			{"HIDE-SUMMARY",	HIDE_SUMMARY},
-			{"HIDE-NONTRADES",	HIDE_NONTRADES},
-			{"HIDE-ERRORS",		HIDE_ERRORS},
-			{"HIDE-REPEATS",	HIDE_REPEATS},
-			{"HIDE-STATS",		HIDE_STATS},
-			{"SORT-BY-ITEM",	SORT_BY_ITEM},
-			{"HIDE-REPEATS",	CASE_SENSITIVE},
-			{"SHOW-MISSING",	SHOW_MISSING},
-			{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},
-		};
-	static const std::unordered_map< std::string, IntOption >
-		int_option_map = {
-			{"SMALL-STEP",		SMALL_STEP},
-			{"BIG-STEP",		BIG_STEP},
-			{"NONTRADE_COST",	NONTRADE_COST},
-		};
-
 	/**
 	 * Tokenize option: ignore spaces or '='
 	 */
@@ -329,16 +320,16 @@ WantParser::_parseOption( const std::string & option_line ) {
 	const std::string & option = elems[0];
 	static const std::regex regex_prio("\\b([^-])*-PRIORITIES");
 
-	if ( bool_option_map.find(option) != bool_option_map.end() ) {
+	if ( _bool_option_map.find(option) != _bool_option_map.end() ) {
 
 		/**
 		 * String option; set to true.
 		 */
-		auto const it = bool_option_map.find(option);
+		auto const it = _bool_option_map.find(option);
 		const BoolOption bool_option = it->second;
 		_bool_options[ bool_option ] = true;
 
-	} else if ( int_option_map.find(option) != int_option_map.end() ) {
+	} else if ( _int_option_map.find(option) != _int_option_map.end() ) {
 
 		/**
 		 * Int option; retrieve value.
@@ -356,7 +347,7 @@ WantParser::_parseOption( const std::string & option_line ) {
 		/**
 		 * Get int option and set it
 		 */
-		auto const it = int_option_map.find(option);
+		auto const it = _int_option_map.find(option);
 		const IntOption int_option = it->second;
 
 		_int_options[ int_option ] = std::stoi(value);
@@ -694,6 +685,38 @@ WantParser::_quotationMarks( const std::string & str ) {
 /************************************//*
  * 	PRIVATE STATIC MEMBERS
  **************************************/
+
+/**
+ * Unordered_map to map string-options to enums.
+ */
+const std::unordered_map< std::string, WantParser::BoolOption  >
+WantParser::_bool_option_map = {
+	{"ALLOW-DUMMIES",	ALLOW_DUMMIES},
+	{"REQUIRE-COLONS",	REQUIRE_COLONS},
+	{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},
+	{"HIDE-LOOPS",		HIDE_LOOPS},
+	{"HIDE-SUMMARY",	HIDE_SUMMARY},
+	{"HIDE-NONTRADES",	HIDE_NONTRADES},
+	{"HIDE-ERRORS",		HIDE_ERRORS},
+	{"HIDE-REPEATS",	HIDE_REPEATS},
+	{"HIDE-STATS",		HIDE_STATS},
+	{"SORT-BY-ITEM",	SORT_BY_ITEM},
+	{"HIDE-REPEATS",	CASE_SENSITIVE},
+	{"SHOW-MISSING",	SHOW_MISSING},
+	{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},
+};
+
+
+/**
+ * Unordered_map to map string-options to enums.
+ */
+const std::unordered_map< std::string, WantParser::IntOption  >
+WantParser::_int_option_map = {
+	{"SMALL-STEP",		SMALL_STEP},
+	{"BIG-STEP",		BIG_STEP},
+	{"NONTRADE_COST",	NONTRADE_COST},
+};
+
 
 /**
  * Regular expression to separate fields.

@@ -72,12 +72,21 @@ public:
 	const WantParser & print( std::ostream & os = std::cout ) const ;
 
 	/**
-	 * @brief Print LGF file.
+	 * @brief Append LGF file to output file.
 	 * Prints the nodes & arcs in a lemon-LGF format.
 	 * @param fn The file output name.
 	 * @return *this
 	 */
 	const WantParser & print( const std::string & fn ) const ;
+
+
+	/**
+	 * @brief Show options.
+	 * Prints the options of WantParser.
+	 * @param os The output stream (default: std::cout).
+	 * @return *this
+	 */
+	const WantParser & showOptions( std::ostream & os = std::cout ) const ;
 
 	/**
 	 * @brief Clear the parser.
@@ -86,20 +95,20 @@ public:
 	WantParser & clear();
 
 private:
+	/***************************//*
+	 * 	OPTIONS
+	 *****************************/
+
 	/**
-	 * Options
+	 * 1. Boolean options.
+	 * 2. Integer options.
+	 * 3. Priority option.
 	 */
-	std::string _priority_scheme;
 
-	enum IntOption {
-		SMALL_STEP,
-		BIG_STEP,
-		NONTRADE_COST,
-		MAX_INT_OPTIONS
-	};
-	std::vector< int > _int_options;
-
-	enum BoolOption {
+	/**
+	 * Boolean & integer options enum
+	 */
+	enum BoolOption {	/**< Bool options enum */
 		ALLOW_DUMMIES,
 		REQUIRE_COLONS,
 		REQUIRE_USERNAMES,
@@ -115,7 +124,30 @@ private:
 		SHOW_ELAPSED_TIME,
 		MAX_BOOL_OPTIONS
 	};
+	enum IntOption {	/**< Int options enum */
+		SMALL_STEP,
+		BIG_STEP,
+		NONTRADE_COST,
+		MAX_INT_OPTIONS
+	};
+
+
+	/**
+	 * Static members: unordered_maps
+	 * to map string options -> enums.
+	 */
+	static const std::unordered_map< std::string, BoolOption  >
+		_bool_option_map;
+	static const std::unordered_map< std::string, IntOption >
+		_int_option_map;
+
 	std::vector< bool > _bool_options;
+	std::vector< int > _int_options;
+
+	/**
+	 * Map: string options to enum.
+	 */
+	std::string _priority_scheme;
 
 	/**
 	 * Enum of current status
