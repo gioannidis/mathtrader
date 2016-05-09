@@ -141,11 +141,15 @@ private:
 	static const std::unordered_map< std::string, IntOption >
 		_int_option_map;
 
+	/**
+	 * The actual vectors members
+	 * with all options.
+	 */
 	std::vector< bool > _bool_options;
 	std::vector< int > _int_options;
 
 	/**
-	 * Map: string options to enum.
+	 * The priority scheme
 	 */
 	std::string _priority_scheme;
 
@@ -158,6 +162,11 @@ private:
 		UNKNOWN,
 	};
 	Status _status;
+
+
+	/***************************//*
+	 * INTERNAL DATA STRUCTURES
+	 *****************************/
 
 	/**
 	 * @brief Node struct
@@ -224,6 +233,11 @@ private:
 	 */
 	std::ifstream _fs;
 
+
+	/***************************//*
+	 * 	UTILITY FUNCTIONS
+	 *****************************/
+
 	/**
 	 * @brief Parse option
 	 */
@@ -249,14 +263,6 @@ private:
 	 * These won't be appended to the results.
 	 */
 	WantParser & _markUnknownItems();
-
-	/**
-	 * Regex to define fields.
-	 * The regular expression defines what the fields **are**,
-	 * therefore it's not a field separator.
-	 * It's used like FPAT from gawk.
-	 */
-	static const std::regex _FPAT;
 
 	/**
 	 * @brief Split string.
@@ -296,6 +302,19 @@ private:
 	 * @return String with quotation marks.
 	 */
 	static std::string _quotationMarks( const std::string & str );
+
+
+	/***************************//*
+	 * UTILITY STATIC MEMBERS
+	 *****************************/
+
+	/**
+	 * Regex to define fields.
+	 * The regular expression defines what the fields **are**,
+	 * therefore it's not a field separator.
+	 * It's used like FPAT from gawk.
+	 */
+	static const std::regex _FPAT;
 };
 
 #endif /* _WANTPARSER_HPP_ */
