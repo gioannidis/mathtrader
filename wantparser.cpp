@@ -251,7 +251,7 @@ const WantParser &
 WantParser::print( const std::string & fn ) const {
 
 	std::filebuf fb;
-	fb.open(fn, std::ios::out);
+	fb.open(fn, std::ios::app);
 	std::ostream os(&fb);
 	print(os);
 	fb.close();
