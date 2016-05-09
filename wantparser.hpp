@@ -307,16 +307,6 @@ private:
 	static bool _dummy( const std::string & item );
 
 	/**
-	 * @brief Append username if dummy.
-	 * Appends the username to the item name, if it's dummy.
-	 * @param item The item to be parsed.
-	 * @return Item name with appended username if needed, enclosed in quotation marks.
-	 */
-	static std::string _appendIfDummy( const std::string & item,
-			const std::string & username );
-
-
-	/**
 	 * @brief Append quotation marks.
 	 * Appends quotation marks to str, if not there.
 	 * Does not append a second one.

@@ -683,6 +683,7 @@ WantParser::_parseItemName( std::string & item,
 		/**
 		 * Append username
 		 */
+		item.push_back('-');
 		item.append(username);
 	}
 
@@ -768,40 +769,6 @@ WantParser::_dummy( const std::string & item ) {
 	}
 
 	return ( item.compare(0 + offset, 1, "%") == 0 );
-}
-
-std::string
-WantParser::_appendIfDummy( const std::string & orig_item,
-		const std::string & username ) {
-
-	std::string item( orig_item );
-
-	/**
-	 * Strip closing quotation mark, if there.
-	 */
-	if ( item.back() == '"' ) {
-		item.pop_back();
-	}
-
-	/**
-	 * Append username, if needed.
-	 */
-	if ( _dummy( item ) ) {
-		item.push_back('-');
-		item.append(username);
-	}
-
-	/**
-	 * Append quotation marks.
-	 */
-	item = _quotationMarks(item);
-
-	/**
-	 * Convert to uppercase.
-	 */
-	std::transform(item.begin(), item.end(), item.begin(), ::toupper);
-
-	return item;
 }
 
 std::string
