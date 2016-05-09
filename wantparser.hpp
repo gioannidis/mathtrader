@@ -87,6 +87,31 @@ public:
 
 private:
 	/**
+	 * Options
+	 */
+	std::string _priotity_scheme;
+	int _small_step;
+	int _big_step;
+
+	enum BoolOption {
+		ALLOW_DUMMIES,
+		REQUIRE_COLONS,
+		REQUIRE_USERNAMES,
+		HIDE_LOOPS,
+		HIDE_SUMMARY,
+		HIDE_NONTRADES,
+		HIDE_ERRORS,
+		HIDE_REPEATS,
+		HIDE_STATS,
+		SORT_BY_ITEM,
+		CASE_SENSITIVE,
+		SHOW_MISSING,
+		SHOW_ELAPSED_TIME,
+		MAX_OPTIONS
+	};
+	std::vector< bool > _options;
+
+	/**
 	 * Enum of current status
 	 */
 	enum Status {
@@ -160,6 +185,11 @@ private:
 	 * when applicable.
 	 */
 	std::ifstream _fs;
+
+	/**
+	 * @brief Parse option
+	 */
+	WantParser & _parseOption( const std::string & option );
 
 	/**
 	 * @brief Parse official name

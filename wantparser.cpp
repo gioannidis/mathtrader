@@ -30,6 +30,9 @@
  **************************************/
 
 WantParser::WantParser() :
+	_small_step(1),
+	_big_step(9),
+	_options( MAX_OPTIONS, false ),
 	_status( PARSE_WANTS )
 {
 }
@@ -105,8 +108,11 @@ WantParser::parse() {
 		} else if ( buffer.compare(0, 2, "#!") == 0 ) {
 
 			/**
-			 * Option line
+			 * Option line;
+			 * isolate option (exlude "#! ") and parse it.
 			 */
+			const std::string option = buffer.substr(3, std::string::npos);
+			_parseOption( option );
 
 		} else if ( buffer.compare(0, 7, "#pragma") == 0 ) {
 
@@ -272,6 +278,27 @@ WantParser::clear() {
  **************************************/
 
 WantParser &
+WantParser::_parseOption( const std::string & option ) {
+
+	static const std::unordered_map< std::string, BoolOption  >
+		bool_option_map = {
+			{"ALLOW-DUMMIES",	ALLOW_DUMMIES},
+			{"REQUIRE-COLONS",	REQUIRE_COLONS},
+			{"HIDE-LOOPS",		HIDE_LOOPS},
+			{"HIDE-SUMMARY",	HIDE_SUMMARY},
+			{"HIDE-NONTRADES",	HIDE_NONTRADES},
+			{"HIDE-ERRORS",		HIDE_ERRORS},
+			{"HIDE-REPEATS",	HIDE_REPEATS},
+			{"SORT-BY-ITEM",	SORT_BY_ITEM},
+			{"HIDE-REPEATS",	CASE_SENSITIVE},
+			{"SHOW-MISSING",	SHOW_MISSING},
+			{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},
+		};
+
+	return *this;
+}
+
+WantParser &
 WantParser::_parseOfficialName( const std::string & line ) {
 
 	/**
@@ -414,8 +441,6 @@ WantParser::_parseWantList( const std::string & line ) {
 	 * Initialize rank
 	 */
 	int rank = 1;
-	int _SMALL_STEP = 1;
-	int _BIG_STEP = 9;
 
 	/**
 	 * Parse every single wanted item.
@@ -433,7 +458,7 @@ WantParser::_parseWantList( const std::string & line ) {
 		 * 3. Actual wanted item.
 		 */
 		if ( target.compare(";") == 0 ) {
-			rank += _BIG_STEP;
+			rank += _big_step;
 		} else {
 
 			/**
@@ -450,7 +475,7 @@ WantParser::_parseWantList( const std::string & line ) {
 		/**
 		 * Advance always the rank by small-step
 		 */
-		rank += _SMALL_STEP;
+		rank += _small_step;
 	}
 
 	return *this;
