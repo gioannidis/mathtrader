@@ -234,9 +234,9 @@ private:
 	std::ifstream _fs;
 
 
-	/***************************//*
-	 * 	UTILITY FUNCTIONS
-	 *****************************/
+	/********************************//*
+	 *  UTILITY NON_STATIC FUNCTIONS
+	 ***********************************/
 
 	/**
 	 * @brief Parse option
@@ -247,22 +247,44 @@ private:
 	 * @brief Parse official name
 	 * Parses lines giving the official names of nodes.
 	 * @param line line to be parsed
+	 * @return *this
 	 */
 	WantParser & _parseOfficialName( const std::string & line );
 
 	/**
 	 * @brief Parse want list
 	 * Parses lines giving the want lists.
+	 * @return *this
 	 */
 	WantParser & _parseWantList( const std::string & line );
+
+	/**
+	 * @brief Parse Item Name.
+	 * Checks whether the item is dummy, appends username if needed
+	 * and finally appends quotation marks.
+	 * Converts to uppercase unless items are case sensitive.
+	 * Raises an exception if a dummy is found but dummies are not allowed
+	 * or the username is undefined.
+	 * @param item item name to be parsed.
+	 * @param username username of item's owner (default: empty)
+	 * @return *this
+	 */
+	WantParser & _parseItemName( std::string & item,
+			const std::string username = "" );
 
 	/**
 	 * @brief Mark unknown items.
 	 * Parses all the arcs and checks
 	 * whether any target nodes are missing (unknown).
 	 * These won't be appended to the results.
+	 * @return *this
 	 */
 	WantParser & _markUnknownItems();
+
+
+	/********************************//*
+	 *  UTILITY STATIC FUNCTIONS
+	 ***********************************/
 
 	/**
 	 * @brief Split string.
@@ -302,6 +324,12 @@ private:
 	 * @return String with quotation marks.
 	 */
 	static std::string _quotationMarks( const std::string & str );
+
+	/**
+	 * @brief Convert to uppercase.
+	 * Converts the given string to uppercase.
+	 */
+	static void _toUpper( std::string & str );
 
 
 	/***************************//*

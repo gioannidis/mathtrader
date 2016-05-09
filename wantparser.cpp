@@ -522,7 +522,16 @@ WantParser::_parseWantList( const std::string & line ) {
 	/**
 	 * Append username on item name, if dummy.
 	 */
-	std::string item = _appendIfDummy( source, username_p );
+	std::string item = source;
+
+	/**
+	 * Parse the item name (dummy, uppercase, etc).
+	 */
+	if ( has_username ) {
+		_parseItemName( item, username_p );
+	} else {
+		_parseItemName( item );
+	}
 
 	/**
 	 * Remove parentheses from username: first and last character.
@@ -613,7 +622,7 @@ WantParser::_parseWantList( const std::string & line ) {
 		 * 1. Semicolon:
 		 * 	"increase the rank of the next item by the big-step value"
 		 * 	NOTE: the small-step of the previous item will also be applied.
-		 * 2. Missing items: ignore them.
+		 * 2. Colon: raise an error. There should be no colon here.
 		 * 3. Actual wanted item.
 		 */
 		if ( target.compare(";") == 0 ) {
@@ -624,12 +633,16 @@ WantParser::_parseWantList( const std::string & line ) {
 		} else {
 
 			/**
-			 * Append username at target, if dummy.
+			 * Parse the item name (dummy, uppercase, etc).
 			 */
-			target = _appendIfDummy( target, username_p );
+			if ( has_username ) {
+				_parseItemName( target, username_p );
+			} else {
+				_parseItemName( target );
+			}
 
 			/**
-			 * Push target to map.
+			 * Push (item-target) arc to map.
 			 */
 			_arc_map[item].push_back(_Arc_t( item, target, rank ));
 		}
@@ -639,6 +652,52 @@ WantParser::_parseWantList( const std::string & line ) {
 		 */
 		rank += small_step;
 	}
+
+	return *this;
+}
+
+WantParser &
+WantParser::_parseItemName( std::string & item,
+		const std::string username ) {
+
+	if ( _dummy(item) ) {
+
+		/**
+		 * Sanity check for dummy item
+		 */
+		if ( !_bool_options[ALLOW_DUMMIES] ) {
+
+			throw std::runtime_error("Dummy item "
+					+ item
+					+ " detected, but dummy items"
+					" not allowed");
+
+		} else if ( username.length() == 0 ) {
+
+			throw std::runtime_error("Dummy item "
+					+ item
+					+ " detected, but username "
+					" not defined");
+		}
+
+		/**
+		 * Append username
+		 */
+		item.append(username);
+	}
+
+	/**
+	 * Unless item names are case sensitive,
+	 * convert to uppercase.
+	 */
+	if ( !_bool_options[CASE_SENSITIVE] ) {
+		_toUpper( item );
+	}
+
+	/**
+	 * Enclose in quotation marks
+	 */
+	item = _quotationMarks(item);
 
 	return *this;
 }
@@ -733,7 +792,7 @@ WantParser::_appendIfDummy( const std::string & orig_item,
 	}
 
 	/**
-	 * Append quotation markes.
+	 * Append quotation marks.
 	 */
 	item = _quotationMarks(item);
 
@@ -765,9 +824,14 @@ WantParser::_quotationMarks( const std::string & str ) {
 	/**
 	 * Convert to uppercase.
 	 */
-	std::transform(item.begin(), item.end(), item.begin(), ::toupper);
+	_toUpper( item );
 
 	return item;
+}
+
+void
+WantParser::_toUpper( std::string & str ) {
+	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 }
 
 
