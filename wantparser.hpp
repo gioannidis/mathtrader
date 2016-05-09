@@ -273,6 +273,15 @@ private:
 			const std::string username = "" );
 
 	/**
+	 * @brief Parse username.
+	 * Appends quotation marks and converts to uppercase.
+	 * Usernames on BGG are always case-insensitive.
+	 * @param username username to be parsed.
+	 * @return *this
+	 */
+	WantParser & _parseUsername( std::string & username );
+
+	/**
 	 * @brief Mark unknown items.
 	 * Parses all the arcs and checks
 	 * whether any target nodes are missing (unknown).

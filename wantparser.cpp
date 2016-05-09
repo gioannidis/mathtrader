@@ -435,7 +435,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	std::string username =
 		from_username.substr(6, std::string::npos); /**< remove "(from " */
 	username.pop_back(); /**< remove last ')' */
-	_quotationMarks( username ); /**< add quotation marks */
+	_parseUsername( username ); /**< quotation marks, uppercase */
 
 	/**
 	 * Emplace the item. It should not exist in the node_map.
@@ -538,11 +538,11 @@ WantParser::_parseWantList( const std::string & line ) {
 
 	/**
 	 * Remove parentheses from username: first and last character.
-	 * Add quotation marks.
+	 * Parse the username.
 	 */
 	std::string username = username_p.substr(1, std::string::npos);
 	username.pop_back();
-	_quotationMarks( username );
+	_parseUsername( username );
 
 	/**
 	 * Insert node if not already present.
@@ -702,6 +702,19 @@ WantParser::_parseItemName( std::string & item,
 	 * Enclose in quotation marks
 	 */
 	_quotationMarks(item);
+
+	return *this;
+}
+
+WantParser &
+WantParser::_parseUsername( std::string & username ) {
+
+	/**
+	 * Convert to uppercase.
+	 * Append quotation marks.
+	 */
+	_toUpper( username );
+	_quotationMarks( username );
 
 	return *this;
 }
