@@ -238,6 +238,7 @@ int main(int argc, char **argv) {
 	 * OUTPUT OPERATIONS
 	 ****************************************/
 
+	want_parser.showOptions();
 	/**
 	 * Print the results to file or stdout.
 	 * Skip if the algorithm has failed.

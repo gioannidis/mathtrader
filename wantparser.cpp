@@ -261,9 +261,19 @@ WantParser::print( const std::string & fn ) const {
 const WantParser &
 WantParser::showOptions( std::ostream & os ) const {
 
+	/**
+	 * TODO: add int options if not default?
+	 * Add stack with given options?
+	 */
+
 	os << "Options: ";
-	for ( auto it : _int_options ) {
+	for ( auto const it : _bool_option_map ) {
+		if ( _bool_options[ it.second ] ) {
+			os << it.first << " ";
+		}
 	}
+	os << _priority_scheme;
+	os << std::endl;
 
 	return *this;
 }
