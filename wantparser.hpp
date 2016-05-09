@@ -89,9 +89,15 @@ private:
 	/**
 	 * Options
 	 */
-	std::string _priotity_scheme;
-	int _small_step;
-	int _big_step;
+	std::string _priority_scheme;
+
+	enum IntOption {
+		SMALL_STEP,
+		BIG_STEP,
+		NONTRADE_COST,
+		MAX_INT_OPTIONS
+	};
+	std::vector< int > _int_options;
 
 	enum BoolOption {
 		ALLOW_DUMMIES,
@@ -107,7 +113,7 @@ private:
 		CASE_SENSITIVE,
 		SHOW_MISSING,
 		SHOW_ELAPSED_TIME,
-		MAX_OPTIONS
+		MAX_BOOL_OPTIONS
 	};
 	std::vector< bool > _bool_options;
 

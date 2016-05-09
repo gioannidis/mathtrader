@@ -30,11 +30,13 @@
  **************************************/
 
 WantParser::WantParser() :
-	_small_step(1),
-	_big_step(9),
-	_bool_options( MAX_OPTIONS, false ),
+	_int_options( MAX_INT_OPTIONS ),
+	_bool_options( MAX_BOOL_OPTIONS, false ),
 	_status( PARSE_WANTS )
 {
+	_int_options[SMALL_STEP] = 1;
+	_int_options[BIG_STEP] = 9;
+	_int_options[NONTRADE_COST] = 1e9;
 }
 
 WantParser::~WantParser() {
@@ -109,9 +111,9 @@ WantParser::parse() {
 
 			/**
 			 * Option line;
-			 * isolate option (exlude "#! ") and parse it.
+			 * isolate option (exlude "#!") and parse it.
 			 */
-			const std::string option = buffer.substr(3, std::string::npos);
+			const std::string option = buffer.substr(2, std::string::npos);
 			_parseOption( option );
 
 		} else if ( buffer.compare(0, 7, "#pragma") == 0 ) {
@@ -278,7 +280,7 @@ WantParser::clear() {
  **************************************/
 
 WantParser &
-WantParser::_parseOption( const std::string & option ) {
+WantParser::_parseOption( const std::string & option_line ) {
 
 	static const std::unordered_map< std::string, BoolOption  >
 		bool_option_map = {
@@ -296,11 +298,80 @@ WantParser::_parseOption( const std::string & option ) {
 			{"SHOW-MISSING",	SHOW_MISSING},
 			{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},
 		};
+	static const std::unordered_map< std::string, IntOption >
+		int_option_map = {
+			{"SMALL-STEP",		SMALL_STEP},
+			{"BIG-STEP",		BIG_STEP},
+			{"NONTRADE_COST",	NONTRADE_COST},
+		};
 
-	auto it = bool_option_map.find(option);
-	if ( it != bool_option_map.end() ) {
-		BoolOption option = it->second;
-		_bool_options[ option ] = true;
+	/**
+	 * Tokenize option: ignore spaces or '='
+	 */
+	static const std::regex e("\\b([^\\s=]+)");
+	auto elems = _split( option_line, e );
+
+	/**
+	 * Verify that we've found an option;
+	 * ignore if empty.
+	 */
+	if ( elems.empty() ) {
+		return *this;
+	}
+
+
+	/**
+	 * Handle option according to type:
+	 * - String
+	 * - Integer
+	 * - Priorities
+	 */
+	const std::string & option = elems[0];
+	static const std::regex regex_prio("\\b([^-])*-PRIORITIES");
+
+	if ( bool_option_map.find(option) != bool_option_map.end() ) {
+
+		/**
+		 * String option; set to true.
+		 */
+		auto const it = bool_option_map.find(option);
+		const BoolOption bool_option = it->second;
+		_bool_options[ bool_option ] = true;
+
+	} else if ( int_option_map.find(option) != int_option_map.end() ) {
+
+		/**
+		 * Int option; retrieve value.
+		 * Accepted formats:
+		 * 	#! VARIABLE = 42
+		 * 	#! VARIABLE=42
+		 * 	#! VARIABLE 42
+		 */
+		if ( elems.size() < 2 ) {
+			throw std::runtime_error("Value for option"
+					+ option + " not found");
+		}
+		const std::string &value = elems[1];
+
+		/**
+		 * Get int option and set it
+		 */
+		auto const it = int_option_map.find(option);
+		const IntOption int_option = it->second;
+
+		_int_options[ int_option ] = std::stoi(value);
+
+	} else if ( std::regex_match(option, regex_prio) ) {
+
+		/**
+		 * Priority scheme. Must have the form of ("XXXX-PRIORITY").
+		 * Do not check its validity,
+		 * that's the responsibility of MathTrader.
+		 */
+		_priority_scheme = option;
+
+	} else {
+		throw std::runtime_error("Unknown option " + option);
 	}
 
 	return *this;
@@ -455,6 +526,9 @@ WantParser::_parseWantList( const std::string & line ) {
 	 */
 	for ( unsigned i = 3; i < match.size(); ++ i ) {
 
+		auto const & small_step = _int_options[SMALL_STEP];
+		auto const & big_step   = _int_options[BIG_STEP];
+
 		std::string target = match[i];
 
 		/**
@@ -466,7 +540,7 @@ WantParser::_parseWantList( const std::string & line ) {
 		 * 3. Actual wanted item.
 		 */
 		if ( target.compare(";") == 0 ) {
-			rank += _big_step;
+			rank += big_step;
 		} else {
 
 			/**
@@ -483,7 +557,7 @@ WantParser::_parseWantList( const std::string & line ) {
 		/**
 		 * Advance always the rank by small-step
 		 */
-		rank += _small_step;
+		rank += small_step;
 	}
 
 	return *this;
