@@ -122,3 +122,4 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 - [x] Add Doxygen documentation.
 - [ ] Add _users-trading_ as a metric.
 - [x] Integrate the file conversion with the main program.
+- [ ] Allow spaces around colons `:` and semicolons `;` in want lists.
