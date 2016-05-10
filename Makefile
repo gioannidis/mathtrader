@@ -47,7 +47,7 @@ DOXYFILE = $(CFGDIR)/doxyfile.cfg
 #===============================#
 
 CXX      = g++
-DEBUG    = #-g
+DBGFLAGS = -g
 OPTIM    = -O3
 INCLUDE  = -I $(INCDIR)
 CXXFLAGS = $(DEBUG) $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11
@@ -64,10 +64,21 @@ MKDIR  = mkdir -p
 
 
 #===============================#
-#	Default Receipe		#
+#	Main Receipes		#
 #===============================#
 
+###
+# Default receipe
+###
+
 all: directories $(EXECUTABLE)
+
+###
+# Debug receipe
+###
+
+debug: CXXFLAGS += $(DBGFLAGS)
+debug: all
 
 
 #===============================#
