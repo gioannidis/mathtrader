@@ -882,11 +882,14 @@ WantParser::_int_option_map = {
  *
  * We may also parse single-nested quotation marks, e.g.:
  * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
+ *
+ * NOTE: regexes are eager, meaning that the longest/more specialized
+ * matching should be put first.
+ * A g++-4.9 bug might produce the correct results if group W
+ * is in the wrong position. g++-5.3 fixes this.
  */
 const std::regex
 WantParser::_FPAT(
-	R"(\S+)"		// Group W: any non-whitespace
-	"|"
 	"(\""			// Group Q: opening quotation mark
 		"("
 		"(\"[^\"]*\")"		// Subgroup Q.1:
@@ -902,4 +905,6 @@ WantParser::_FPAT(
 	R"(\([^\)]+\))"		// Group P: parentheses
 	"|"
 	R"(\[[^\[\]]+\])"	// Group B: brackets
+	"|"
+	R"(\S+)"		// Group W: any non-whitespace
 );
