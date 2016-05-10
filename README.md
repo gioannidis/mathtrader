@@ -68,11 +68,8 @@ The Math Trading problem may be formally stated as:
 * The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon). To
 install the LEMON library, please refer to the respective
 [installation guide](http://lemon.cs.elte.hu/trac/lemon/wiki/InstallGuide).
-* A C++ compiler with support of the C++11 standard.
-On Linux systems the latest `g++` version provides support of the standard, e.g., g++ 4.9.2.
-Many IDE on Windows systems support the C++11 standard,
-e.g., [Code::Blocks](http://www.codeblocks.org/).
-You might have to appropriately configure your IDE to enable C++11 support.
+* g++ 4.9 compiler or newer.
+On a Windows IDE, you might have to appropriately configure your IDE to enable C++11 support.
 
 ## Compiling
 
@@ -116,6 +113,7 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 
 ## Future Tasks
 
+- [ ] Fix Regular Expressions issues under g++-5.
 - [x] Investigate possible algorithm bug, as it does not maximize the trading items on larger inputs.
 - [ ] Implement scaled priority schemes.
 - [x] Implement BIG-STEP and SMALL-STEP.
