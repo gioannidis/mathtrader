@@ -19,29 +19,70 @@
 # You should have received a copy of the GNU General Public License
 # along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
 
-CXX	 = g++
-DEBUG    = #-g
-OPTIM	 = -O3
-INCLUDE  =
-CXXFLAGS = $(DEBUG) $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11
-LDFLAGS  = -lemon
+#===============================#
+#	Directories		#
+#===============================#
 
-ECHO	= echo
-RM	= rm
-
-SOURCES=main.cpp mathtrader.cpp wantparser.cpp
-OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=mathtrader++
-
-DOXYGEN	 = doxygen
-DOXYFILE = doxyfile.cfg
-DOXYDIR  = doc
-
-all: $(EXECUTABLE)
+INCDIR   = ./include
+SRCDIR   = ./src
+OBJDIR   = ./build
+CFGDIR   = ./cfg
+DOXYDIR  = ./doc
 
 
 #===============================#
-#	Build Executable	#
+#	Files			#
+#===============================#
+
+SOURCES    = $(wildcard $(SRCDIR)/*.cpp)
+OBJECTS    = $(addprefix $(OBJDIR)/,$(notdir $(SOURCES:.cpp=.o)))
+EXECUTABLE = mathtrader++
+
+DOXYBIN	 = doxygen
+DOXYFILE = $(CFGDIR)/doxyfile.cfg
+
+
+#===============================#
+#	Compiler/Linker Flags	#
+#===============================#
+
+CXX      = g++
+DEBUG    = #-g
+OPTIM    = -O3
+INCLUDE  = -I $(INCDIR)
+CXXFLAGS = $(DEBUG) $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11
+LDFLAGS  = -lemon
+
+
+#===============================#
+#	Command aliases		#
+#===============================#
+
+ECHO   = echo
+RM     = rm
+MKDIR  = mkdir -p
+
+
+#===============================#
+#	Default Receipe		#
+#===============================#
+
+all: directories $(EXECUTABLE)
+
+
+#===============================#
+#	Directories Receipes	#
+#===============================#
+
+.PHONY: directories
+directories: $(OBJDIR)
+
+$(OBJDIR):
+	$(MKDIR) $(OBJDIR)
+
+
+#===============================#
+#	Executable Receipe	#
 #===============================#
 
 $(EXECUTABLE): $(OBJECTS)
@@ -49,10 +90,10 @@ $(EXECUTABLE): $(OBJECTS)
 
 
 #===============================#
-#	Build Dependencies	#
+#	Dependencies Receipies	#
 #===============================#
 
-%.o: %.cpp
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 
@@ -62,7 +103,8 @@ $(EXECUTABLE): $(OBJECTS)
 
 .PHONY: html
 html:
-	$(DOXYGEN) $(DOXYFILE)
+	$(DOXYBIN) $(DOXYFILE)
+
 
 #===============================#
 #	    Cleaning		#
@@ -74,4 +116,4 @@ clean:
 
 .PHONY: purge
 purge: clean
-	-$(RM) -rf $(DOXYDIR)
+	-$(RM) -rf $(DOXYDIR) $(OBJDIR)
