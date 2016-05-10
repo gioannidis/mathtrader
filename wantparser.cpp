@@ -437,8 +437,20 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 * TODO it might not be a username;
 	 * match with "(from xxx)" and ignore otherwise.
 	 */
-	std::string username =
-		from_username.substr(6, std::string::npos); /**< remove "(from " */
+	std::string username;
+	try {
+		username = from_username.substr(6, std::string::npos); /**< remove "(from " */
+	} catch ( std::out_of_range & e ) {
+		std::cerr << "Out of range when parsing username: "
+			<< from_username
+			<< "; received error: "
+			<< e.what()
+			<< std::endl;
+		return *this;
+	} catch ( std::exception & e ) {
+		throw;
+	}
+
 	username.pop_back(); /**< remove last ')' */
 	_parseUsername( username ); /**< quotation marks, uppercase */
 
