@@ -885,21 +885,21 @@ WantParser::_int_option_map = {
  */
 const std::regex
 WantParser::_FPAT(
-	"(\\S+)"		// Group 1: any non-whitespace
+	R"(\S+)"		// Group W: any non-whitespace
 	"|"
-	"(\""			// Group 2: opening quotation mark
+	"(\""			// Group Q: opening quotation mark
 		"("
-		"(\"[^\"]*\")"		// Subgroup 2.1:
+		"(\"[^\"]*\")"		// Subgroup Q.1:
 					// two nested quotation marks
 					// with any non-quotation mark
 					// character between them
 		"|"
-		"[^\"]"			// Subgroup 2.2:
+		"[^\"]"			// Subgroup Q.2:
 					// anything not a quotation mark
 		")*"
-	"\")"			// Group 2: closing quotation mark
+	"\")"			// Group Q: closing quotation mark
 	"|"
-	"(\\([^\\)]+\\))"	// Group 3: parentheses
+	R"(\([^\)]+\))"		// Group P: parentheses
 	"|"
-	"(\\[[^\\[\\]]+\\])"	// Group 4: brackets
+	R"(\[[^\[\]]+\])"	// Group B: brackets
 );
