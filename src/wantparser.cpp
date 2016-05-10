@@ -890,17 +890,11 @@ WantParser::_int_option_map = {
  */
 const std::regex
 WantParser::_FPAT(
-	"(\""			// Group Q: opening quotation mark
-		"("
-		"(\"[^\"]*\")"		// Subgroup Q.1:
-					// two nested quotation marks
-					// with any non-quotation mark
-					// character between them
-		"|"
-		"[^\"]"			// Subgroup Q.2:
-					// anything not a quotation mark
-		")*"
-	"\")"			// Group Q: closing quotation mark
+	R"(\"([\"]*|[^\"])+\")"	// Group Q: quotation mark pairs
+				// with possible quotation marks included.
+				// This finds the longest stream of quotation marks.
+				// TODO If usernames or descriptions have
+				// quotation marks, we will have a problem here.
 	"|"
 	R"(\([^\)]+\))"		// Group P: parentheses
 	"|"
