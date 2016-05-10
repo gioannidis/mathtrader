@@ -372,7 +372,12 @@ WantParser::_parseOption( const std::string & option_line ) {
 		_priority_scheme = option;
 
 	} else {
+		const std::string e("Unknown option " + option);
+#if 0
 		throw std::runtime_error("Unknown option " + option);
+#else
+		std::cerr << e << std::endl;
+#endif
 	}
 
 	return *this;
