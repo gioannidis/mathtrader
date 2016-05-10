@@ -443,6 +443,8 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	} catch ( std::out_of_range & e ) {
 		std::cerr << "Out of range when parsing username: "
 			<< from_username
+			<< " in line "
+			<< line
 			<< "; received error: "
 			<< e.what()
 			<< std::endl;
