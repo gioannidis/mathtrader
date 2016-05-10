@@ -448,6 +448,10 @@ WantParser::_parseOfficialName( const std::string & line ) {
 			<< "; received error: "
 			<< e.what()
 			<< std::endl;
+		std::cerr << "Tokens:" << std::endl;
+		for ( auto const & token : match ) {
+			std::cerr << "\t" << token << std::endl;
+		}
 		return *this;
 	} catch ( std::exception & e ) {
 		throw;
