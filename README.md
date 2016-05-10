@@ -99,14 +99,14 @@ You may see the options of `mathtrader++` by running `./mathtrader++ -h`.
 The testcase file may be provided either from the standard input
 or as a file:
 
-    ./mathtrader++ < 207635-results.txt
-    ./mathtrader++ -f 207635-results.txt
+    ./mathtrader++ < 207635-officialwants.txt
+    ./mathtrader++ -f 207635-officialwants.txt
 
 The results will be printed to the standard output.
 You may redirect the output to a file:
 
-    ./mathtrader++ < 207635-results.txt > 207635-results.txt
-    ./mathtrader++ --input-file 207635-results.txt --output-file 207635-results.txt
+    ./mathtrader++ < 207635-officialwants.txt > 207635-results.txt
+    ./mathtrader++ --input-file 207635-officialwants.txt --output-file 207635-results.txt
 
 In the following example,
 the input file is downloaded from OLWLG and saved to the standard output
