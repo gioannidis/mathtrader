@@ -113,7 +113,7 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 
 ## Future Tasks
 
-- [ ] Fix Regular Expressions issues under g++-5.
+- [x] Fix Regular Expressions issues under g++-5.
 - [x] Investigate possible algorithm bug, as it does not maximize the trading items on larger inputs.
 - [ ] Implement scaled priority schemes.
 - [x] Implement BIG-STEP and SMALL-STEP.
