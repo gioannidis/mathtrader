@@ -29,6 +29,11 @@
 #include <stdexcept>
 #include <unordered_map>
 
+/* Algorithms */
+#include <lemon/capacity_scaling.h>
+#include <lemon/cost_scaling.h>
+#include <lemon/network_simplex.h>
+
 
 /************************************//*
  * 	PUBLIC METHODS - CONSTRUCTORS
@@ -445,7 +450,9 @@ MathTrader::_runFlowAlgorithm() {
 	/**
 	 * Define and apply the solver
 	 */
-	typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
+	typedef lemon::CapacityScaling< SplitOrient, int64_t > FlowAlgorithm;
+	//typedef lemon::CostScaling< SplitOrient, int64_t > FlowAlgorithm;
+	//typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
 	AlgoWrapper< FlowAlgorithm, SplitOrient >
 		trade_algo( split_orient, supply_map,
 				capacity_map, cost_map);
