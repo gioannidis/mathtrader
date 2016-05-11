@@ -890,7 +890,7 @@ WantParser::_int_option_map = {
  */
 const std::regex
 WantParser::_FPAT(
-	R"(\"([\"]*|[^\"])+\")"	// Group Q: quotation mark pairs
+	R"(\"([\"]|[^\"])+\")"	// Group Q: quotation mark pairs
 				// with possible quotation marks included.
 				// This finds the longest stream of quotation marks.
 				// TODO If usernames or descriptions have
