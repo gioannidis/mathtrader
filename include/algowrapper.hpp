@@ -48,7 +48,7 @@ private:
 	const G & _graph;
 	const NodeIntMap & _supply;
 	const ArcIntMap & _capacity, & _cost;
-	const A _algorithm;
+	A _algorithm;
 };
 
 
@@ -67,6 +67,13 @@ AlgoWrapper< A, G >::AlgoWrapper( const G & graph,
 	_cost( cost ),
 	_algorithm( _graph )
 {
+	/**
+	 * Set the parameters
+	 */
+	_algorithm.
+		supplyMap( supply ).
+		upperMap( capacity ).
+		costMap( cost );
 }
 
 template< typename A, typename G >
