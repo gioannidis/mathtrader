@@ -61,8 +61,12 @@ int main(int argc, char **argv) {
 			"print the lemon graph format (LGF) file"
 			" (default: stdout)");
 
-	/**
+	/********************************************//*
 	 * Overriding options from want file
+	 **********************************************/
+
+	/**
+	 * Priority scheme.
 	 */
 	ap.stringOption("p", "set the priorities:"
 			" LINEAR-PRIORITIES"
@@ -71,9 +75,18 @@ int main(int argc, char **argv) {
 			" SCALED-PRIORITIES");
 	ap.synonym("-priorities", "p");
 
+	/**
+	 * Show or hide non-trades.
+	 * Only one option may be given.
+	 */
+	ap.boolOption("-show-non-trades",
+			"show non-trading items");
 	ap.boolOption("-hide-non-trades",
-			"do not show non-trading items",
-			true);
+			"do not show non-trading items");
+
+	ap.optionGroup("non_trades", "-show-non-trades").
+		optionGroup("non_trades", "-hide-non-trades").
+		onlyOneGroup("non_trades");
 
 	/**
 	 * Run the argument parser.
@@ -205,9 +218,9 @@ int main(int argc, char **argv) {
 		 * - Any option from command line overrides given options
 		 *   in the want file.
 		 */
-		if ( ap.given("p") ) {
+		if ( ap.given("-priorities") ) {
 
-			math_trader.setPriorities(ap["p"]);
+			math_trader.setPriorities(ap["-priorities"]);
 
 		} else if ( !input_lgf_file ) {
 
@@ -217,7 +230,16 @@ int main(int argc, char **argv) {
 			}
 
 		}
-		if ( ap.given("-hide-non-trades") || want_parser.hideNonTrades() ) {
+
+		/**
+		 * Show/Hide non-trading items
+		 */
+		if ( ap.given("-show-non-trades") ) {
+
+			math_trader.showNonTrades();
+
+		} else if ( ap.given("-hide-non-trades") || want_parser.hideNonTrades() ) {
+
 			math_trader.hideNonTrades();
 		}
 	} catch ( std::exception & error ) {
