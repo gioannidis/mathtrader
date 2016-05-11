@@ -110,12 +110,6 @@ public:
 	 */
 	std::string getPriorityScheme() const ;
 
-	/**
-	 * @brief Clear the parser.
-	 * Clears all data and resets variables.
-	 */
-	WantParser & clear();
-
 private:
 	/***************************//*
 	 * 	OPTIONS

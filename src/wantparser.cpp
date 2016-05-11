@@ -316,22 +316,6 @@ WantParser::getPriorityScheme() const {
  * 	PUBLIC METHODS - UTILITIES
  **************************************/
 
-WantParser &
-WantParser::clear() {
-
-	_status = PARSE_WANTS;
-	_node_map.clear();
-	_arc_map.clear();
-	_unknown_item_map.clear();
-	_errors.clear();
-
-	if ( _fs.is_open() ) {
-		_fs.close();
-	}
-
-	return *this;
-}
-
 
 /************************************//*
  * 	PRIVATE METHODS - PARSING
