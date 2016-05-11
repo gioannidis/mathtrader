@@ -296,10 +296,16 @@ int main(int argc, char **argv) {
 	}
 
 
+
 	/**************************************//*
-	 * OUTPUT OPERATIONS
+	 * OUTPUT OPERATIONS - MATH TRADES
 	 ****************************************/
 
+	/**
+	 * We will print the the output to either a file
+	 * or std::cout.
+	 * Open the output file, if needed.
+	 */
 	std::ofstream fs;
 	const bool write_to_file = ap.given("o");
 
@@ -308,11 +314,17 @@ int main(int argc, char **argv) {
 		fs.open(fn, std::ios_base::out);
 	}
 
+	/**
+	 * Set the output stream to the file stream
+	 * or std::cout, whichever is applicable.
+	 */
 	std::ostream & os = (write_to_file) ? fs : std::cout;
 
+
 	/**
-	 * Print the results to file or stdout.
-	 * Skip if the algorithm has failed.
+	 * Print the WantParser and the MathTrader results
+	 * to the same output stream, i.e., either std::cout
+	 * or the output file.
 	 */
 	try {
 		lemon::TimeReport t("Results time: ");
@@ -329,12 +341,17 @@ int main(int argc, char **argv) {
 	}
 
 	/**
-	 * Close output file stream,
-	 * if needed.
+	 * Close output file stream if needed.
 	 */
 	if ( fs.is_open() ) {
 		fs.close();
 	}
+
+
+
+	/**************************************//*
+	 * OUTPUT OPERATIONS - UTILITIES
+	 ****************************************/
 
 	/**
 	 * Print the produced lgf file, if requested.
