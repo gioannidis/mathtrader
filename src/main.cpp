@@ -78,7 +78,6 @@ int main(int argc, char **argv) {
 			" SCALED-PRIORITIES"
 			"; "
 			+ info_override);
-	ap.synonym("p", "-priorities");
 
 	ap.boolOption("-no-priorities",
 			"clears any priorites; "
