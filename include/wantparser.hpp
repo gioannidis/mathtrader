@@ -72,7 +72,7 @@ public:
 	const WantParser & print( std::ostream & os = std::cout ) const ;
 
 	/**
-	 * @brief Append LGF file to output file.
+	 * @brief Print LGF file to output file.
 	 * Prints the nodes & arcs in a lemon-LGF format.
 	 * @param fn The file output name.
 	 * @return *this
