@@ -107,6 +107,26 @@ public:
 	MathTrader & showNonTrades();
 
 	/**
+	 * @brief Minimum Cost Flow Algorithms
+	 * Enum showing all minimum cost flow algorithms
+	 * that are currently implemented.
+	 * MCFA::NETWORK_SIMPLEX is the default.
+	 */
+	enum MCFA {
+		NETWORK_SIMPLEX = 0,
+		COST_SCALING,
+		CAPACITY_SCALING,
+		CYCLE_CANCELLING,
+	};
+
+	/**
+	 * @brief Select MCFA
+	 * Select the minimum cost flow algorithm to be used.
+	 * If not called, MCFA::NETWORK_SIMPLEX will be used.
+	 */
+	MathTrader & setMCFA( MCFA algorithm );
+
+	/**
 	 * @brief MathTrade algorithm.
 	 * Runs the MathTrade algorithm.
 	 */
@@ -189,6 +209,13 @@ private:
 	 * @brief Username-to-item map
 	 */
 	std::multimap< std::string, int > _username_to_item;
+
+
+	/**
+	 * @brief Chosen MCFA.
+	 * NetworkSimplex is the default.
+	 */
+	MCFA _mcfa;
 
 	/**
 	 * @brief Run math trade algorithm.

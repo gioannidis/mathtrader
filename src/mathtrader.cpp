@@ -43,7 +43,8 @@ MathTrader::MathTrader() :
 	_dummy( _input_graph, false ),
 	_trade( _input_graph, false ),
 	_rank( _input_graph, 0 ),
-	_chosen_arc( _input_graph, false )
+	_chosen_arc( _input_graph, false ),
+	_mcfa( NETWORK_SIMPLEX )
 {
 }
 
@@ -129,6 +130,12 @@ MathTrader::hideNonTrades() {
 MathTrader &
 MathTrader::showNonTrades() {
 	_hide_non_trades = false;
+	return *this;
+}
+
+MathTrader &
+MathTrader::setMCFA( MCFA algorithm ) {
+	_mcfa = algorithm;
 	return *this;
 }
 
