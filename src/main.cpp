@@ -90,10 +90,6 @@ int main(int argc, char **argv) {
 	 * INPUT OPERATIONS
 	 ****************************************/
 
-	/* Encountered any exceptions? */
-	bool exception_risen = false;
-
-
 	/**
 	 * The Math Trader object.
 	 */
@@ -185,7 +181,15 @@ int main(int argc, char **argv) {
 				<< error.what()
 				<< std::endl;
 
-			exception_risen = true;
+			const std::string fn = "error_graph.lgf";
+			want_parser.print(fn);
+
+			std::cerr << "The produced LGF file"
+				" has been written to"
+				<< fn
+				<< std::endl;
+
+			return -1;
 		}
 	}
 
@@ -194,20 +198,18 @@ int main(int argc, char **argv) {
 	 * PARAMETER CONFIGURATION
 	 ****************************************/
 
-	if ( !exception_risen ) {
-		try {
-			if ( ap.given("p") ) {
-				math_trader.setPriorities(ap["p"]);
-			}
-			if ( ap.given("-hide-no-trades") ) {
-				math_trader.hideNoTrades();
-			}
-		} catch ( std::exception & error ) {
-			std::cerr << "Error during initialization: " << error.what()
-				<< std::endl;
-
-			exception_risen = true;
+	try {
+		if ( ap.given("p") ) {
+			math_trader.setPriorities(ap["p"]);
 		}
+		if ( ap.given("-hide-no-trades") ) {
+			math_trader.hideNoTrades();
+		}
+	} catch ( std::exception & error ) {
+		std::cerr << "Error during initialization: " << error.what()
+			<< std::endl;
+
+		return -1;
 	}
 
 
@@ -221,16 +223,14 @@ int main(int argc, char **argv) {
 	 * Do not exit on error; there might be pending
 	 * output operations.
 	 */
-	if ( !exception_risen ) {
-		try {
-			lemon::TimeReport t("Execution time: ");
-			math_trader.run();
-		} catch ( std::exception & error ) {
-			std::cerr << "Error during execution: " << error.what()
-				<< std::endl;
+	try {
+		lemon::TimeReport t("Execution time: ");
+		math_trader.run();
+	} catch ( std::exception & error ) {
+		std::cerr << "Error during execution: " << error.what()
+			<< std::endl;
 
-			exception_risen = true;
-		}
+		return -1;
 	}
 
 
@@ -243,20 +243,18 @@ int main(int argc, char **argv) {
 	 * Print the results to file or stdout.
 	 * Skip if the algorithm has failed.
 	 */
-	if ( !exception_risen ) {
-		try {
-			lemon::TimeReport t("Results time: ");
-			math_trader.processResults();
-			if ( ap.given("o") ) {
-				math_trader.printResults(ap["o"]);
-			} else {
-				math_trader.printResults();
-			}
-		} catch ( std::exception & error ) {
-			std::cerr << "Error during printing the results: " << error.what()
-				<< std::endl;
-			return -1;
+	try {
+		lemon::TimeReport t("Results time: ");
+		math_trader.processResults();
+		if ( ap.given("o") ) {
+			math_trader.printResults(ap["o"]);
+		} else {
+			math_trader.printResults();
 		}
+	} catch ( std::exception & error ) {
+		std::cerr << "Error during printing the results: " << error.what()
+			<< std::endl;
+		return -1;
 	}
 
 
