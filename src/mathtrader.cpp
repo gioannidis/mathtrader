@@ -441,13 +441,14 @@ MathTrader::_runFlowAlgorithm() {
 		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
 	}
 
-	AlgoWrapper< SplitOrient > trade_algo( split_orient, supply_map,
-			capacity_map, cost_map);
 
 	/**
 	 * Define and apply the solver
 	 */
 	typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
+	AlgoWrapper< FlowAlgorithm, SplitOrient >
+		trade_algo( split_orient, supply_map,
+				capacity_map, cost_map);
 	FlowAlgorithm trade_solver( split_orient );
 	FlowAlgorithm::ProblemType rv = trade_solver.
 		upperMap( capacity_map ).
