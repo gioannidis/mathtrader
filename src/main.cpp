@@ -69,21 +69,31 @@ int main(int argc, char **argv) {
 	/**
 	 * Priority scheme.
 	 */
-	ap.stringOption("p", "override the priorities:"
+	const std::string info_override("overrides option in official-wants file");
+
+	ap.stringOption("-priorities", "set the priorities:"
 			" LINEAR-PRIORITIES"
 			" TRIANGLE-PRIORITIES"
 			" SQUARE-PRIORITIES"
-			" SCALED-PRIORITIES");
-	ap.synonym("-priorities", "p");
+			" SCALED-PRIORITIES"
+			"; "
+			+ info_override);
+	ap.synonym("p", "-priorities");
+
+	ap.boolOption("-no-priorities",
+			"clears any priorites; "
+			+ info_override);
 
 	/**
 	 * Show or hide non-trades.
 	 * Only one option may be given.
 	 */
 	ap.boolOption("-show-non-trades",
-			"show non-trading items; overrides input options");
+			"show non-trading items; "
+			+ info_override);
 	ap.boolOption("-hide-non-trades",
-			"do not show non-trading items; overrides input options");
+			"do not show non-trading items; "
+			+ info_override);
 
 	ap.optionGroup("non_trades", "-show-non-trades").
 		optionGroup("non_trades", "-hide-non-trades").
