@@ -50,7 +50,7 @@ CXX      = g++
 DBGFLAGS = -g
 OPTIM    = -O3
 INCLUDE  = -I $(INCDIR)
-CXXFLAGS = $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11
+CXXFLAGS = $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11 -Wno-strict-aliasing
 LDFLAGS  = -lemon
 
 
