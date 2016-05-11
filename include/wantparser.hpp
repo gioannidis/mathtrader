@@ -99,6 +99,18 @@ public:
 	const WantParser & showErrors( std::ostream & os = std::cout ) const ;
 
 	/**
+	 * @brief Get priority scheme.
+	 * Gets the given priority scheme, in the form of
+	 * 	"PRIORITY-XXX"
+	 * Note that the priority scheme might be invalid
+	 * or not implemented yet;
+	 * it's not the responsibility of WantParser to check
+	 * its validity.
+	 * @return std::string with the priority scheme.
+	 */
+	std::string getPriorityScheme() const ;
+
+	/**
 	 * @brief Clear the parser.
 	 * Clears all data and resets variables.
 	 */
@@ -132,13 +144,13 @@ private:
 		CASE_SENSITIVE,
 		SHOW_MISSING,
 		SHOW_ELAPSED_TIME,
-		MAX_BOOL_OPTIONS
+		MAX_BOOL_OPTIONS	/**< Not an option */
 	};
 	enum IntOption {	/**< Int options enum */
 		SMALL_STEP,
 		BIG_STEP,
 		NONTRADE_COST,
-		MAX_INT_OPTIONS
+		MAX_INT_OPTIONS		/**< Not an option */
 	};
 
 

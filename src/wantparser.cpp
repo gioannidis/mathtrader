@@ -306,6 +306,11 @@ WantParser::showErrors( std::ostream & os ) const {
  * 	PUBLIC METHODS - OPTIONS OUTPUT
  **************************************/
 
+std::string
+WantParser::getPriorityScheme() const {
+	return _priority_scheme;
+}
+
 
 /************************************//*
  * 	PUBLIC METHODS - UTILITIES
