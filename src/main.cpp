@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 			want_parser.print(fn);
 
 			std::cerr << "The produced LGF file"
-				" has been written to"
+				" has been printed to file"
 				<< fn
 				<< std::endl;
 
