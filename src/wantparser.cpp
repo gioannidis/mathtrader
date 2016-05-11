@@ -94,9 +94,10 @@ WantParser::parse() {
 	 */
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
 
-
+	uint64_t line_n = 0;
 	while (std::getline( is, buffer )) {
 
+		++ line_n;
 		/**
 		 * Parse line by content:
 		 * - Empty lines
@@ -105,72 +106,84 @@ WantParser::parse() {
 		 * - Comments
 		 * - Items
 		 */
-		if ( buffer.empty() ) {
+		try {
+			if ( buffer.empty() ) {
 
-			/**
-			 * Empty line; do nothing.
-			 */
+				/**
+				 * Empty line; do nothing.
+				 */
 
-		} else if ( buffer.compare(0, 2, "#!") == 0 ) {
+			} else if ( buffer.compare(0, 2, "#!") == 0 ) {
 
-			/**
-			 * Option line;
-			 * isolate option (exlude "#!") and parse it.
-			 */
-			const std::string option = buffer.substr(2, std::string::npos);
-			_parseOption( option );
+				/**
+				 * Option line;
+				 * isolate option (exlude "#!") and parse it.
+				 */
+				const std::string option = buffer.substr(2, std::string::npos);
+				_parseOption( option );
 
-		} else if ( buffer.compare(0, 7, "#pragma") == 0 ) {
+			} else if ( buffer.compare(0, 7, "#pragma") == 0 ) {
 
-			/**
-			 * No current implementation for #pragma
-			 */
+				/**
+				 * No current implementation for #pragma
+				 */
 
-		} else if ( buffer.compare(0, 1, "#") == 0 ) {
+			} else if ( buffer.compare(0, 1, "#") == 0 ) {
 
-			/**
-			 * Comment line; do nothing.
-			 * NOTE: parsing any directive beginning with
-			 * "#" should go before this.
-			 */
+				/**
+				 * Comment line; do nothing.
+				 * NOTE: parsing any directive beginning with
+				 * "#" should go before this.
+				 */
 
-		} else if ( buffer.compare(0, 1, "!") == 0 ) {
+			} else if ( buffer.compare(0, 1, "!") == 0 ) {
 
-			/**
-			 * Directives.
-			 */
-			if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
+				/**
+				 * Directives.
+				 */
+				if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
 
-				_status = PARSE_NAMES;
-				continue ;
+					_status = PARSE_NAMES;
+					continue ;
 
-			} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
+				} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
 
-				_status = PARSE_WANTS;
-				continue ;
+					_status = PARSE_WANTS;
+					continue ;
 
+				} else {
+					throw std::runtime_error("Unrecognized directive: "
+							+ buffer);
+				}
 			} else {
-				throw std::runtime_error("Unrecognized directive: "
-						+ buffer);
+				/**
+				 * Item to be parsed. This is the default option
+				 * and should be handled last.
+				 * Use appropriate handler for current status.
+				 */
+				switch ( _status ) {
+					case PARSE_NAMES:
+						_parseOfficialName( buffer );
+						break;
+					case PARSE_WANTS:
+						_parseWantList( buffer );
+						break;
+					default:
+						throw std::runtime_error("Unknown handler for status "
+								+ std::to_string(_status));
+						break;
+				}
 			}
-		} else {
+
+		} catch ( const std::exception & e ) {
+
 			/**
-			 * Item to be parsed. This is the default option
-			 * and should be handled last.
-			 * Use appropriate handler for current status.
+			 * Add the exception text to the error list.
+			 * Continue with the next line.
 			 */
-			switch ( _status ) {
-				case PARSE_NAMES:
-					_parseOfficialName( buffer );
-					break;
-				case PARSE_WANTS:
-					_parseWantList( buffer );
-					break;
-				default:
-					throw std::runtime_error("Unknown handler for status "
-							+ std::to_string(_status));
-					break;
-			}
+			this->_errors.push_back( std::to_string(line_n)
+					+ ":"
+					+ e.what() );
 		}
 	}
 
@@ -278,6 +291,15 @@ WantParser::showOptions( std::ostream & os ) const {
 	return *this;
 }
 
+const WantParser &
+WantParser::showErrors( std::ostream & os ) const {
+	os << "ERRORS" << std::endl;
+	for ( auto const & err : _errors ) {
+		os << "**** " << err << std::endl;
+	}
+	return *this;
+}
+
 
 /************************************//*
  * 	PUBLIC METHODS - UTILITIES
@@ -372,12 +394,7 @@ WantParser::_parseOption( const std::string & option_line ) {
 		_priority_scheme = option;
 
 	} else {
-		const std::string e("Unknown option " + option);
-#if 0
 		throw std::runtime_error("Unknown option " + option);
-#else
-		std::cerr << e << std::endl;
-#endif
 	}
 
 	return *this;

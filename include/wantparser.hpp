@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <list>
 #include <map>
 #include <regex>
 #include <string>
@@ -87,6 +88,15 @@ public:
 	 * @return *this
 	 */
 	const WantParser & showOptions( std::ostream & os = std::cout ) const ;
+
+	/**
+	 * @brief Show errors.
+	 * Prints any logged errors that were encountered
+	 * during parse().
+	 * @param os The output stream (default: std::cout).
+	 * @return *this;
+	 */
+	const WantParser & showErrors( std::ostream & os = std::cout ) const ;
 
 	/**
 	 * @brief Clear the parser.
@@ -225,6 +235,11 @@ private:
 	 * Unknown items map:
 	 */
 	std::unordered_map< std::string, int > _unknown_item_map;
+
+	/**
+	 * Errors list.
+	 */
+	std::list< std::string > _errors;
 
 	/**
 	 * @brief File Stream
