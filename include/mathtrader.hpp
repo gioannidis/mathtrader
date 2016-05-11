@@ -165,8 +165,6 @@ public:
 	const MathTrader & printResults( const char * fn ) const ;
 
 private:
-	typedef int64_t bigint_t;
-
 	/**
 	 * @brief Priorities enum.
 	 * Enumerates all available priority implementations.
@@ -231,7 +229,7 @@ private:
 	 * @param rank The rank of the arc.
 	 * @return The corresponding cost.
 	 */
-	bigint_t _getCost( int rank ) const ;
+	int64_t _getCost( int rank ) const ;
 
 	/**
 	 * @brief Merge dummies.

@@ -20,6 +20,7 @@
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "mathtrader.hpp"
+#include "algowrapper.hpp"
 
 #include <iomanip>
 #include <lemon/adaptors.h>
@@ -378,8 +379,8 @@ MathTrader::_runFlowAlgorithm() {
 	typedef lemon::SplitNodes< InputGraph > SplitDirect;
 	SplitDirect split_graph( input_graph );
 
-	SplitDirect::NodeMap< bigint_t > supply_map( split_graph );
-	SplitDirect::ArcMap< bigint_t > capacity_map( split_graph, 1 ), cost_map( split_graph );
+	SplitDirect::NodeMap< int64_t > supply_map( split_graph );
+	SplitDirect::ArcMap< int64_t > capacity_map( split_graph, 1 ), cost_map( split_graph );
 
 	/**
 	 * Undirected split graph.
@@ -440,10 +441,15 @@ MathTrader::_runFlowAlgorithm() {
 		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
 	}
 
+	SplitOrient::NodeMap< int64_t > supply( split_orient );
+	mapCopy( split_orient, supply, supply_map );
+	AlgoWrapper< SplitOrient > trade_algo( split_orient, supply );
+	//, cost_map, supply_map );
+
 	/**
 	 * Define and apply the solver
 	 */
-	typedef lemon::NetworkSimplex< SplitOrient, bigint_t > FlowAlgorithm;
+	typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
 	FlowAlgorithm trade_solver( split_orient );
 	FlowAlgorithm::ProblemType rv = trade_solver.
 		upperMap( capacity_map ).
@@ -461,7 +467,7 @@ MathTrader::_runFlowAlgorithm() {
 	/**
 	 * Get the flow map
 	 */
-	SplitDirect::ArcMap< bigint_t > flow_map( split_graph );
+	SplitDirect::ArcMap< int64_t > flow_map( split_graph );
 	trade_solver.flowMap( flow_map );
 
 	/**
@@ -524,7 +530,7 @@ MathTrader::exportToDot( const DGR & g,
  * 	PRIVATE METHODS - Parameters
  **************************************/
 
-MathTrader::bigint_t
+int64_t
 MathTrader::_getCost( int rank ) const {
 
 	/**
