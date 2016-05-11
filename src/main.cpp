@@ -31,6 +31,10 @@
 
 int main(int argc, char **argv) {
 
+	lemon::TimeReport t("Total execution time of "
+			+ std::string(argv[0])
+			+ ": ");
+
 
 	/**************************************//*
 	 * COMMAND LINE ARGUMENT PARSING
