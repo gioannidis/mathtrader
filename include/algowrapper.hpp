@@ -22,7 +22,7 @@
 #ifndef _ALGOWRAPPER_HPP_
 #define _ALGOWRAPPER_HPP_
 
-template< typename G >
+template< typename A, typename G >
 class AlgoWrapper {
 
 public:
@@ -48,6 +48,7 @@ private:
 	const G & _graph;
 	const NodeIntMap & _supply;
 	const ArcIntMap & _capacity, & _cost;
+	const A _algorithm;
 };
 
 
@@ -55,20 +56,21 @@ private:
  * 	PUBLIC METHODS - CONSTRUCTORS
  **************************************/
 
-template< typename G >
-AlgoWrapper< G >::AlgoWrapper( const G & graph,
+template< typename A, typename G >
+AlgoWrapper< A, G >::AlgoWrapper( const G & graph,
 		const NodeIntMap & supply,
 		const ArcIntMap & capacity,
 		const ArcIntMap & cost) :
 	_graph( graph ),
 	_supply( supply ),
 	_capacity( capacity ),
-	_cost( cost )
+	_cost( cost ),
+	_algorithm( _graph )
 {
 }
 
-template< typename G >
-AlgoWrapper< G >::~AlgoWrapper() {
+template< typename A, typename G >
+AlgoWrapper< A, G >::~AlgoWrapper() {
 }
 
 #endif /* _ALGOWRAPPER_HPP_ */
