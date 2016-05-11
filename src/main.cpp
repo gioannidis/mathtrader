@@ -300,26 +300,41 @@ int main(int argc, char **argv) {
 	 * OUTPUT OPERATIONS
 	 ****************************************/
 
-	want_parser.showOptions();
-	want_parser.showErrors();
+	std::ofstream fs;
+	const bool write_to_file = ap.given("o");
+
+	if ( write_to_file ) {
+		const std::string & fn = ap["o"];
+		fs.open(fn, std::ios_base::out);
+	}
+
+	std::ostream & os = (write_to_file) ? fs : std::cout;
+
 	/**
 	 * Print the results to file or stdout.
 	 * Skip if the algorithm has failed.
 	 */
 	try {
 		lemon::TimeReport t("Results time: ");
+
+		want_parser.showOptions(os);
+		want_parser.showErrors(os);
 		math_trader.processResults();
-		if ( ap.given("o") ) {
-			math_trader.printResults(ap["o"]);
-		} else {
-			math_trader.printResults();
-		}
+		math_trader.printResults(os);
+
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
 			<< std::endl;
 		return -1;
 	}
 
+	/**
+	 * Close output file stream,
+	 * if needed.
+	 */
+	if ( fs.is_open() ) {
+		fs.close();
+	}
 
 	/**
 	 * Print the produced lgf file, if requested.
