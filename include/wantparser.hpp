@@ -107,8 +107,16 @@ public:
 	 * it's not the responsibility of WantParser to check
 	 * its validity.
 	 * @return std::string with the priority scheme.
+	 * @return Null string if no priority has been given.
 	 */
 	std::string getPriorityScheme() const ;
+
+	/**
+	 * @brief Hide non-trades at output.
+	 * Shows if we should hide non-trades.
+	 * @return true if HIDE-NONTRADES has been given.
+	 */
+	bool hideNonTrades() const ;
 
 private:
 	/***************************//*

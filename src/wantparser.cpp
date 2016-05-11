@@ -311,6 +311,11 @@ WantParser::getPriorityScheme() const {
 	return _priority_scheme;
 }
 
+bool
+WantParser::hideNonTrades() const {
+	return _bool_options[HIDE_NONTRADES];
+}
+
 
 /************************************//*
  * 	PUBLIC METHODS - UTILITIES

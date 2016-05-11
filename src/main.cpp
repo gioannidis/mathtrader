@@ -111,7 +111,8 @@ int main(int argc, char **argv) {
 	 *
 	 * - Otherwise, we will invoke the wantlist parser.
 	 */
-	if ( ap.given("-input-lgf-file") ) {
+	const bool input_lgf_file = ap.given("-input-lgf-file");
+	if ( input_lgf_file ) {
 
 		/**
 		 * Read LGF from file or stdin
@@ -199,10 +200,24 @@ int main(int argc, char **argv) {
 	 ****************************************/
 
 	try {
+		/**
+		 * Priority scheme:
+		 * - Any option from command line overrides given options
+		 *   in the want file.
+		 */
 		if ( ap.given("p") ) {
+
 			math_trader.setPriorities(ap["p"]);
+
+		} else if ( !input_lgf_file ) {
+
+			const std::string priority = want_parser.getPriorityScheme();
+			if ( priority.length() > 0 ) {
+				math_trader.setPriorities( priority );
+			}
+
 		}
-		if ( ap.given("-hide-no-trades") ) {
+		if ( ap.given("-hide-no-trades") || want_parser.hideNonTrades() ) {
 			math_trader.hideNoTrades();
 		}
 	} catch ( std::exception & error ) {
