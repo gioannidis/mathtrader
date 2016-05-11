@@ -46,12 +46,13 @@ int main(int argc, char **argv) {
 	/**
 	 * Input/Output
 	 */
-	ap.stringOption("f", "input want list file (default: stdin)");
+	ap.stringOption("f", "input official wants file (default: stdin)");
 	ap.synonym("-input-file", "f");
 	ap.synonym("-official-wants", "f");
 
-	ap.stringOption("o", "output file (default: stdout)");
+	ap.stringOption("o", "output official results file (default: stdout)");
 	ap.synonym("-output-file", "o");
+	ap.synonym("-results-official", "o");
 
 	ap.stringOption("-input-lgf-file",
 			"input lemon graph format (LGF) file"
