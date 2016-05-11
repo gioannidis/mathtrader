@@ -90,21 +90,21 @@ public:
 	MathTrader & clearPriorities();
 
 	/**
-	 * @brief Hide no trades.
+	 * @brief Hide non trades.
 	 * Items not being traded will not be shown
 	 * in the results.
 	 * @return *this
 	 */
-	MathTrader & hideNoTrades();
+	MathTrader & hideNonTrades();
 
 	/**
-	 * @brief Show no trades.
+	 * @brief Show non trades.
 	 * Items not being traded will be shown
 	 * in the results.
 	 * This is the default behavior.
 	 * @return *this
 	 */
-	MathTrader & showNoTrades();
+	MathTrader & showNonTrades();
 
 	/**
 	 * @brief MathTrade algorithm.
@@ -162,7 +162,7 @@ private:
 	};
 
 	PriorityScheme _priority_scheme;
-	bool _hide_no_trades;
+	bool _hide_non_trades;
 
 	/**
 	 * @brief Graphs

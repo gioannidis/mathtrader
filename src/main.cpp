@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 			" SCALED-PRIORITIES");
 	ap.synonym("-priorities", "p");
 
-	ap.boolOption("-hide-no-trades",
+	ap.boolOption("-hide-non-trades",
 			"do not show non-trading items",
 			true);
 
@@ -217,8 +217,8 @@ int main(int argc, char **argv) {
 			}
 
 		}
-		if ( ap.given("-hide-no-trades") || want_parser.hideNonTrades() ) {
-			math_trader.hideNoTrades();
+		if ( ap.given("-hide-non-trades") || want_parser.hideNonTrades() ) {
+			math_trader.hideNonTrades();
 		}
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during initialization: " << error.what()

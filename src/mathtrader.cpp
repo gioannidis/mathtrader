@@ -35,7 +35,7 @@
 
 MathTrader::MathTrader() :
 	_priority_scheme( NO_PRIORITIES ),
-	_hide_no_trades( false ),
+	_hide_non_trades( false ),
 	_name( _input_graph ),
 	_username( _input_graph ),
 	_send( _input_graph ),
@@ -121,14 +121,14 @@ MathTrader::clearPriorities() {
 }
 
 MathTrader &
-MathTrader::hideNoTrades() {
-	_hide_no_trades = true;
+MathTrader::hideNonTrades() {
+	_hide_non_trades = true;
 	return *this;
 }
 
 MathTrader &
-MathTrader::showNoTrades() {
-	_hide_no_trades = false;
+MathTrader::showNonTrades() {
+	_hide_non_trades = false;
 	return *this;
 }
 
@@ -235,7 +235,7 @@ MathTrader::printResults( std::ostream & os ) const {
 	 * Else, filter all nodes.
 	 */
 	BoolMap filter( _input_graph, true );
-	if ( this->_hide_no_trades ) {
+	if ( this->_hide_non_trades ) {
 		mapCopy( _input_graph, _trade, filter );
 	}
 
@@ -346,7 +346,7 @@ MathTrader::printResults( std::ostream & os ) const {
 					+ _name[ _send[n] ]
 					<< std::endl;
 
-			} else if ( !_hide_no_trades ) {
+			} else if ( !_hide_non_trades ) {
 
 				os << std::left
 					<< std::setw(TABWIDTH)
