@@ -23,7 +23,6 @@
 #define _MATHTRADER_HPP_
 
 #include <lemon/smart_graph.h>
-#include <lemon/network_simplex.h>
 #include <map>
 
 class MathTrader {
