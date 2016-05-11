@@ -219,12 +219,9 @@ private:
 
 	/**
 	 * @brief Run math trade algorithm.
-	 * Runs the math trade algorithm on a subgraph
-	 * defined by the filter map.
-	 * @param filter NodeMap with nodes to filter out
+	 * Runs the math trade algorithm on the whole graph.
 	 */
 	void _runFlowAlgorithm();
-	void _runFlowAlgorithm( const BoolMap & filter );
 
 	/**
 	 * @brief Convert rank to cost.

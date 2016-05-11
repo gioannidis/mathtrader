@@ -147,50 +147,7 @@ MathTrader::setMCFA( MCFA algorithm ) {
 void
 MathTrader::run() {
 
-#if 0
-	const InputGraph & input_graph = this->_input_graph;
-
-	/**
-	 * Find strongly connected components
-	 */
-	InputGraph::NodeMap< int > component_id( input_graph );
-	int n_strong = lemon::stronglyConnectedComponents( input_graph, component_id );
-	std::cout << "strongly: " << n_strong << std::endl;
-
-	/**
-	 * Iterate all strongly connected components.
-	 * Create filter map.
-	 * Run flow algorithm.
-	 */
-	std::vector< std::unique_ptr< BoolMap > > component_vector;
-	component_vector.reserve( n_strong );
-
-	/**
-	 * Initialize the vector of bool maps
-	 * per strongly connected component.
-	 */
-	for ( int i = 0; i < n_strong; i ++ ) {
-		component_vector.push_back( std::unique_ptr< BoolMap >(new BoolMap(input_graph, false)) );
-	}
-
-	/**
-	 * Iterate all nodes.
-	 * For each node get the component_id.
-	 * Get the corresponding component bool-vector: 0 .. n_strong - 1
-	 * Set the node map to true.
-	 */
-	for ( InputGraph::NodeIt n(input_graph); n != lemon::INVALID; ++ n ) {
-		BoolMap & filter = *(component_vector[ component_id[n] ]);
-		filter[n] = true;
-	}
-
-	for ( unsigned i = 0; i < component_vector.size(); ++ i ) {
-		const BoolMap & filter = *(component_vector[i]);
-		this->_runFlowAlgorithm( filter );
-	}
-#else
 	this->_runFlowAlgorithm();
-#endif
 }
 
 
@@ -393,18 +350,12 @@ MathTrader::printResults( const char * fn ) const {
 
 void
 MathTrader::_runFlowAlgorithm() {
-	const InputGraph &g = _input_graph;
-	BoolMap all_pass(g,true);
-	_runFlowAlgorithm(all_pass);
-}
-
-void
-MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 
 	const InputGraph & input_graph = this->_input_graph;
 	/**
-	 * Graph -> Filter Nodes -> Split Direct
-	 * 	-> Split Undirect -> Reverse bind edges.
+	 * Graph -> Split Direct	[split the nodes]
+	 * 	 -> Split Undirect	[make graph undirect]
+	 * 	 -> Reverse bind edges	[make graph direct again; reverse self-edges]
 	 * SplitNodes splits each node v to v-out and v-in.
 	 * Each arc v -> u becomes v-out -> u-in.
 	 *
@@ -419,19 +370,13 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	 */
 
 	/**
-	 * Filter out the given strongly connected component.
-	 */
-	typedef lemon::FilterNodes< const InputGraph, const BoolMap > StronglyConnected;
-	StronglyConnected strong_graph = filterNodes( input_graph, filter );
-
-	/**
 	 * Directed split graph.
 	 * - Typedefs
 	 * - Object
 	 * - Maps
 	 */
-	typedef lemon::SplitNodes< StronglyConnected > SplitDirect;
-	SplitDirect split_graph( strong_graph );
+	typedef lemon::SplitNodes< InputGraph > SplitDirect;
+	SplitDirect split_graph( input_graph );
 
 	SplitDirect::NodeMap< bigint_t > supply_map( split_graph );
 	SplitDirect::ArcMap< bigint_t > capacity_map( split_graph, 1 ), cost_map( split_graph );
@@ -463,7 +408,7 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	 * so as to inherently prefer a dummy self-arc over a real item's self-arc.
 	 * Mark self-arc to reverse its direction.
 	 */
-	for ( StronglyConnected::NodeIt n(strong_graph); n != lemon::INVALID; ++ n ) {
+	for ( InputGraph::NodeIt n(input_graph); n != lemon::INVALID; ++ n ) {
 
 		auto const & self_arc = split_graph.arc(n);
 		cost_map[ self_arc ] = ( _dummy[n] ) ? 1e7 : 1e9;
@@ -476,7 +421,7 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	 * Cost: depends on rank and priority scheme.
 	 * Mark match-arc to keep its direction.
 	 */
-	for ( StronglyConnected::ArcIt a(strong_graph); a != lemon::INVALID; ++ a ) {
+	for ( InputGraph::ArcIt a(input_graph); a != lemon::INVALID; ++ a ) {
 
 		auto const & match_arc = split_graph.arc(a);
 		const int rank = _rank[a];
@@ -522,8 +467,8 @@ MathTrader::_runFlowAlgorithm( const BoolMap & filter ) {
 	/**
 	 * Map it back to the original graph.
 	 */
-	const StronglyConnected & g = strong_graph;
-	for ( StronglyConnected::ArcIt a(g); a != lemon::INVALID; ++a ) {
+	const InputGraph & g = input_graph;
+	for ( InputGraph::ArcIt a(g); a != lemon::INVALID; ++a ) {
 
 		auto const & want_arc = split_graph.arc(a);
 		const bool chosen = flow_map[ want_arc ];
