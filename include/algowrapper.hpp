@@ -27,13 +27,16 @@ class AlgoWrapper {
 
 public:
 	typedef typename G::template NodeMap< int64_t > NodeIntMap;
+	typedef typename G::template ArcMap< int64_t > ArcIntMap;
 
 	/**
 	 * @brief Constructor.
 	 * Details.
 	 */
 	AlgoWrapper( const G & graph,
-			const NodeIntMap & supply );
+			const NodeIntMap & supply,
+			const ArcIntMap  & capacity,
+			const ArcIntMap  & cost);
 
 	/**
 	 * @brief Destructor.
@@ -44,7 +47,7 @@ public:
 private:
 	const G & _graph;
 	const NodeIntMap & _supply;
-
+	const ArcIntMap & _capacity, & _cost;
 };
 
 
@@ -54,9 +57,13 @@ private:
 
 template< typename G >
 AlgoWrapper< G >::AlgoWrapper( const G & graph,
-		const NodeIntMap & supply ) :
+		const NodeIntMap & supply,
+		const ArcIntMap & capacity,
+		const ArcIntMap & cost) :
 	_graph( graph ),
-	_supply( supply )
+	_supply( supply ),
+	_capacity( capacity ),
+	_cost( cost )
 {
 }
 

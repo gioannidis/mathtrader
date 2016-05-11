@@ -441,8 +441,8 @@ MathTrader::_runFlowAlgorithm() {
 		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
 	}
 
-	AlgoWrapper< SplitOrient > trade_algo( split_orient, supply_map );
-	//, cost_map, supply_map );
+	AlgoWrapper< SplitOrient > trade_algo( split_orient, supply_map,
+			capacity_map, cost_map);
 
 	/**
 	 * Define and apply the solver
