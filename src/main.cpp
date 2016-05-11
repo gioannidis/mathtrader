@@ -307,12 +307,26 @@ int main(int argc, char **argv) {
 	 * Open the output file, if needed.
 	 */
 	std::ofstream fs;
-	const bool write_to_file = ap.given("o");
+	bool write_to_file = ap.given("o");
 
 	if ( write_to_file ) {
+
 		const std::string & fn = ap["o"];
 		fs.open(fn, std::ios_base::out);
+
+		/**
+		 * On fail, just append to std::cout
+		 */
+		if ( fs.fail() ) {
+			std::cerr << "Error opening output file "
+				+ fn
+				+ "; will append to standard output instead."
+				<< std::endl;
+			write_to_file = false;
+		}
+
 	}
+
 
 	/**
 	 * Set the output stream to the file stream
