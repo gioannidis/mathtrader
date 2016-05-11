@@ -402,6 +402,9 @@ MathTrader::_runFlowAlgorithm() {
 	typedef lemon::Orienter< const SplitUndirect, ReverseMap > SplitOrient;
 	SplitOrient split_orient( split_undirect, reverse_map );
 
+	SplitOrient::NodeMap< int64_t > supply_map2( split_orient );
+	SplitOrient::ArcMap< int64_t > capacity_map2( split_orient, 1 ), cost_map2( split_orient );
+
 	/**
 	 * Iterate nodes of original graph.
 	 * Get corresponding bind-arcs.
@@ -412,7 +415,7 @@ MathTrader::_runFlowAlgorithm() {
 	for ( InputGraph::NodeIt n(input_graph); n != lemon::INVALID; ++ n ) {
 
 		auto const & self_arc = split_graph.arc(n);
-		cost_map[ self_arc ] = ( _dummy[n] ) ? 1e7 : 1e9;
+		cost_map2[ self_arc ] = ( _dummy[n] ) ? 1e7 : 1e9;
 		reverse_map[ self_arc ] = false;
 	}
 
@@ -427,7 +430,7 @@ MathTrader::_runFlowAlgorithm() {
 		auto const & match_arc = split_graph.arc(a);
 		const int rank = _rank[a];
 
-		cost_map[ match_arc ] = _getCost(rank);
+		cost_map2[ match_arc ] = _getCost(rank);
 		reverse_map[ match_arc ] = true;
 	}
 
@@ -438,12 +441,10 @@ MathTrader::_runFlowAlgorithm() {
 	 */
 	for ( SplitDirect::NodeIt n( split_graph ); n != lemon::INVALID; ++ n ) {
 
-		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
+		supply_map2[n] = (split_graph.outNode(n)) ? +1 : -1;
 	}
 
-	SplitOrient::NodeMap< int64_t > supply( split_orient );
-	mapCopy( split_orient, supply, supply_map );
-	AlgoWrapper< SplitOrient > trade_algo( split_orient, supply );
+	AlgoWrapper< SplitOrient > trade_algo( split_orient, supply_map2 );
 	//, cost_map, supply_map );
 
 	/**
@@ -452,9 +453,9 @@ MathTrader::_runFlowAlgorithm() {
 	typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
 	FlowAlgorithm trade_solver( split_orient );
 	FlowAlgorithm::ProblemType rv = trade_solver.
-		upperMap( capacity_map ).
-		costMap( cost_map ).
-		supplyMap( supply_map ).
+		upperMap( capacity_map2 ).
+		costMap( cost_map2 ).
+		supplyMap( supply_map2 ).
 		run();
 
 	/**
