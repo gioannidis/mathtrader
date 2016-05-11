@@ -78,10 +78,13 @@ int main(int argc, char **argv) {
 			" SCALED-PRIORITIES"
 			"; "
 			+ info_override);
-
 	ap.boolOption("-no-priorities",
 			"clears any priorites; "
 			+ info_override);
+
+	ap.onlyOneGroup("priority_scheme").
+		optionGroup("priority_scheme", "-priorities").
+		optionGroup("priority_scheme", "-no-priorities");
 
 	/**
 	 * Show or hide non-trades.
@@ -94,9 +97,9 @@ int main(int argc, char **argv) {
 			"do not show non-trading items; "
 			+ info_override);
 
-	ap.optionGroup("non_trades", "-show-non-trades").
-		optionGroup("non_trades", "-hide-non-trades").
-		onlyOneGroup("non_trades");
+	ap.onlyOneGroup("non_trades").
+		optionGroup("non_trades", "-show-non-trades").
+		optionGroup("non_trades", "-hide-non-trades");
 
 	/**
 	 * Run the argument parser.
@@ -228,12 +231,24 @@ int main(int argc, char **argv) {
 		 * - Any option from command line overrides given options
 		 *   in the want file.
 		 */
-		if ( ap.given("-priorities") ) {
+		if ( ap.given("-no-priorities") ) {
 
+			/* Do nothing;
+			 * override want file.
+			 */
+
+		} else if ( ap.given("-priorities") ) {
+
+			/* Set priorities;
+			 * override want file.
+			 */
 			math_trader.setPriorities(ap["-priorities"]);
 
 		} else if ( !input_lgf_file ) {
 
+			/* Get priority scheme from want file, if any.
+			 * Set the priorities if this option has been given.
+			 */
 			const std::string priority = want_parser.getPriorityScheme();
 			if ( priority.length() > 0 ) {
 				math_trader.setPriorities( priority );
