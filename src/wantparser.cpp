@@ -169,13 +169,14 @@ WantParser::parse() {
 						_parseWantList( buffer );
 						break;
 					default:
-						throw std::runtime_error("Unknown handler for status "
+						throw std::logic_error("Unknown handler for"
+								" internal status "
 								+ std::to_string(_status));
 						break;
 				}
 			}
 
-		} catch ( const std::exception & e ) {
+		} catch ( const std::runtime_error & e ) {
 
 			/**
 			 * Add the exception text to the error list.
