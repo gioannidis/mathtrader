@@ -77,6 +77,8 @@ all: directories $(EXECUTABLE)
 # Debug receipe
 ###
 
+debug: CXXFLAGS := $(filter-out $(OPTIM), $(CXXFLAGS))
+debug: CXXFLAGS += -O0
 debug: CXXFLAGS += $(DBGFLAGS)
 debug: all
 
