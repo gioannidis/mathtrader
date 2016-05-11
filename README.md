@@ -68,8 +68,9 @@ The Math Trading problem may be formally stated as:
 * The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon). To
 install the LEMON library, please refer to the respective
 [installation guide](http://lemon.cs.elte.hu/trac/lemon/wiki/InstallGuide).
-* g++ 4.9 compiler or newer.
-On a Windows IDE, you might have to appropriately configure your IDE to enable C++11 support.
+  * ``cmake 3.0.2`` or newer is recommended.
+* ``g++ 4.9`` compiler or newer.
+  * On a Windows IDE, you might have to appropriately configure your IDE to enable C++11 support.
 
 ## Compiling
 
