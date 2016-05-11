@@ -303,6 +303,11 @@ WantParser::showErrors( std::ostream & os ) const {
 
 
 /************************************//*
+ * 	PUBLIC METHODS - OPTIONS OUTPUT
+ **************************************/
+
+
+/************************************//*
  * 	PUBLIC METHODS - UTILITIES
  **************************************/
 
@@ -313,6 +318,7 @@ WantParser::clear() {
 	_node_map.clear();
 	_arc_map.clear();
 	_unknown_item_map.clear();
+	_errors.clear();
 
 	if ( _fs.is_open() ) {
 		_fs.close();
