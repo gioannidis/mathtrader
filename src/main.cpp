@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 	/**
 	 * Priority scheme.
 	 */
-	ap.stringOption("p", "set the priorities:"
+	ap.stringOption("p", "override the priorities:"
 			" LINEAR-PRIORITIES"
 			" TRIANGLE-PRIORITIES"
 			" SQUARE-PRIORITIES"
@@ -80,9 +80,9 @@ int main(int argc, char **argv) {
 	 * Only one option may be given.
 	 */
 	ap.boolOption("-show-non-trades",
-			"show non-trading items");
+			"show non-trading items; overrides input options");
 	ap.boolOption("-hide-non-trades",
-			"do not show non-trading items");
+			"do not show non-trading items; overrides input options");
 
 	ap.optionGroup("non_trades", "-show-non-trades").
 		optionGroup("non_trades", "-hide-non-trades").
