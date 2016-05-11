@@ -239,6 +239,7 @@ int main(int argc, char **argv) {
 	 ****************************************/
 
 	want_parser.showOptions();
+	want_parser.showErrors();
 	/**
 	 * Print the results to file or stdout.
 	 * Skip if the algorithm has failed.
