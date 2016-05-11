@@ -59,6 +59,14 @@ public:
 	 */
 	ProblemType getProblemType() const ;
 
+	/**
+	 * @brief Get Flow Map.
+	 * Returns the flow map produced by run().
+	 * @param flow_map The flow map to be set.
+	 * @return *this
+	 */
+	const AlgoWrapper & flowMap( ArcIntMap & flow_map ) const ;
+
 private:
 	const G & _graph;
 	const NodeIntMap & _supply;
@@ -107,6 +115,13 @@ template< typename A, typename G >
 typename AlgoWrapper< A, G >::ProblemType
 AlgoWrapper< A, G >::getProblemType() const {
 	return _rv;
+}
+
+template< typename A, typename G >
+const AlgoWrapper< A, G > &
+AlgoWrapper< A, G >::flowMap( ArcIntMap & flow_map ) const {
+	_algorithm.flowMap( flow_map );
+	return *this;
 }
 
 #endif /* _ALGOWRAPPER_HPP_ */

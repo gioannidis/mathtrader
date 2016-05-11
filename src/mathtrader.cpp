@@ -449,12 +449,12 @@ MathTrader::_runFlowAlgorithm() {
 	AlgoWrapper< FlowAlgorithm, SplitOrient >
 		trade_algo( split_orient, supply_map,
 				capacity_map, cost_map);
-	FlowAlgorithm trade_solver( split_orient );
-	FlowAlgorithm::ProblemType rv = trade_solver.
-		upperMap( capacity_map ).
-		costMap( cost_map ).
-		supplyMap( supply_map ).
-		run();
+
+	/**
+	 * Run and get the Problem Type
+	 */
+	trade_algo.run();
+	auto rv = trade_algo.getProblemType();
 
 	/**
 	 * Check if perfect match has been found.
@@ -466,8 +466,8 @@ MathTrader::_runFlowAlgorithm() {
 	/**
 	 * Get the flow map
 	 */
-	SplitDirect::ArcMap< int64_t > flow_map( split_graph );
-	trade_solver.flowMap( flow_map );
+	SplitOrient::ArcMap< int64_t > flow_map( split_orient );
+	trade_algo.flowMap( flow_map );
 
 	/**
 	 * Map it back to the original graph.
