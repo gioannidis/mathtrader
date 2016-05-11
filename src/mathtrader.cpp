@@ -32,6 +32,7 @@
 /* Algorithms */
 #include <lemon/capacity_scaling.h>
 #include <lemon/cost_scaling.h>
+#include <lemon/cycle_canceling.h>
 #include <lemon/network_simplex.h>
 
 
@@ -450,7 +451,8 @@ MathTrader::_runFlowAlgorithm() {
 	/**
 	 * Define and apply the solver
 	 */
-	typedef lemon::CapacityScaling< SplitOrient, int64_t > FlowAlgorithm;
+	typedef lemon::CycleCanceling< SplitOrient, int64_t > FlowAlgorithm;
+	//typedef lemon::CapacityScaling< SplitOrient, int64_t > FlowAlgorithm;
 	//typedef lemon::CostScaling< SplitOrient, int64_t > FlowAlgorithm;
 	//typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
 	AlgoWrapper< FlowAlgorithm, SplitOrient >
