@@ -28,6 +28,7 @@ class AlgoWrapper {
 public:
 	typedef typename G::template NodeMap< int64_t > NodeIntMap;
 	typedef typename G::template ArcMap< int64_t > ArcIntMap;
+	typedef typename A::ProblemType ProblemType;
 
 	/**
 	 * @brief Constructor.
@@ -44,11 +45,27 @@ public:
 	 */
 	~AlgoWrapper();
 
+	/**
+	 * @brief Runnable.
+	 * Run the minimum cost flow algorithm
+	 */
+	void run();
+
+	/**
+	 * @brief Get Problem Type.
+	 * Gives the return value of the algorithm.
+	 * run() must be called beforehand.
+	 * @return Type of problem (OPTIMAL, etc).
+	 */
+	ProblemType getProblemType() const ;
+
 private:
 	const G & _graph;
 	const NodeIntMap & _supply;
 	const ArcIntMap & _capacity, & _cost;
 	A _algorithm;
+
+	ProblemType _rv;
 };
 
 
@@ -78,6 +95,18 @@ AlgoWrapper< A, G >::AlgoWrapper( const G & graph,
 
 template< typename A, typename G >
 AlgoWrapper< A, G >::~AlgoWrapper() {
+}
+
+template< typename A, typename G >
+void
+AlgoWrapper< A, G >::run() {
+	_rv = _algorithm.run();
+}
+
+template< typename A, typename G >
+typename AlgoWrapper< A, G >::ProblemType
+AlgoWrapper< A, G >::getProblemType() const {
+	return _rv;
 }
 
 #endif /* _ALGOWRAPPER_HPP_ */
