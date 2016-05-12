@@ -31,11 +31,6 @@
 
 int main(int argc, char **argv) {
 
-	lemon::TimeReport t("Total execution time of "
-			+ std::string(argv[0])
-			+ ": ");
-
-
 	/**************************************//*
 	 * COMMAND LINE ARGUMENT PARSING
 	 ****************************************/
@@ -59,12 +54,18 @@ int main(int argc, char **argv) {
 	ap.synonym("-results-official", "o");
 
 	ap.stringOption("-input-lgf-file",
-			"input lemon graph format (LGF) file"
-			" (default: stdin)");
+			"parse directly a lemon graph format (LGF) file"
+			" (default: stdin);"
+			" no wants file will be read");
 
 	ap.stringOption("-output-lgf-file",
 			"print the lemon graph format (LGF) file"
 			" (default: stdout)");
+
+	ap.onlyOneGroup("input_file").
+		optionGroup("input_file", "f").
+		optionGroup("input_file", "-input-lgf-file");
+
 
 	/********************************************//*
 	 * Overriding options from want file
@@ -105,15 +106,36 @@ int main(int argc, char **argv) {
 		optionGroup("non_trades", "-show-non-trades").
 		optionGroup("non_trades", "-hide-non-trades");
 
-	/**
-	 * Run the argument parser.
-	 */
+
+	/********************************************//*
+	 * 	Minimum Cost Flow Algorithm options
+	 **********************************************/
+
+	ap.stringOption("-algorithm", "set the minimum cost"
+			" flow algorithm:"
+			" NETWORK-SIMPLEX"
+			" COST-SCALING"
+			" CAPACITY-SCALING"
+			" CYCLE-CANCELING"
+			" (default: NETWORK-SIMPLEX)");
+
+
+	/********************************************//*
+	 * 	Argument Parsing
+	 **********************************************/
+
 	try {
 		ap.parse();
 	} catch ( lemon::ArgParserException & error ) {
 		return 1;
 	}
 
+	/**
+	 * Start the timer after parsing the arguments.
+	 */
+	lemon::TimeReport t("Total execution time of "
+			+ std::string(argv[0])
+			+ ": ");
 
 
 	/**************************************//*
@@ -271,6 +293,15 @@ int main(int argc, char **argv) {
 
 			math_trader.hideNonTrades();
 		}
+
+		/**
+		 * Algorithm to be used
+		 */
+		if ( ap.given("-algorithm") ) {
+
+			math_trader.setAlgorithm(ap["-algorithm"]);
+		}
+
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during initialization: " << error.what()
 			<< std::endl;
