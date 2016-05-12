@@ -256,6 +256,7 @@ int main(int argc, char **argv) {
 		 * Priority scheme:
 		 * - Any option from command line overrides given options
 		 *   in the want file.
+		 * Make uppercase.
 		 */
 		if ( ap.given("-no-priorities") ) {
 
@@ -268,16 +269,22 @@ int main(int argc, char **argv) {
 			/* Set priorities;
 			 * override want file.
 			 */
-			math_trader.setPriorities(ap["-priorities"]);
+			std::string priorities( ap["-priorities"] );
+			std::transform( priorities.begin(), priorities.end(),
+					priorities.begin(), ::toupper );
+			math_trader.setPriorities( priorities );
 
 		} else if ( !input_lgf_file ) {
 
 			/* Get priority scheme from want file, if any.
 			 * Set the priorities if this option has been given.
+			 * TODO avoid code repetition in making uppercase.
 			 */
-			const std::string priority = want_parser.getPriorityScheme();
-			if ( priority.length() > 0 ) {
-				math_trader.setPriorities( priority );
+			std::string priorities = want_parser.getPriorityScheme();
+			if ( priorities.length() > 0 ) {
+				std::transform( priorities.begin(), priorities.end(),
+						priorities.begin(), ::toupper );
+				math_trader.setPriorities( priorities );
 			}
 
 		}
@@ -296,10 +303,14 @@ int main(int argc, char **argv) {
 
 		/**
 		 * Algorithm to be used
+		 * Make uppercase.
 		 */
 		if ( ap.given("-algorithm") ) {
 
-			math_trader.setAlgorithm(ap["-algorithm"]);
+			std::string algorithm( ap["-algorithm"] );
+			std::transform( algorithm.begin(), algorithm.end(),
+					algorithm.begin(), ::toupper );
+			math_trader.setAlgorithm( algorithm );
 		}
 
 	} catch ( std::exception & error ) {
