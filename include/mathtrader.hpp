@@ -127,6 +127,15 @@ public:
 	void run();
 
 	/**
+	 * @brief Merge dummies.
+	 * If not run, dummy nodes will be printed
+	 * by tradeLoops().
+	 * Run to merge them.
+	 * @return *this
+	 */
+	MathTrader & mergeDummyItems();
+
+	/**
 	 * @brief Display trade loops.
 	 * Displays the trade loops that have been found
 	 * to the given output stream.
@@ -247,13 +256,6 @@ private:
 	 * @return The corresponding cost.
 	 */
 	int64_t _getCost( int rank ) const ;
-
-	/**
-	 * @brief Merge dummies.
-	 * Removes all dummy nodes and merges the arcs.
-	 * @return *this
-	 */
-	MathTrader & _mergeDummies();
 
 #if 0
 	/**

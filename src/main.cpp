@@ -121,6 +121,19 @@ int main(int argc, char **argv) {
 
 
 	/********************************************//*
+	 * 	Other command-line-only options
+	 **********************************************/
+
+	/**
+	 * Show dummy nodes at the output.
+	 * Do not eliminate them.
+	 */
+	ap.boolOption("-show-dummy-items",
+			"show the dummy items instead of merging them; "
+			"only useful for debugging purposes");
+
+
+	/********************************************//*
 	 * 	Argument Parsing
 	 **********************************************/
 
@@ -335,7 +348,8 @@ int main(int argc, char **argv) {
 		lemon::TimeReport t("Execution time: ");
 		math_trader.run();
 	} catch ( std::exception & error ) {
-		std::cerr << "Error during execution: " << error.what()
+		std::cerr << "Error during execution: "
+			<< error.what()
 			<< std::endl;
 
 		return -1;
@@ -346,6 +360,21 @@ int main(int argc, char **argv) {
 	/**************************************//*
 	 * OUTPUT OPERATIONS - MATH TRADES
 	 ****************************************/
+
+	/**
+	 * Merge the dummy nodes, so that they will not
+	 * appear in the results.
+	 * Ignore if we want to see them.
+	 */
+	if ( !ap.given("-show-dummy-items") ) {
+		try {
+			math_trader.mergeDummyItems();
+		} catch ( std::exception & error ) {
+			std::cerr << "Error during merging dummy items: "
+				<< error.what()
+				<< std::endl;
+		}
+	}
 
 	/**
 	 * We will print the the output to either a file
@@ -373,13 +402,11 @@ int main(int argc, char **argv) {
 
 	}
 
-
 	/**
 	 * Set the output stream to the file stream
 	 * or std::cout, whichever is applicable.
 	 */
 	std::ostream & os = (write_to_file) ? fs : std::cout;
-
 
 	/**
 	 * Print the WantParser and the MathTrader results
@@ -397,6 +424,7 @@ int main(int argc, char **argv) {
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
 			<< std::endl;
+		fs.close();
 		return -1;
 	}
 

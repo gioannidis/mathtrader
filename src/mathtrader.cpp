@@ -205,7 +205,6 @@ MathTrader::run() {
 		run();
 
 	this->_runFlowAlgorithm();
-	this->_mergeDummies();
 }
 
 
@@ -213,11 +212,118 @@ MathTrader::run() {
  * 	PUBLIC METHODS - OUTPUT
  **************************************/
 
+MathTrader &
+MathTrader::mergeDummyItems() {
+
+	/**
+	 * List to mark nodes for deletion.
+	 */
+	std::list< int > id_to_delete;
+
+	OutputGraph & g = this->_output_graph;
+	OutputGraph::NodeMap< bool > iterated(g,false);
+
+	/**
+	 * Iterate all nodes and check if they are dummies.
+	 */
+	for ( OutputGraph::NodeIt n(g); n != lemon::INVALID; ++ n ) {
+
+		/**
+		 * Node of input graph.
+		 * The _dummy map uses INPUT nodes.
+		 */
+		auto const & n_i = _node_out2in[ n ];
+
+		/**
+		 * Dummy? Mark for deletion in any case, trading or not.
+		 * All nodes will be parsed up to this point.
+		 */
+		if ( _dummy[n_i] ) {
+			id_to_delete.push_back( g.id(n) );
+		}
+
+		/**
+		 * Parse a dummy if it's trading and it hasn't been iterated yet.
+		 * A dummy may have been already iterated if it's part of a larger dummy chain.
+		 * Some users may specify multiple dummies in a chain, like A -> D1 -> D2 -> B.
+		 */
+		if ( _dummy[n_i] && _trade[n] && !iterated[n] ) {
+
+			iterated[n] = true;
+
+			/**
+			 * Pointers to sender and receiver node.
+			 * We will go forwards/backwards
+			 * until a non-dummy is found
+			 * or we detect a cycle.
+			 * Cycle begins from @start.
+			 */
+			const OutputGraph::Node *receiver = &n, *sender = &n;
+			const int start = g.id(n);
+
+			/**
+			 * Move to next receiver/sender until a non-dummy is found
+			 * or until we detect a cycle of dummies;
+			 * some users define dummy cycles like D1 -> D2 -> D1
+			 * and the algorithm might have chosen them.
+			 * Mark the iterated nodes as "iterated" in the process,
+			 * so that the running time of this method is O(V).
+			 */
+			/* Do for receiver node */
+			do {
+				receiver = &( _send[*receiver] );
+				iterated[*receiver] = true;
+			}
+			while (( receiver != NULL ) && ( _dummy[_node_out2in[*receiver]] )
+					&& ( g.id(*receiver) != start ));
+
+			/* Do for sender node */
+			do {
+				sender = &( _receive[*sender] );
+				iterated[*sender] = true;
+			}
+			while (( sender != NULL ) && ( _dummy[_node_out2in[*sender]] )
+					&& ( g.id(*sender) != start ));
+
+			/**
+			 * Found a cycle of dummies? Ignore it.
+			 */
+			if (( sender != NULL ) && ( receiver != NULL )
+					&& ( g.id(*sender) != start ) && ( g.id(*receiver) != start )) {
+
+				/**
+				 * We have found the real items of this chain.
+				 * Updated send/receive maps.
+				 */
+				_receive[ *receiver ] = *sender;
+				_send[ *sender ] = *receiver;
+
+				/**
+				 * Add corresponding arc.
+				 * TODO cost?
+				 */
+				auto arc = g.addArc( *receiver, *sender );
+				this->_chosen_arc[arc] = true;
+			}
+		}
+	}
+
+	/**
+	 * Delete scheduled nodes.
+	 */
+	for ( int id : id_to_delete ) {
+		g.erase(g.nodeFromId(id));
+	}
+
+	return *this;
+}
+
 
 const MathTrader &
 MathTrader::tradeLoops( std::ostream & os ) const {
 
 #define TABWIDTH 50
+
 	/**
 	 * FILTERS
 	 * 1. Hide dummies.
@@ -341,37 +447,35 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 		const InputGraph::Node & ni = _input_graph.nodeFromId(username_map.second);
 		const FinalGraph::Node & n  = _node_in2out[ni];
 
-		if ( !_dummy[ni] ) {
-			if ( _trade[n] ) {
+		if ( _trade[n] ) {
 
-				os << std::left
-					<< std::setw(TABWIDTH)
-					<< "(" + _username[ni] + ") "
-					+ _name[ni]
-					<< std::setw(TABWIDTH)
-					<< "receives ("
-					+ _username[ _node_out2in[_receive[n]] ] + ") "
-					+ _name[ _node_out2in[_receive[n]] ]
-					<< "and sends to ("
-					+ _username[ _node_out2in[_send[n]] ] + ") "
-					+ _name[ _node_out2in[_send[n]] ]
-					<< std::endl;
+			os << std::left
+				<< std::setw(TABWIDTH)
+				<< "(" + _username[ni] + ") "
+				+ _name[ni]
+				<< std::setw(TABWIDTH)
+				<< "receives ("
+				+ _username[ _node_out2in[_receive[n]] ] + ") "
+				+ _name[ _node_out2in[_receive[n]] ]
+				<< "and sends to ("
+				+ _username[ _node_out2in[_send[n]] ] + ") "
+				+ _name[ _node_out2in[_send[n]] ]
+				<< std::endl;
 
-			} else if ( !_hide_non_trades ) {
+		} else if ( !_hide_non_trades ) {
 
-				os << std::left
-					<< std::setw(TABWIDTH)
-					<< "(" + _username[ni] + ") "
-					+ _name[ni]
-					<< "does not trade"
-					<< std::endl;
-			}
+			os << std::left
+				<< std::setw(TABWIDTH)
+				<< "(" + _username[ni] + ") "
+				+ _name[ni]
+				<< "does not trade"
+				<< std::endl;
 		}
 	}
 
 	return *this;
-}
 #undef TABWIDTH
+}
 
 
 /************************************//*
@@ -645,110 +749,4 @@ MathTrader::_getCost( int rank ) const {
 			break;
 	}
 	return -1;
-}
-
-MathTrader &
-MathTrader::_mergeDummies() {
-
-	/**
-	 * List to mark nodes for deletion.
-	 */
-	std::list< int > id_to_delete;
-
-	OutputGraph & g = this->_output_graph;
-	OutputGraph::NodeMap< bool > iterated(g,false);
-
-	/**
-	 * Iterate all nodes and check if they are dummies.
-	 */
-	for ( OutputGraph::NodeIt n(g); n != lemon::INVALID; ++ n ) {
-
-		/**
-		 * Node of input graph.
-		 * The _dummy map uses INPUT nodes.
-		 */
-		auto const & n_i = _node_out2in[ n ];
-
-		/**
-		 * Dummy? Mark for deletion in any case, trading or not.
-		 * All nodes will be parsed up to this point.
-		 */
-		if ( _dummy[n_i] ) {
-			id_to_delete.push_back( g.id(n) );
-		}
-
-		/**
-		 * Parse a dummy if it's trading and it hasn't been iterated yet.
-		 * A dummy may have been already iterated if it's part of a larger dummy chain.
-		 * Some users may specify multiple dummies in a chain, like A -> D1 -> D2 -> B.
-		 */
-		if ( _dummy[n_i] && _trade[n] && !iterated[n] ) {
-
-			iterated[n] = true;
-
-			/**
-			 * Pointers to sender and receiver node.
-			 * We will go forwards/backwards
-			 * until a non-dummy is found
-			 * or we detect a cycle.
-			 * Cycle begins from @start.
-			 */
-			const OutputGraph::Node *receiver = &n, *sender = &n;
-			const int start = g.id(n);
-
-			/**
-			 * Move to next receiver/sender until a non-dummy is found
-			 * or until we detect a cycle of dummies;
-			 * some users define dummy cycles like D1 -> D2 -> D1
-			 * and the algorithm might have chosen them.
-			 * Mark the iterated nodes as "iterated" in the process,
-			 * so that the running time of this method is O(V).
-			 */
-			/* Do for receiver node */
-			do {
-				receiver = &( _send[*receiver] );
-				iterated[*receiver] = true;
-			}
-			while (( receiver != NULL ) && ( _dummy[_node_out2in[*receiver]] )
-					&& ( g.id(*receiver) != start ));
-
-			/* Do for sender node */
-			do {
-				sender = &( _receive[*sender] );
-				iterated[*sender] = true;
-			}
-			while (( sender != NULL ) && ( _dummy[_node_out2in[*sender]] )
-					&& ( g.id(*sender) != start ));
-
-			/**
-			 * Found a cycle of dummies? Ignore it.
-			 */
-			if (( sender != NULL ) && ( receiver != NULL )
-					&& ( g.id(*sender) != start ) && ( g.id(*receiver) != start )) {
-
-				/**
-				 * We have found the real items of this chain.
-				 * Updated send/receive maps.
-				 */
-				_receive[ *receiver ] = *sender;
-				_send[ *sender ] = *receiver;
-
-				/**
-				 * Add corresponding arc.
-				 * TODO cost?
-				 */
-				auto arc = g.addArc( *receiver, *sender );
-				this->_chosen_arc[arc] = true;
-			}
-		}
-	}
-
-	/**
-	 * Delete scheduled nodes.
-	 */
-	for ( int id : id_to_delete ) {
-		g.erase(g.nodeFromId(id));
-	}
-
-	return *this;
 }
