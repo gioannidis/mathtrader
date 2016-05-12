@@ -71,6 +71,7 @@ public:
 	 * @brief Set priorities.
 	 * Set the priorities to be used by
 	 * the math trade algorithm.
+	 * If not called, no priorities will be used.
 	 * @param priorities The type of priorities to be used. Accepted values:
 	 * 	LINEAR-PRIORITIES
 	 * 	TRIANGLE-PRIORITIES
@@ -79,6 +80,19 @@ public:
 	 * @return *this
 	 */
 	MathTrader & setPriorities( const std::string & priorities );
+
+	/**
+	 * @brief Select Algorithm
+	 * Set the minimum cost flow algorithm to be used.
+	 * If not called, Network Simplex will be used.
+	 * @param algorithm The algorithm to be used. Accepted values:
+	 * 	NETWORK-SIMPLEX
+	 * 	COST-SCALING
+	 * 	CAPACITY-SCALING
+	 * 	CYCLE-CANCELING
+	 * @return *this
+	 */
+	MathTrader & setAlgorithm( const std::string & algorithm );
 
 	/**
 	 * @brief Clear priorities.
@@ -104,26 +118,6 @@ public:
 	 * @return *this
 	 */
 	MathTrader & showNonTrades();
-
-	/**
-	 * @brief Minimum Cost Flow Algorithms
-	 * Enum showing all minimum cost flow algorithms
-	 * that are currently implemented.
-	 * MCFA::NETWORK_SIMPLEX is the default.
-	 */
-	enum MCFA {
-		NETWORK_SIMPLEX,
-		COST_SCALING,
-		CAPACITY_SCALING,
-		CYCLE_CANCELING,
-	};
-
-	/**
-	 * @brief Select MCFA
-	 * Select the minimum cost flow algorithm to be used.
-	 * If not called, MCFA::NETWORK_SIMPLEX will be used.
-	 */
-	MathTrader & setMCFA( MCFA algorithm );
 
 	/**
 	 * @brief MathTrade algorithm.
@@ -178,7 +172,21 @@ private:
 		SCALED_PRIORITIES,
 	};
 
+	/**
+	 * @brief Minimum Cost Flow Algorithms
+	 * Enumerates all available minimum cost flow algorithm implementations.
+	 * Default is NETWORK_SIMPLEX.
+	 */
+	enum MCFA {
+		NETWORK_SIMPLEX,
+		COST_SCALING,
+		CAPACITY_SCALING,
+		CYCLE_CANCELING,
+	};
+
 	PriorityScheme _priority_scheme;
+	MCFA _mcfa;
+
 	bool _hide_non_trades;
 
 	/**
@@ -206,13 +214,6 @@ private:
 	 * @brief Username-to-item map
 	 */
 	std::multimap< std::string, int > _username_to_item;
-
-
-	/**
-	 * @brief Chosen MCFA.
-	 * NetworkSimplex is the default.
-	 */
-	MCFA _mcfa;
 
 	/**
 	 * @brief Run math trade algorithm.
