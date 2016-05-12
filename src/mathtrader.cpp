@@ -454,40 +454,51 @@ MathTrader::_runFlowAlgorithm() {
 	std::unique_ptr< AlgoAbstract< SplitOrient > > trade_ptr;
 
 	switch ( _mcfa ) {
-		case NETWORK_SIMPLEX:
+		case NETWORK_SIMPLEX: {
 			typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
-#if 0
-			trade_ptr = std::move(new AlgoWrapper< FlowAlgorithm, SplitOrient >
+			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, SplitOrient >
 				(split_orient, supply_map, capacity_map, cost_map));
-#endif
 			break;
+		}
 
-		case COST_SCALING:
-		case CAPACITY_SCALING:
-		case CYCLE_CANCELLING:
-		default:
+		case COST_SCALING: {
+			typedef lemon::CostScaling< SplitOrient, int64_t > FlowAlgorithm;
+			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, SplitOrient >
+				(split_orient, supply_map, capacity_map, cost_map));
+			break;
+		}
+
+		case CAPACITY_SCALING: {
+			typedef lemon::CapacityScaling< SplitOrient, int64_t > FlowAlgorithm;
+			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, SplitOrient >
+				(split_orient, supply_map, capacity_map, cost_map));
+			break;
+		}
+
+		case CYCLE_CANCELING: {
+			typedef lemon::CycleCanceling< SplitOrient, int64_t > FlowAlgorithm;
+			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, SplitOrient >
+				(split_orient, supply_map, capacity_map, cost_map));
+			break;
+		}
+
+		default: {
 			throw std::logic_error("No implementation for"
 					" minimum cost flow algorithm"
 					+ std::to_string(_mcfa));
 			break;
+		}
 	}
-
-	typedef lemon::CycleCanceling< SplitOrient, int64_t > FlowAlgorithm;
-	//typedef lemon::CapacityScaling< SplitOrient, int64_t > FlowAlgorithm;
-	//typedef lemon::CostScaling< SplitOrient, int64_t > FlowAlgorithm;
-	AlgoWrapper< FlowAlgorithm, SplitOrient >
-		trade_algo( split_orient, supply_map,
-				capacity_map, cost_map);
 
 	/**
 	 * Run and get the Problem Type
 	 */
-	trade_algo.run();
+	trade_ptr->run();
 
 	/**
 	 * Check if perfect match has been found.
 	 */
-	if ( trade_algo.optimalSolution() ) {
+	if ( trade_ptr->optimalSolution() ) {
 		throw std::runtime_error("No optimal solution found");
 	}
 
@@ -495,7 +506,7 @@ MathTrader::_runFlowAlgorithm() {
 	 * Get the flow map
 	 */
 	SplitOrient::ArcMap< int64_t > flow_map( split_orient );
-	trade_algo.flowMap( flow_map );
+	trade_ptr->flowMap( flow_map );
 
 	/**
 	 * Map it back to the original graph.
