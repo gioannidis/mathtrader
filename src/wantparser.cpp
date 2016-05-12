@@ -294,9 +294,12 @@ WantParser::showOptions( std::ostream & os ) const {
 
 const WantParser &
 WantParser::showErrors( std::ostream & os ) const {
-	os << "ERRORS" << std::endl;
-	for ( auto const & err : _errors ) {
-		os << "**** " << err << std::endl;
+
+	if ( ! _errors.empty() ) {
+		os << "ERRORS" << std::endl;
+		for ( auto const & err : _errors ) {
+			os << "**** " << err << std::endl;
+		}
 	}
 	return *this;
 }
