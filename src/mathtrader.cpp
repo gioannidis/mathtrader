@@ -451,10 +451,30 @@ MathTrader::_runFlowAlgorithm() {
 	/**
 	 * Define and apply the solver
 	 */
+	std::unique_ptr< AlgoAbstract< SplitOrient > > trade_ptr;
+
+	switch ( _mcfa ) {
+		case NETWORK_SIMPLEX:
+			typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
+#if 0
+			trade_ptr = std::move(new AlgoWrapper< FlowAlgorithm, SplitOrient >
+				(split_orient, supply_map, capacity_map, cost_map));
+#endif
+			break;
+
+		case COST_SCALING:
+		case CAPACITY_SCALING:
+		case CYCLE_CANCELLING:
+		default:
+			throw std::logic_error("No implementation for"
+					" minimum cost flow algorithm"
+					+ std::to_string(_mcfa));
+			break;
+	}
+
 	typedef lemon::CycleCanceling< SplitOrient, int64_t > FlowAlgorithm;
 	//typedef lemon::CapacityScaling< SplitOrient, int64_t > FlowAlgorithm;
 	//typedef lemon::CostScaling< SplitOrient, int64_t > FlowAlgorithm;
-	//typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
 	AlgoWrapper< FlowAlgorithm, SplitOrient >
 		trade_algo( split_orient, supply_map,
 				capacity_map, cost_map);
