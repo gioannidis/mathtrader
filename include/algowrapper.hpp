@@ -28,7 +28,6 @@ class AlgoWrapper {
 public:
 	typedef typename G::template NodeMap< int64_t > NodeIntMap;
 	typedef typename G::template ArcMap< int64_t > ArcIntMap;
-	typedef typename A::ProblemType ProblemType;
 
 	/**
 	 * @brief Constructor.
@@ -52,12 +51,13 @@ public:
 	void run();
 
 	/**
-	 * @brief Get Problem Type.
-	 * Gives the return value of the algorithm.
+	 * @brief Has an optimal solution been found?
+	 * Checks whether the algorithm has found
+	 * an optimal solution for the MCF problem.
 	 * run() must be called beforehand.
-	 * @return Type of problem (OPTIMAL, etc).
+	 * @return true if an optimal solution has been found.
 	 */
-	ProblemType getProblemType() const ;
+	bool optimalSolution() const ;
 
 	/**
 	 * @brief Get Flow Map.
@@ -73,6 +73,7 @@ private:
 	const ArcIntMap & _capacity, & _cost;
 	A _algorithm;
 
+	typedef typename A::ProblemType ProblemType;
 	ProblemType _rv;
 };
 
@@ -112,9 +113,9 @@ AlgoWrapper< A, G >::run() {
 }
 
 template< typename A, typename G >
-typename AlgoWrapper< A, G >::ProblemType
-AlgoWrapper< A, G >::getProblemType() const {
-	return _rv;
+bool
+AlgoWrapper< A, G >::optimalSolution() const {
+	return ( _rv == ProblemType::OPTIMAL );
 }
 
 template< typename A, typename G >
