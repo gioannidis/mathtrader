@@ -400,7 +400,7 @@ MathTrader::_runFlowAlgorithm() {
 	 *
 	 * All node & arc maps are inter-compatible.
 	 */
- 
+
 	/**
 	 * Directed split graph.
 	 * - Typedefs
@@ -508,8 +508,8 @@ MathTrader::_runFlowAlgorithm() {
 		}
 
 		default: {
-			throw std::logic_error("No implementation for"
-					" minimum cost flow algorithm"
+			throw std::logic_error("No implementation for "
+					"minimum cost flow algorithm "
 					+ std::to_string(_mcfa));
 			break;
 		}
@@ -543,22 +543,47 @@ MathTrader::_runFlowAlgorithm() {
 
 		if ( chosen ) {
 
+			/**
+			 * Receiver & Sender nodes: source/target
+			 * of original chosen arc.
+			 */
+			const OutputGraph::Node
+				&receiver = start_graph.source(a),
+				&sender = start_graph.target(a);
+
+			/**
+			 * Mark original arc as chosen.
+			 * This should be the first and only time
+			 * when the chosen arc is marked as "trading".
+			 */
 			if ( this->_chosen_arc[a] ) {
-				throw std::runtime_error("Arc already chosen");
+				throw std::runtime_error("Arc from "
+						+ _name[ _node_out2in[receiver] ]
+						+ " to "
+						+ _name[ _node_out2in[sender] ]
+						+ " has been already chosen");
 			}
 			this->_chosen_arc[a] = chosen;
 
-			const OutputGraph::Node &receiver = start_graph.source(a),
-			      &sender = start_graph.target(a);
-
-			if ( ! _trade[receiver] ) {
-				_trade[receiver] = true;
-				_receive[ receiver ] = sender;
-				_send[ sender ] = receiver;
-			} else {
+			/**
+			 * By convention, mark only the receiver as trading.
+			 * The sender will be marked
+			 * by its own chosen "want" arc.
+			 * This should be the first and only time
+			 * when the receiver node is marked as "trading".
+			 */
+			if ( this->_trade[receiver] ) {
 				throw std::runtime_error("Multiple trades for item "
 						+ _name[ _node_out2in[receiver] ]);
 			}
+			_trade[receiver] = true;
+
+			/**
+			 * Set the receiver & sender
+			 * reciprocal maps.
+			 */
+			_receive[ receiver ] = sender;
+			_send[ sender ] = receiver;
 		}
 	}
 }
@@ -627,7 +652,6 @@ MathTrader::_mergeDummies() {
 
 	/**
 	 * List to mark nodes for deletion.
-	 * TODO implement
 	 */
 	std::list< int > id_to_delete;
 
@@ -643,10 +667,10 @@ MathTrader::_mergeDummies() {
 		 * Node of input graph.
 		 * The _dummy map uses INPUT nodes.
 		 */
-		const auto & n_i = _node_out2in[ n ];
+		auto const & n_i = _node_out2in[ n ];
 
 		/**
-		 * Dummy? Mark for deletion.
+		 * Dummy? Mark for deletion in any case, trading or not.
 		 * All nodes will be parsed up to this point.
 		 */
 		if ( _dummy[n_i] ) {
@@ -662,13 +686,25 @@ MathTrader::_mergeDummies() {
 
 			iterated[n] = true;
 
+			/**
+			 * Pointers to sender and receiver node.
+			 * We will go forwards/backwards
+			 * until a non-dummy is found
+			 * or we detect a cycle.
+			 * Cycle begins from @start.
+			 */
 			const OutputGraph::Node *receiver = &n, *sender = &n;
 			const int start = g.id(n);
 
 			/**
 			 * Move to next receiver/sender until a non-dummy is found
-			 * or until we detect a cycle of dummies.
+			 * or until we detect a cycle of dummies;
+			 * some users define dummy cycles like D1 -> D2 -> D1
+			 * and the algorithm might have chosen them.
+			 * Mark the iterated nodes as "iterated" in the process,
+			 * so that the running time of this method is O(V).
 			 */
+			/* Do for receiver node */
 			do {
 				receiver = &( _send[*receiver] );
 				iterated[*receiver] = true;
@@ -676,12 +712,13 @@ MathTrader::_mergeDummies() {
 			while (( receiver != NULL ) && ( _dummy[_node_out2in[*receiver]] )
 					&& ( g.id(*receiver) != start ));
 
+			/* Do for sender node */
 			do {
 				sender = &( _receive[*sender] );
 				iterated[*sender] = true;
 			}
-			while (( sender != NULL ) && ( _dummy[_node_out2in[*sender]] ) && ( g.id(*sender) != start ));
-
+			while (( sender != NULL ) && ( _dummy[_node_out2in[*sender]] )
+					&& ( g.id(*sender) != start ));
 
 			/**
 			 * Found a cycle of dummies? Ignore it.
