@@ -504,13 +504,13 @@ MathTrader::exportToDot( const DGR & g,
 		const typename DGR::template NodeMap< std::string > & name ) {
 
 	std::cout << "digraph G {" << std::endl;
-	for ( typename DGR::template NodeIt n(g); n != lemon::INVALID; ++n ) {
+	for ( typename DGR::NodeIt n(g); n != lemon::INVALID; ++n ) {
 		std::cout << "\t"
 			<< "n" << g.id(n)
 			<< " [label=\"" << name[n] << "\"];"
 			<< std::endl;
 	}
-	for ( typename DGR::template ArcIt a(g); a != lemon::INVALID; ++a ) {
+	for ( typename DGR::ArcIt a(g); a != lemon::INVALID; ++a ) {
 		std::cout << "\t"
 			<< "n" << g.id( g.source(a) )
 			<< " -> " << "n" << g.id(g.target(a))
