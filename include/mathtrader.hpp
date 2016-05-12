@@ -22,6 +22,7 @@
 #ifndef _MATHTRADER_HPP_
 #define _MATHTRADER_HPP_
 
+#include <lemon/list_graph.h>
 #include <lemon/smart_graph.h>
 #include <map>
 
@@ -126,36 +127,26 @@ public:
 	void run();
 
 	/**
-	 * @brief Process results.
-	 */
-	MathTrader & processResults();
-
-	/**
-	 * @brief Print results to ostream.
-	 * Prints the results of the trade
+	 * @brief Display trade loops.
+	 * Displays the trade loops that have been found
 	 * to the given output stream.
 	 * @param os output stream (default: stdout)
 	 * @return *this
 	 */
-	const MathTrader & printResults( std::ostream & os = std::cout ) const ;
+	const MathTrader & tradeLoops( std::ostream & os = std::cout ) const ;
 
 	/**
-	 * @brief Print results to file.
-	 * Prints the results of the trade
-	 * to the given file.
-	 * @param fn file name (default: stdout)
+	 * @brief Display item summary.
+	 * Displays the item summary
+	 * to the given output stream.
+	 * - If trading
+	 * - Sending item
+	 * - Receiving item
+	 * Items are sorted by usernames.
+	 * @param os output stream (default: stdout)
 	 * @return *this
 	 */
-	const MathTrader & printResults( const std::string & fn ) const ;
-
-	/**
-	 * @brief Print results to file.
-	 * Prints the results of the trade
-	 * to the given file.
-	 * @param fn file name (default: stdout)
-	 * @return *this
-	 */
-	const MathTrader & printResults( const char * fn ) const ;
+	const MathTrader & itemSummary( std::ostream & os = std::cout ) const ;
 
 private:
 	/**
@@ -190,25 +181,51 @@ private:
 	bool _hide_non_trades;
 
 	/**
-	 * @brief Graphs
+	 * @brief Input Graph
+	 * Type of Input Graph, member and maps.
+	 * Nodes: items
+	 * Arc A->B: item A is offered for item B
 	 */
-	typedef lemon::SmartDigraph InputGraph;
-	InputGraph _input_graph;
+	typedef lemon::SmartDigraph InputGraph;	/**< type of input graph */
+	const InputGraph _input_graph;		/**< actual input graph */
+
+
+	InputGraph::NodeMap< std::string >	/**< node maps: strings */
+		_name,				/**< official item name	*/
+		_username;			/**< owner's username	*/
+
+	InputGraph::NodeMap< bool >	/**< node maps: boolean	*/
+		_dummy;			/**< item is a dummy */
+
+	InputGraph::ArcMap< int >	/**< arc maps: integer	*/
+		_rank;			/**< rank of want	*/
 
 	/**
-	 * @brief Node Maps
+	 * @brief Output Graph
+	 * Type of Output Graph, member and maps.
 	 */
-	typedef InputGraph::NodeMap< std::string > StringMap;
-	typedef InputGraph::NodeMap< bool > BoolMap;
-	StringMap  _name, _username;
-	InputGraph::NodeMap< InputGraph::Node > _send, _receive;
-	BoolMap _dummy, _trade;
+	typedef lemon::ListDigraph OutputGraph;
+	OutputGraph _output_graph;
 
-	/**
-	 * @brief Arc Maps
-	 */
-	InputGraph::ArcMap< int > _rank;
-	InputGraph::ArcMap< bool > _chosen_arc;
+	InputGraph::NodeMap< OutputGraph::Node >	/**< node reference: in -> out */
+		_node_in2out;
+	InputGraph::ArcMap< OutputGraph::Arc >		/**< arc reference: in -> out */
+		_arc_in2out;
+
+	OutputGraph::NodeMap< InputGraph::Node >	/**< node cross reference: out -> in */
+		_node_out2in;
+	OutputGraph::ArcMap< InputGraph::Arc >		/**< arc cross reference: out -> in */
+		_arc_out2in;
+
+	OutputGraph::NodeMap< OutputGraph::Node >	/**< node maps: nodes -> nodes */
+		_send,					/**< will send to this node */
+		_receive;				/**< will receive from this node */
+
+	OutputGraph::NodeMap< bool >	/**< node maps: boolean	*/
+		_trade;			/**< item will trade */
+	OutputGraph::ArcMap< bool >	/**< arc maps: boolean	*/
+		_chosen_arc;		/**< want has been chosen */
+
 
 	/**
 	 * @brief Username-to-item map

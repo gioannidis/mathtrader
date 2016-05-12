@@ -391,8 +391,8 @@ int main(int argc, char **argv) {
 
 		want_parser.showOptions(os);
 		want_parser.showErrors(os);
-		math_trader.processResults();
-		math_trader.printResults(os);
+		math_trader.tradeLoops(os);
+		//math_trader.itemSummary(os);
 
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
