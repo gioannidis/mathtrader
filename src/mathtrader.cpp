@@ -463,12 +463,11 @@ MathTrader::_runFlowAlgorithm() {
 	 * Run and get the Problem Type
 	 */
 	trade_algo.run();
-	auto rv = trade_algo.getProblemType();
 
 	/**
 	 * Check if perfect match has been found.
 	 */
-	if ( rv != FlowAlgorithm::ProblemType::OPTIMAL ) {
+	if ( trade_algo.optimalSolution() ) {
 		throw std::runtime_error("No optimal solution found");
 	}
 
