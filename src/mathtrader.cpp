@@ -42,6 +42,7 @@
 
 MathTrader::MathTrader() :
 	_priority_scheme( NO_PRIORITIES ),
+	_mcfa( NETWORK_SIMPLEX ),
 	_hide_non_trades( false ),
 	_name( _input_graph ),
 	_username( _input_graph ),
@@ -50,8 +51,7 @@ MathTrader::MathTrader() :
 	_dummy( _input_graph, false ),
 	_trade( _input_graph, false ),
 	_rank( _input_graph, 0 ),
-	_chosen_arc( _input_graph, false ),
-	_mcfa( NETWORK_SIMPLEX )
+	_chosen_arc( _input_graph, false )
 {
 }
 
@@ -105,19 +105,42 @@ MathTrader &
 MathTrader::setPriorities( const std::string & priorities ) {
 
 	typedef std::unordered_map< std::string, PriorityScheme > PrioMap_t;
-	PrioMap_t prioMap;
+	static const PrioMap_t prioMap = {
+		{"LINEAR-PRIORITIES", LINEAR_PRIORITIES},
+		{"TRIANGLE-PRIORITIES", TRIANGLE_PRIORITIES},
+		{"SQUARE-PRIORITIES", SQUARE_PRIORITIES},
+		{"SCALED-PRIORITIES", SCALED_PRIORITIES},
+	};
 
-	prioMap.emplace("LINEAR-PRIORITIES", LINEAR_PRIORITIES);
-	prioMap.emplace("TRIANGLE-PRIORITIES", TRIANGLE_PRIORITIES);
-	prioMap.emplace("SQUARE-PRIORITIES", SQUARE_PRIORITIES);
-	prioMap.emplace("SCALED-PRIORITIES", SCALED_PRIORITIES);
-
-	PrioMap_t::const_iterator it = prioMap.find( priorities );
+	auto const & it = prioMap.find( priorities );
 	if ( it == prioMap.end() ) {
-		throw std::runtime_error("Invalid priority scheme given");
+		throw std::runtime_error("Invalid priority scheme given: "
+				+ priorities);
 	}
 
 	_priority_scheme = it->second;
+
+	return *this;
+}
+
+MathTrader &
+MathTrader::setAlgorithm( const std::string & algorithm ) {
+
+	typedef std::unordered_map< std::string, MCFA > AlgoMap_t;
+	static const AlgoMap_t algoMap = {
+		{"NETWORK-SIMPLEX", NETWORK_SIMPLEX},
+		{"COST-SCALING", COST_SCALING},
+		{"CAPACITY-SCALING", CAPACITY_SCALING},
+		{"CYCLE-CANCELING", CYCLE_CANCELING},
+	};
+
+	auto const & it = algoMap.find( algorithm );
+	if ( it == algoMap.end() ) {
+		throw std::runtime_error("Invalid algorithm given: "
+				+ algorithm);
+	}
+
+	_mcfa = it->second;
 
 	return *this;
 }
@@ -137,12 +160,6 @@ MathTrader::hideNonTrades() {
 MathTrader &
 MathTrader::showNonTrades() {
 	_hide_non_trades = false;
-	return *this;
-}
-
-MathTrader &
-MathTrader::setMCFA( MCFA algorithm ) {
-	_mcfa = algorithm;
 	return *this;
 }
 
@@ -498,7 +515,7 @@ MathTrader::_runFlowAlgorithm() {
 	/**
 	 * Check if perfect match has been found.
 	 */
-	if ( trade_ptr->optimalSolution() ) {
+	if ( !trade_ptr->optimalSolution() ) {
 		throw std::runtime_error("No optimal solution found");
 	}
 
