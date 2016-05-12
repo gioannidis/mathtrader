@@ -22,12 +22,14 @@
 #ifndef _ALGOWRAPPER_HPP_
 #define _ALGOWRAPPER_HPP_
 
+#include "algoabstract.hpp"
+
 template< typename A, typename G >
-class AlgoWrapper {
+class AlgoWrapper : public AlgoAbstract< G > {
 
 public:
 	typedef typename G::template NodeMap< int64_t > NodeIntMap;
-	typedef typename G::template ArcMap< int64_t > ArcIntMap;
+	typedef typename AlgoAbstract< G >::ArcIntMap ArcIntMap;
 
 	/**
 	 * @brief Constructor.
@@ -87,6 +89,7 @@ AlgoWrapper< A, G >::AlgoWrapper( const G & graph,
 		const NodeIntMap & supply,
 		const ArcIntMap & capacity,
 		const ArcIntMap & cost) :
+	AlgoAbstract< G >(),
 	_graph( graph ),
 	_supply( supply ),
 	_capacity( capacity ),
