@@ -559,6 +559,7 @@ MathTrader::_runFlowAlgorithm() {
  * 	PRIVATE METHODS - Utilities
  **************************************/
 
+#if 0
 template < typename DGR >
 void
 MathTrader::exportToDot( const DGR & g,
@@ -579,6 +580,7 @@ MathTrader::exportToDot( const DGR & g,
 	}
 	std::cout << "}" << std::endl;
 }
+#endif
 
 
 /************************************//*
