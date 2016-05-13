@@ -23,7 +23,7 @@
 #include "mathtrader.hpp"
 
 #include <exception>
-#include <iostream>
+#include <iomanip>
 #include <lemon/arg_parser.h>
 #include <lemon/time_measure.h>
 #include <sstream>
@@ -154,9 +154,7 @@ int main(int argc, char **argv) {
 	/**
 	 * Start the timer after parsing the arguments.
 	 */
-	lemon::TimeReport t("Total execution time of "
-			+ std::string(argv[0])
-			+ ": ");
+	lemon::TimeReport t("Total execution time: ");
 
 
 	/**************************************//*
@@ -191,7 +189,7 @@ int main(int argc, char **argv) {
 		 * Read LGF from file or stdin
 		 */
 		try {
-			lemon::TimeReport t("Reading time: ");
+			lemon::TimeReport t("Input graph reading:  ");
 
 			const std::string & fn = ap["-input-lgf-file"];
 			if ( fn.length() > 0 ) {
@@ -213,7 +211,7 @@ int main(int argc, char **argv) {
 		 * Read file from wantlist
 		 */
 		try {
-			lemon::TimeReport t("Wantlist parsing time: ");
+			lemon::TimeReport t("Want-list reading:    ");
 
 			/**
 			 * Configure input file
@@ -245,8 +243,7 @@ int main(int argc, char **argv) {
 		want_parser.print(ss);
 
 		try {
-			lemon::TimeReport t("Reading the produced"
-					" LGF file time: ");
+			lemon::TimeReport t("Passing input graph:  ");
 
 			math_trader.graphReader(ss);
 		} catch ( std::exception & error ) {
@@ -353,7 +350,7 @@ int main(int argc, char **argv) {
 	 * output operations.
 	 */
 	try {
-		lemon::TimeReport t("Execution time: ");
+		lemon::TimeReport t("Algorithm execution:  ");
 		math_trader.run();
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during execution: "
@@ -432,7 +429,7 @@ int main(int argc, char **argv) {
 	 * or the output file.
 	 */
 	try {
-		lemon::TimeReport t("Results time: ");
+		lemon::TimeReport t("Result report:        ");
 
 		want_parser.showOptions(os);
 		want_parser.showErrors(os);
