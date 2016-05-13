@@ -24,7 +24,6 @@
 
 #include <lemon/list_graph.h>
 #include <lemon/smart_graph.h>
-#include <map>
 
 class MathTrader {
 
@@ -237,11 +236,6 @@ private:
 	OutputGraph::ArcMap< bool >	/**< arc maps: boolean	*/
 		_chosen_arc;		/**< want has been chosen */
 
-
-	/**
-	 * @brief Username-to-item map
-	 */
-	std::multimap< std::string, int > _username_to_item;
 
 	/**
 	 * @brief Run math trade algorithm.

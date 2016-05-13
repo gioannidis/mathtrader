@@ -27,6 +27,7 @@
 #include <lemon/connectivity.h>
 #include <lemon/lgf_reader.h>
 #include <list>
+#include <map>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -89,16 +90,6 @@ MathTrader::graphReader( std::istream & is ) {
 		nodeMap( "username", _username ).
 		arcMap( "rank", _in_rank ).
 		run();
-
-	/**
-	 * Create username-to-item map
-	 */
-	_username_to_item.clear();
-	const InputGraph & g = this->_input_graph;
-	for ( InputGraph::NodeIt n(g); n != lemon::INVALID; ++ n ) {
-		_username_to_item.emplace( _username[n], g.id(n) );
-	}
-
 
 	return *this;
 }
@@ -535,35 +526,109 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 	os << "ITEM SUMMARY (" << total_trades << " total trades):" << std::endl;
 	os << std::endl;
 
-	for ( auto username_map : _username_to_item ) {
+	/**
+	 * Structure to summarize an item
+	 */
+	typedef struct Summary_s {
+		const std::string
+			user,
+			item_name,
+			receive_user,
+			receive_item,
+			send_user,
+			send_item;
+
+		Summary_s(
+				const std::string & user_,
+				const std::string & item_,
+				const std::string & ruser_ = "",
+				const std::string & ritem_ = "",
+				const std::string & suser_ = "",
+				const std::string & sitem_ = ""
+				) :
+			user( user_ ),
+			item_name( item_ ),
+			receive_user( ruser_ ),
+			receive_item( ritem_ ),
+			send_user( suser_ ),
+			send_item( sitem_ )
+		{}
+
+	} Summary_t;
+
+	std::multimap< std::string, Summary_t > summary_multimap;
+
+	for ( FinalGraph::NodeIt n(final_graph); n != lemon::INVALID; ++ n ){
 
 		/**
-		 * NOTE: username_map contains the INPUT graph ids.
+		 * Usernames and item names are contained in
+		 * a map tied to the input graph.
+		 * Get the corresponding input graph node.
 		 */
-		const InputGraph::Node & ni = _input_graph.nodeFromId(username_map.second);
-		const FinalGraph::Node & n  = _node_in2out[ni];
+		const InputGraph::Node & ni = _node_out2in[n];
+
+		/**
+		 * Key
+		 */
+		const std::string
+			/* This user */
+			& user	= _username[ni],
+			& item	= _name[ni],
+			& key	= user;
 
 		if ( _trade[n] ) {
 
+			const std::string
+				/* User she receives from */
+				& ruser	= _username[ _node_out2in[_receive[n]] ],
+				& ritem	=     _name[ _node_out2in[_receive[n]] ],
+
+				/* User she sends to */
+				& suser	= _username[ _node_out2in[_send[n]] ],
+				& sitem	=     _name[ _node_out2in[_send[n]] ];
+
+			summary_multimap.emplace(key,
+					Summary_t(user,item,
+						ruser,ritem,
+						suser,sitem));
+		} else if ( !_hide_non_trades ) {
+
+			summary_multimap.emplace(key,
+					Summary_t(user,item));
+		}
+	}
+
+	for ( auto const & item_set : summary_multimap ) {
+		auto const & item = item_set.second;
+
+		if ( item.receive_item.length() > 0 ) {
+
+			/**
+			 * Trading item summary.
+			 */
 			os << std::left
 				<< std::setw(TABWIDTH)
-				<< "(" + _username[ni] + ") "
-				+ _name[ni]
+				<< "(" + item.user + ") "
+				+ item.item_name
 				<< std::setw(TABWIDTH)
 				<< "receives ("
-				+ _username[ _node_out2in[_receive[n]] ] + ") "
-				+ _name[ _node_out2in[_receive[n]] ]
+				+ item.receive_user + ") "
+				+ item.receive_item
 				<< "and sends to ("
-				+ _username[ _node_out2in[_send[n]] ] + ") "
-				+ _name[ _node_out2in[_send[n]] ]
+				+ item.send_user + ") "
+				+ item.send_item
 				<< std::endl;
 
 		} else if ( !_hide_non_trades ) {
 
+			/**
+			 * Non-trading item summary.
+			 * Show only if we're not hiding non-trades.
+			 */
 			os << std::left
 				<< std::setw(TABWIDTH)
-				<< "(" + _username[ni] + ") "
-				+ _name[ni]
+				<< "(" + item.user + ") "
+				+ item.item_name
 				<< "does not trade"
 				<< std::endl;
 		}
