@@ -333,6 +333,11 @@ MathTrader::mergeDummyItems() {
 					*prev = receiver,
 					*next = prev;
 
+#if 0
+				/**
+				 * Get the minimum rank across the whole
+				 * want chain between A -> D1 -> D2 -> B
+				 */
 				/**
 				 * Begin from @receiver.
 				 * Continue until reaching @sender.
@@ -358,7 +363,23 @@ MathTrader::mergeDummyItems() {
 
 					prev = next;
 				}
+#else
+				/**
+				 * Get the rank of A -> D1 only
+				 * across the chain between A -> D1 -> D2 -> B
+				 */
+				next = &(_receive[ *next ]);
+				auto const & arc = arc_lookup( *prev, *next );
+				if ( arc == lemon::INVALID ) {
+					throw std::runtime_error("Arc not found "
+							"between items "
+							+ _name[_node_out2in[*prev]]
+							+ " and "
+							+ _name[_node_out2in[*next]]);
+				}
 
+				rank = _out_rank[arc];
+#endif
 				/**
 				 * We have found the real items of this chain.
 				 * Updated send/receive maps.
