@@ -505,19 +505,10 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 				cur_node = next_node;
 
 			} while ( cur_node != start_node );
-		} else {
-			os << std::left
-				<< std::setw(TABWIDTH)
-				<< "(" + _username[_node_out2in[start_node]] + ") "
-				+ _name[_node_out2in[start_node]]
-				<< "does not trade"
-				<< std::endl;
+			os << std::endl;
 		}
-		os << std::endl;
 	}
 	os << "Users trading: " << users_trading.size() << std::endl;
-
-
 
 	/**
 	 * Print item summary,
