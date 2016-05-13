@@ -504,10 +504,12 @@ WantParser::_parseWantList( const std::string & line ) {
 	static const std::regex FPAT_want(
 		R"(\([^\)]+\))"		// Group 1: parentheses
 		"|"
-		R"([^\s:]+)"		// Group 2: any non-whitespace,
-					// stopped by a colon
+		R"([^\s:;]+)"		// Group 2: any non-whitespace,
+					// colon, or semicolon
 		"|"
 		R"(:)"
+		"|"
+		R"(;)"
 	);
 
 	/**
