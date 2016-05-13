@@ -220,13 +220,41 @@ MathTrader::run() {
 MathTrader &
 MathTrader::mergeDummyItems() {
 
+	OutputGraph & g = this->_output_graph;
+	OutputGraph::NodeMap< bool > iterated(g,false);
+
+	/**
+	 * List to mark new arcs to add
+	 */
+	typedef struct NewArc_s {
+		const OutputGraph::Node *s, *t;
+		int rank;
+
+		/**
+		 * Constructor
+		 */
+		NewArc_s( const OutputGraph::Node *s_,
+				const OutputGraph::Node *t_,
+				int rank_ ) :
+			s( s_ ),
+			t( t_ ),
+			rank( rank_ ) {}
+
+	} NewArc_t;
+	std::list< NewArc_t > arcs_to_add;
+
 	/**
 	 * List to mark nodes for deletion.
 	 */
 	std::list< int > id_to_delete;
 
-	OutputGraph & g = this->_output_graph;
-	OutputGraph::NodeMap< bool > iterated(g,false);
+	/**
+	 * Create static arc lookup to quickly find the arcs
+	 * between two nodes.
+	 * Node/Arc operations will be applied afterwards,
+	 * therefore we can use the static lookup.
+	 */
+	lemon::ArcLookUp< OutputGraph > arc_lookup(g);
 
 	/**
 	 * Iterate all nodes and check if they are dummies.
@@ -297,6 +325,41 @@ MathTrader::mergeDummyItems() {
 					&& ( g.id(*sender) != start ) && ( g.id(*receiver) != start )) {
 
 				/**
+				 * First, calculate the rank
+				 * between receiver -> D1 -> D2 -> ... -> DN -> sender.
+				 */
+				int rank = -1;
+				const OutputGraph::Node
+					*prev = receiver,
+					*next = prev;
+
+				/**
+				 * Begin from @receiver.
+				 * Continue until reaching @sender.
+				 * Keep track of @prev node and @next node
+				 * to quickly find the arcs in between.
+				 */
+				while ( next != sender ) {
+					next = &(_receive[ *next ]);
+					auto const & arc = arc_lookup( *prev, *next );
+
+					if ( arc == lemon::INVALID ) {
+						throw std::runtime_error("Arc not found "
+								"between items "
+								+ _name[_node_out2in[*prev]]
+								+ " and "
+								+ _name[_node_out2in[*next]]);
+					}
+
+					int cur_rank = _out_rank[arc];
+					if ( rank < 0 || cur_rank < rank ) {
+						rank = cur_rank;
+					}
+
+					prev = next;
+				}
+
+				/**
 				 * We have found the real items of this chain.
 				 * Updated send/receive maps.
 				 */
@@ -304,13 +367,20 @@ MathTrader::mergeDummyItems() {
 				_send[ *sender ] = *receiver;
 
 				/**
-				 * Add corresponding arc.
-				 * TODO cost?
+				 * Schedule corresponding arc to be added.
 				 */
-				auto arc = g.addArc( *receiver, *sender );
-				this->_chosen_arc[arc] = true;
+				arcs_to_add.push_back(NewArc_t(receiver,sender,rank));
 			}
 		}
+	}
+
+	/**
+	 * Add new arcs
+	 */
+	for ( auto const & new_arc : arcs_to_add ) {
+		auto arc = g.addArc( *(new_arc.s), *(new_arc.t) );
+		this->_out_rank[arc] = new_arc.rank;
+		this->_chosen_arc[arc] = true;
 	}
 
 	/**
@@ -477,6 +547,12 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 				<< std::endl;
 		}
 	}
+
+	int64_t total_cost = 0;
+	for ( FinalGraph::ArcIt a(final_graph); a != lemon::INVALID; ++ a ) {
+		total_cost += _getCost(_out_rank[a]);
+	}
+	os << "Total cost = " << total_cost << std::endl;
 
 	return *this;
 #undef TABWIDTH
