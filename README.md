@@ -123,3 +123,4 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 - [x] Integrate the file conversion with the main program.
 - [x] Allow spaces around colons `:` and semicolons `;` in want lists.
 - [ ] Catch user spelling errors by comparing items in official names with the given ones.
+- [ ] Handle corner cases where there are no want lists at all.
