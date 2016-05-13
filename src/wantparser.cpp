@@ -501,6 +501,15 @@ WantParser::_parseOfficialName( const std::string & line ) {
 WantParser &
 WantParser::_parseWantList( const std::string & line ) {
 
+	static const std::regex FPAT_want(
+		R"(\([^\)]+\))"		// Group 1: parentheses
+		"|"
+		R"([^\s:]+)"		// Group 2: any non-whitespace,
+					// stopped by a colon
+		"|"
+		R"(:)"
+	);
+
 	/**
 	 * Summary:
 	 * 1. Tokenize the line.
@@ -520,7 +529,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	/**
 	 * Tokenize the line
 	 */
-	auto const match = _split( line );
+	auto const match = _split( line, FPAT_want );
 	if ( match.empty() ) {
 		throw std::runtime_error("Bad format of want list: "
 				+ line);
@@ -799,10 +808,10 @@ WantParser::_markUnknownItems() {
 }
 
 std::vector<std::string>
-WantParser::_split( const std::string & input, const std::string & regex ) {
+WantParser::_split( const std::string & input, const std::string & str ) {
 
-	std::regex re(regex);
-	return _split( input, re );
+	std::regex regex(str);
+	return _split( input, regex );
 }
 
 std::vector<std::string>
@@ -919,7 +928,7 @@ WantParser::_FPAT(
 	"|"
 	R"(\([^\)]+\))"		// Group P: parentheses
 	"|"
-	R"(\[[^\[\]]+\])"	// Group B: brackets
+	R"(\[[^\]]+\])"		// Group B: brackets
 	"|"
 	R"(\S+)"		// Group W: any non-whitespace
 );
