@@ -22,8 +22,8 @@
 #ifndef _MATHTRADER_HPP_
 #define _MATHTRADER_HPP_
 
+#include <lemon/list_graph.h>
 #include <lemon/smart_graph.h>
-#include <lemon/network_simplex.h>
 #include <map>
 
 class MathTrader {
@@ -72,6 +72,7 @@ public:
 	 * @brief Set priorities.
 	 * Set the priorities to be used by
 	 * the math trade algorithm.
+	 * If not called, no priorities will be used.
 	 * @param priorities The type of priorities to be used. Accepted values:
 	 * 	LINEAR-PRIORITIES
 	 * 	TRIANGLE-PRIORITIES
@@ -80,6 +81,19 @@ public:
 	 * @return *this
 	 */
 	MathTrader & setPriorities( const std::string & priorities );
+
+	/**
+	 * @brief Select Algorithm
+	 * Set the minimum cost flow algorithm to be used.
+	 * If not called, Network Simplex will be used.
+	 * @param algorithm The algorithm to be used. Accepted values:
+	 * 	NETWORK-SIMPLEX
+	 * 	COST-SCALING
+	 * 	CAPACITY-SCALING
+	 * 	CYCLE-CANCELING
+	 * @return *this
+	 */
+	MathTrader & setAlgorithm( const std::string & algorithm );
 
 	/**
 	 * @brief Clear priorities.
@@ -107,66 +121,43 @@ public:
 	MathTrader & showNonTrades();
 
 	/**
-	 * @brief Minimum Cost Flow Algorithms
-	 * Enum showing all minimum cost flow algorithms
-	 * that are currently implemented.
-	 * MCFA::NETWORK_SIMPLEX is the default.
-	 */
-	enum MCFA {
-		NETWORK_SIMPLEX = 0,
-		COST_SCALING,
-		CAPACITY_SCALING,
-		CYCLE_CANCELLING,
-	};
-
-	/**
-	 * @brief Select MCFA
-	 * Select the minimum cost flow algorithm to be used.
-	 * If not called, MCFA::NETWORK_SIMPLEX will be used.
-	 */
-	MathTrader & setMCFA( MCFA algorithm );
-
-	/**
 	 * @brief MathTrade algorithm.
 	 * Runs the MathTrade algorithm.
 	 */
 	void run();
 
 	/**
-	 * @brief Process results.
+	 * @brief Merge dummies.
+	 * If not run, dummy nodes will be printed
+	 * by tradeLoops().
+	 * Run to merge them.
+	 * @return *this
 	 */
-	MathTrader & processResults();
+	MathTrader & mergeDummyItems();
 
 	/**
-	 * @brief Print results to ostream.
-	 * Prints the results of the trade
+	 * @brief Display trade loops.
+	 * Displays the trade loops that have been found
 	 * to the given output stream.
 	 * @param os output stream (default: stdout)
 	 * @return *this
 	 */
-	const MathTrader & printResults( std::ostream & os = std::cout ) const ;
+	const MathTrader & tradeLoops( std::ostream & os = std::cout ) const ;
 
 	/**
-	 * @brief Print results to file.
-	 * Prints the results of the trade
-	 * to the given file.
-	 * @param fn file name (default: stdout)
+	 * @brief Display item summary.
+	 * Displays the item summary
+	 * to the given output stream.
+	 * - If trading
+	 * - Sending item
+	 * - Receiving item
+	 * Items are sorted by usernames.
+	 * @param os output stream (default: stdout)
 	 * @return *this
 	 */
-	const MathTrader & printResults( const std::string & fn ) const ;
-
-	/**
-	 * @brief Print results to file.
-	 * Prints the results of the trade
-	 * to the given file.
-	 * @param fn file name (default: stdout)
-	 * @return *this
-	 */
-	const MathTrader & printResults( const char * fn ) const ;
+	const MathTrader & itemSummary( std::ostream & os = std::cout ) const ;
 
 private:
-	typedef int64_t bigint_t;
-
 	/**
 	 * @brief Priorities enum.
 	 * Enumerates all available priority implementations.
@@ -181,41 +172,76 @@ private:
 		SCALED_PRIORITIES,
 	};
 
+	/**
+	 * @brief Minimum Cost Flow Algorithms
+	 * Enumerates all available minimum cost flow algorithm implementations.
+	 * Default is NETWORK_SIMPLEX.
+	 */
+	enum MCFA {
+		NETWORK_SIMPLEX,
+		COST_SCALING,
+		CAPACITY_SCALING,
+		CYCLE_CANCELING,
+	};
+
 	PriorityScheme _priority_scheme;
+	MCFA _mcfa;
+
 	bool _hide_non_trades;
 
 	/**
-	 * @brief Graphs
+	 * @brief Input Graph
+	 * Type of Input Graph, member and maps.
+	 * Nodes: items
+	 * Arc A->B: item A is offered for item B
 	 */
-	typedef lemon::SmartDigraph InputGraph;
-	InputGraph _input_graph;
+	typedef lemon::SmartDigraph InputGraph;	/**< type of input graph */
+	const InputGraph _input_graph;		/**< actual input graph */
+
+
+	InputGraph::NodeMap< std::string >	/**< node maps: strings */
+		_name,				/**< official item name	*/
+		_username;			/**< owner's username	*/
+
+	InputGraph::NodeMap< bool >	/**< node maps: boolean	*/
+		_dummy;			/**< item is a dummy */
+
+	InputGraph::ArcMap< int >	/**< arc maps: integer	*/
+		_in_rank;		/**< rank of want	*/
 
 	/**
-	 * @brief Node Maps
+	 * @brief Output Graph
+	 * Type of Output Graph, member and maps.
 	 */
-	typedef InputGraph::NodeMap< std::string > StringMap;
-	typedef InputGraph::NodeMap< bool > BoolMap;
-	StringMap  _name, _username;
-	InputGraph::NodeMap< InputGraph::Node > _send, _receive;
-	BoolMap _dummy, _trade;
+	typedef lemon::ListDigraph OutputGraph;
+	OutputGraph _output_graph;
 
-	/**
-	 * @brief Arc Maps
-	 */
-	InputGraph::ArcMap< int > _rank;
-	InputGraph::ArcMap< bool > _chosen_arc;
+	InputGraph::NodeMap< OutputGraph::Node >	/**< node reference: in -> out */
+		_node_in2out;
+	InputGraph::ArcMap< OutputGraph::Arc >		/**< arc reference: in -> out */
+		_arc_in2out;
+
+	OutputGraph::NodeMap< InputGraph::Node >	/**< node cross reference: out -> in */
+		_node_out2in;
+	OutputGraph::ArcMap< InputGraph::Arc >		/**< arc cross reference: out -> in */
+		_arc_out2in;
+
+	OutputGraph::NodeMap< OutputGraph::Node >	/**< node maps: nodes -> nodes */
+		_send,					/**< will send to this node */
+		_receive;				/**< will receive from this node */
+
+	OutputGraph::NodeMap< bool >	/**< node maps: boolean	*/
+		_trade;			/**< item will trade	*/
+	OutputGraph::ArcMap< int >	/**< arc maps: integer	*/
+		_out_rank;		/**< rank of want	*/
+	OutputGraph::ArcMap< bool >	/**< arc maps: boolean	*/
+		_chosen_arc;		/**< want has been chosen */
+
 
 	/**
 	 * @brief Username-to-item map
 	 */
 	std::multimap< std::string, int > _username_to_item;
-
-
-	/**
-	 * @brief Chosen MCFA.
-	 * NetworkSimplex is the default.
-	 */
-	MCFA _mcfa;
 
 	/**
 	 * @brief Run math trade algorithm.
@@ -231,15 +257,9 @@ private:
 	 * @param rank The rank of the arc.
 	 * @return The corresponding cost.
 	 */
-	bigint_t _getCost( int rank ) const ;
+	int64_t _getCost( int rank ) const ;
 
-	/**
-	 * @brief Merge dummies.
-	 * Removes all dummy nodes and merges the arcs.
-	 * @return *this
-	 */
-	MathTrader & _mergeDummies();
-
+#if 0
 	/**
 	 * @brief Export to .dot format.
 	 * Exports a graph to a file compatible with
@@ -248,7 +268,7 @@ private:
 	template < typename DGR >
 	static void exportToDot( const DGR & g,
 			const typename DGR::template NodeMap< std::string > & name );
-
+#endif
 };
 
 #endif /* _MATHTRADER_HPP_ */

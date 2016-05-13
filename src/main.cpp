@@ -31,7 +31,6 @@
 
 int main(int argc, char **argv) {
 
-
 	/**************************************//*
 	 * COMMAND LINE ARGUMENT PARSING
 	 ****************************************/
@@ -55,12 +54,18 @@ int main(int argc, char **argv) {
 	ap.synonym("-results-official", "o");
 
 	ap.stringOption("-input-lgf-file",
-			"input lemon graph format (LGF) file"
-			" (default: stdin)");
+			"parse directly a lemon graph format (LGF) file"
+			" (default: stdin);"
+			" no wants file will be read");
 
 	ap.stringOption("-output-lgf-file",
 			"print the lemon graph format (LGF) file"
 			" (default: stdout)");
+
+	ap.onlyOneGroup("input_file").
+		optionGroup("input_file", "f").
+		optionGroup("input_file", "-input-lgf-file");
+
 
 	/********************************************//*
 	 * Overriding options from want file
@@ -101,15 +106,49 @@ int main(int argc, char **argv) {
 		optionGroup("non_trades", "-show-non-trades").
 		optionGroup("non_trades", "-hide-non-trades");
 
+
+	/********************************************//*
+	 * 	Minimum Cost Flow Algorithm options
+	 **********************************************/
+
+	ap.stringOption("-algorithm", "set the minimum cost"
+			" flow algorithm:"
+			" NETWORK-SIMPLEX"
+			" COST-SCALING"
+			" CAPACITY-SCALING"
+			" CYCLE-CANCELING"
+			" (default: NETWORK-SIMPLEX)");
+
+
+	/********************************************//*
+	 * 	Other command-line-only options
+	 **********************************************/
+
 	/**
-	 * Run the argument parser.
+	 * Show dummy nodes at the output.
+	 * Do not eliminate them.
 	 */
+	ap.boolOption("-show-dummy-items",
+			"show the dummy items instead of merging them; "
+			"only useful for debugging purposes");
+
+
+	/********************************************//*
+	 * 	Argument Parsing
+	 **********************************************/
+
 	try {
 		ap.parse();
 	} catch ( lemon::ArgParserException & error ) {
 		return 1;
 	}
 
+	/**
+	 * Start the timer after parsing the arguments.
+	 */
+	lemon::TimeReport t("Total execution time of "
+			+ std::string(argv[0])
+			+ ": ");
 
 
 	/**************************************//*
@@ -230,6 +269,7 @@ int main(int argc, char **argv) {
 		 * Priority scheme:
 		 * - Any option from command line overrides given options
 		 *   in the want file.
+		 * Make uppercase.
 		 */
 		if ( ap.given("-no-priorities") ) {
 
@@ -242,16 +282,22 @@ int main(int argc, char **argv) {
 			/* Set priorities;
 			 * override want file.
 			 */
-			math_trader.setPriorities(ap["-priorities"]);
+			std::string priorities( ap["-priorities"] );
+			std::transform( priorities.begin(), priorities.end(),
+					priorities.begin(), ::toupper );
+			math_trader.setPriorities( priorities );
 
 		} else if ( !input_lgf_file ) {
 
 			/* Get priority scheme from want file, if any.
 			 * Set the priorities if this option has been given.
+			 * TODO avoid code repetition in making uppercase.
 			 */
-			const std::string priority = want_parser.getPriorityScheme();
-			if ( priority.length() > 0 ) {
-				math_trader.setPriorities( priority );
+			std::string priorities = want_parser.getPriorityScheme();
+			if ( priorities.length() > 0 ) {
+				std::transform( priorities.begin(), priorities.end(),
+						priorities.begin(), ::toupper );
+				math_trader.setPriorities( priorities );
 			}
 
 		}
@@ -267,6 +313,19 @@ int main(int argc, char **argv) {
 
 			math_trader.hideNonTrades();
 		}
+
+		/**
+		 * Algorithm to be used
+		 * Make uppercase.
+		 */
+		if ( ap.given("-algorithm") ) {
+
+			std::string algorithm( ap["-algorithm"] );
+			std::transform( algorithm.begin(), algorithm.end(),
+					algorithm.begin(), ::toupper );
+			math_trader.setAlgorithm( algorithm );
+		}
+
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during initialization: " << error.what()
 			<< std::endl;
@@ -289,7 +348,8 @@ int main(int argc, char **argv) {
 		lemon::TimeReport t("Execution time: ");
 		math_trader.run();
 	} catch ( std::exception & error ) {
-		std::cerr << "Error during execution: " << error.what()
+		std::cerr << "Error during execution: "
+			<< error.what()
 			<< std::endl;
 
 		return -1;
@@ -300,6 +360,21 @@ int main(int argc, char **argv) {
 	/**************************************//*
 	 * OUTPUT OPERATIONS - MATH TRADES
 	 ****************************************/
+
+	/**
+	 * Merge the dummy nodes, so that they will not
+	 * appear in the results.
+	 * Ignore if we want to see them.
+	 */
+	if ( !ap.given("-show-dummy-items") ) {
+		try {
+			math_trader.mergeDummyItems();
+		} catch ( std::exception & error ) {
+			std::cerr << "Error during merging dummy items: "
+				<< error.what()
+				<< std::endl;
+		}
+	}
 
 	/**
 	 * We will print the the output to either a file
@@ -327,13 +402,11 @@ int main(int argc, char **argv) {
 
 	}
 
-
 	/**
 	 * Set the output stream to the file stream
 	 * or std::cout, whichever is applicable.
 	 */
 	std::ostream & os = (write_to_file) ? fs : std::cout;
-
 
 	/**
 	 * Print the WantParser and the MathTrader results
@@ -345,12 +418,13 @@ int main(int argc, char **argv) {
 
 		want_parser.showOptions(os);
 		want_parser.showErrors(os);
-		math_trader.processResults();
-		math_trader.printResults(os);
+		math_trader.tradeLoops(os);
+		//math_trader.itemSummary(os);
 
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
 			<< std::endl;
+		fs.close();
 		return -1;
 	}
 
