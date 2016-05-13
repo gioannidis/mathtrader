@@ -132,6 +132,14 @@ int main(int argc, char **argv) {
 			"show the dummy items instead of merging them; "
 			"only useful for debugging purposes");
 
+	/**
+	 * Export input or output to dot files.
+	 */
+	ap.stringOption("-export-input-dot-file",
+			"export the input graph to .dot formatted file");
+	ap.stringOption("-export-output-dot-file",
+			"export the result graph to .dot formatted file");
+
 
 	/********************************************//*
 	 * 	Argument Parsing
@@ -457,11 +465,20 @@ int main(int argc, char **argv) {
 	if ( ap.given("-output-lgf-file") ) {
 
 		const std::string &fn = ap["-output-lgf-file"];
-		if ( fn.length() > 0 ) {
-			want_parser.print(fn);
-		} else {
-			want_parser.print();
-		}
+		want_parser.print(fn);
+	}
+
+	/**
+	 * Export the input/output graphs to .dot files,
+	 * if requested.
+	 */
+	if ( ap.given("-export-input-dot-file") ) {
+		const std::string &fn = ap["-export-input-dot-file"];
+		math_trader.exportInputToDot(fn);
+	}
+	if ( ap.given("-export-output-dot-file") ) {
+		const std::string &fn = ap["-export-output-dot-file"];
+		math_trader.exportOutputToDot(fn);
 	}
 
 	return 0;

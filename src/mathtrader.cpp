@@ -96,11 +96,6 @@ MathTrader::graphReader( std::istream & is ) {
 
 MathTrader &
 MathTrader::graphReader( const std::string & fn ) {
-	return graphReader( fn.c_str() );
-}
-
-MathTrader &
-MathTrader::graphReader( const char * fn ) {
 
 	std::filebuf fb;
 	fb.open(fn, std::ios::in);
@@ -637,6 +632,65 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 
 
 /************************************//*
+ * 	PUBLIC METHODS - Utilities
+ **************************************/
+
+const MathTrader &
+MathTrader::exportInputToDot( std::ostream & os ) const {
+
+	_exportToDot< InputGraph >( os, _input_graph,
+			"Input_Graph",
+			_name );
+
+	return *this;
+}
+
+const MathTrader &
+MathTrader::exportInputToDot( const std::string & fn ) const {
+
+	std::filebuf fb;
+	fb.open(fn, std::ios::out);
+	std::ostream os(&fb);
+	exportInputToDot(os);
+	fb.close();
+	return *this;
+}
+
+const MathTrader &
+MathTrader::exportOutputToDot( std::ostream & os ) const {
+
+	auto const & result_graph = this->_output_graph;
+	auto const cycle_forest = filterArcs( result_graph, this->_chosen_arc );
+	typedef decltype(cycle_forest) CycleForest;
+
+	/**
+	 * Create item_name map for template method.
+	 * TODO workaround until fixed.
+	 */
+	CycleForest::NodeMap< std::string > item_name(cycle_forest);
+	mapCopy( cycle_forest,
+			composeMap(_name, _node_out2in),
+			item_name);
+
+	_exportToDot< CycleForest >( os, cycle_forest,
+			"Output_Graph", item_name);
+
+	return *this;
+}
+
+const MathTrader &
+MathTrader::exportOutputToDot( const std::string & fn ) const {
+
+	std::filebuf fb;
+	fb.open(fn, std::ios::out);
+	std::ostream os(&fb);
+	exportOutputToDot(os);
+	fb.close();
+	return *this;
+}
+
+
+/************************************//*
  * 	PRIVATE METHODS - Flows
  **************************************/
 
@@ -852,32 +906,6 @@ MathTrader::_runFlowAlgorithm() {
 
 
 /************************************//*
- * 	PRIVATE METHODS - Utilities
- **************************************/
-
-template < typename DGR >
-void
-MathTrader::exportToDot( const DGR & g,
-		const typename DGR::template NodeMap< std::string > & name ) {
-
-	std::cout << "digraph G {" << std::endl;
-	for ( typename DGR::NodeIt n(g); n != lemon::INVALID; ++n ) {
-		std::cout << "\t"
-			<< "n" << g.id(n)
-			<< " [label=\"" << name[n] << "\"];"
-			<< std::endl;
-	}
-	for ( typename DGR::ArcIt a(g); a != lemon::INVALID; ++a ) {
-		std::cout << "\t"
-			<< "n" << g.id( g.source(a) )
-			<< " -> " << "n" << g.id(g.target(a))
-			<< std::endl;
-	}
-	std::cout << "}" << std::endl;
-}
-
-
-/************************************//*
  * 	PRIVATE METHODS - Parameters
  **************************************/
 
@@ -905,4 +933,36 @@ MathTrader::_getCost( int rank ) const {
 			break;
 	}
 	return -1;
+}
+
+
+/************************************//*
+ * 	PRIVATE METHODS - Utilities
+ **************************************/
+
+template < typename DGR >
+void
+MathTrader::_exportToDot( std::ostream & os,
+		const DGR & g,
+		const std::string & title,
+		const typename DGR::template NodeMap< std::string > & name ) {
+
+	os << "digraph "
+		<< title
+		<< " {"
+		<< std::endl;
+
+	for ( typename DGR::NodeIt n(g); n != lemon::INVALID; ++n ) {
+		os << "\t"
+			<< "n" << g.id(n)
+			<< " [label=\"" << name[n] << "\"];"
+			<< std::endl;
+	}
+	for ( typename DGR::ArcIt a(g); a != lemon::INVALID; ++a ) {
+		os << "\t"
+			<< "n" << g.id( g.source(a) )
+			<< " -> " << "n" << g.id(g.target(a))
+			<< std::endl;
+	}
+	os << "}" << std::endl;
 }

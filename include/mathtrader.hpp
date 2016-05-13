@@ -59,15 +59,6 @@ public:
 	MathTrader & graphReader( const std::string & fn );
 
 	/**
-	 * @brief Read graph from file.
-	 * Constructs the input trade graph,
-	 * from the given file.
-	 * @param fn file name
-	 * @return *this
-	 */
-	MathTrader & graphReader( const char * fn );
-
-	/**
 	 * @brief Set priorities.
 	 * Set the priorities to be used by
 	 * the math trade algorithm.
@@ -155,6 +146,42 @@ public:
 	 * @return *this
 	 */
 	const MathTrader & itemSummary( std::ostream & os = std::cout ) const ;
+
+	/**
+	 * @brief Export input graph to dot format.
+	 * Writes the input graph
+	 * to the given output stream as .dot format.
+	 * @param os output stream (default: stdout)
+	 * @return *this
+	 */
+	const MathTrader & exportInputToDot( std::ostream & os = std::cout ) const ;
+
+	/**
+	 * @brief Export input graph to dot format.
+	 * Writes the input graph
+	 * to the given file as .dot format.
+	 * @param fn file name to write to
+	 * @return *this
+	 */
+	const MathTrader & exportInputToDot( const std::string & fn ) const ;
+
+	/**
+	 * @brief Export output graph to dot format.
+	 * Writes the results graph
+	 * to the given output stream as .dot format.
+	 * @param os output stream (default: stdout)
+	 * @return *this
+	 */
+	const MathTrader & exportOutputToDot( std::ostream & os = std::cout ) const ;
+
+	/**
+	 * @brief Export output graph to dot format.
+	 * Writes the results graph
+	 * to the given file as .dot format.
+	 * @param fn file name to write to
+	 * @return *this
+	 */
+	const MathTrader & exportOutputToDot( const std::string & fn ) const ;
 
 private:
 	/**
@@ -259,7 +286,9 @@ private:
 	 * graphviz, to visualize the graph.
 	 */
 	template < typename DGR >
-	static void exportToDot( const DGR & g,
+	static void _exportToDot( std::ostream & os,
+			const DGR & g,
+			const std::string & title,
 			const typename DGR::template NodeMap< std::string > & name );
 };
 
