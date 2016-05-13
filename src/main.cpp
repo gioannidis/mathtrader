@@ -251,7 +251,7 @@ int main(int argc, char **argv) {
 			want_parser.print(fn);
 
 			std::cerr << "The produced LGF file"
-				" has been printed to file"
+				" has been written to "
 				<< fn
 				<< std::endl;
 
@@ -351,6 +351,16 @@ int main(int argc, char **argv) {
 		std::cerr << "Error during execution: "
 			<< error.what()
 			<< std::endl;
+
+		if ( !input_lgf_file ) {
+			const std::string fn = "error_graph.lgf";
+			want_parser.print(fn);
+
+			std::cerr << "The produced LGF file"
+				" has been written to "
+				<< fn
+				<< std::endl;
+		}
 
 		return -1;
 	}
