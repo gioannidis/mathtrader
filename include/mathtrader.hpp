@@ -259,7 +259,6 @@ private:
 	 */
 	int64_t _getCost( int rank ) const ;
 
-#if 0
 	/**
 	 * @brief Export to .dot format.
 	 * Exports a graph to a file compatible with
@@ -268,7 +267,6 @@ private:
 	template < typename DGR >
 	static void exportToDot( const DGR & g,
 			const typename DGR::template NodeMap< std::string > & name );
-#endif
 };
 
 #endif /* _MATHTRADER_HPP_ */
