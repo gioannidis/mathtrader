@@ -283,6 +283,7 @@ private:
 	/**
 	 * @brief Parse want list
 	 * Parses lines giving the want lists.
+	 * If any errors are detected the whole line is discarded!
 	 * @return *this
 	 */
 	WantParser & _parseWantList( const std::string & line );

@@ -638,30 +638,34 @@ WantParser::_parseWantList( const std::string & line ) {
 	 *************************************/
 
 	/**
-	 * Create ArcMap entry with empty vector.
+	 * Check if want list already exists.
+	 * This may happen if a user has defined multiple want lists
+	 * or another line was split over two lines.
 	 */
-	auto rv_a = _arc_map.emplace( item, std::vector< _Arc_t >() );
-
-	/**
-	 * Failed to emplace arc list?
-	 */
-	if ( !rv_a.second ) {
-		throw std::runtime_error("Want list for item "
-				+ item + " already exists");
+	if ( _arc_map.find(item) != _arc_map.end() ) {
+		throw std::runtime_error("Multiple want lists for item "
+				+ item);
 	}
 
 	/**
-	 * Optimization: reserve adequate space.
-	 * The first n_pos elems were not wanted items.
+	 * First wanted item.
 	 */
 	const unsigned first_wanted_pos = n_pos;
-	const unsigned max_arcs = match.size() - first_wanted_pos;
-	_arc_map[item].reserve( max_arcs );
 
 	/**
 	 * Initialize rank
 	 */
 	int rank = 1;
+
+	/**
+	 * Initialize list with want-lists to be added.
+	 * All parsed want lists are added to this map
+	 * and they will be eventually added
+	 * to the official graph
+	 * if *no errors* whatsoever are detected.
+	 * On errors, the whole line is discarded.
+	 */
+	std::list< _Arc_t > arcs_to_add;
 
 
 	/**********************************//*
@@ -702,13 +706,43 @@ WantParser::_parseWantList( const std::string & line ) {
 			/**
 			 * Push (item-target) arc to map.
 			 */
-			_arc_map[item].push_back(_Arc_t( item, target, rank ));
+			arcs_to_add.push_back(_Arc_t( item, target, rank ));
 		}
 
 		/**
 		 * Advance always the rank by small-step
 		 */
 		rank += small_step;
+	}
+
+	/**
+	 * Create ArcMap entry with empty vector.
+	 */
+	auto rv_a = _arc_map.emplace( item, std::vector< _Arc_t >() );
+
+	/**
+	 * Failed to emplace arc list?
+	 * This should not happen, as we already checked
+	 * that the list was empty.
+	 */
+	if ( !rv_a.second ) {
+		throw std::logic_error("Want list for item "
+				+ item + " already exists, "
+				"but was initially empty");
+	}
+
+	/**
+	 * Optimization: reserve adequate space.
+	 * The first n_pos elems were not wanted items.
+	 */
+	const unsigned max_arcs = match.size() - first_wanted_pos;
+	_arc_map[item].reserve( max_arcs );
+
+	/**
+	 * Emplace all scheduled arcs
+	 */
+	for ( auto const & arc : arcs_to_add ) {
+		_arc_map[item].push_back(arc);
 	}
 
 	return *this;
