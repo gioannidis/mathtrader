@@ -439,7 +439,10 @@ WantParser::_parseOfficialName( const std::string & line ) {
 
 	/**
 	 * Replace nested quotation marks in official_name with "'".
+	 * Replace backslashes with forward slashes;
+	 * we are not going to escape them.
 	 * Ignore the first and the last position of the string.
+	 * TODO create static private method.
 	 */
 	std::string official_name( orig_official_name );
 	size_t pos = 1;
@@ -447,6 +450,13 @@ WantParser::_parseOfficialName( const std::string & line ) {
 			&& ( pos != official_name.length()-1 )) {
 
 		official_name.replace( pos, 1, "'");
+		pos += 1;
+	}
+	pos = 1;
+	while ((( pos = official_name.find( "\\", pos )) != std::string::npos )
+			&& ( pos != official_name.length()-1 )) {
+
+		official_name.replace( pos, 1, "/");
 		pos += 1;
 	}
 
