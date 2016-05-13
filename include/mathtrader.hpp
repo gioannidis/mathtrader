@@ -207,7 +207,7 @@ private:
 		_dummy;			/**< item is a dummy */
 
 	InputGraph::ArcMap< int >	/**< arc maps: integer	*/
-		_rank;			/**< rank of want	*/
+		_in_rank;		/**< rank of want	*/
 
 	/**
 	 * @brief Output Graph
@@ -231,7 +231,9 @@ private:
 		_receive;				/**< will receive from this node */
 
 	OutputGraph::NodeMap< bool >	/**< node maps: boolean	*/
-		_trade;			/**< item will trade */
+		_trade;			/**< item will trade	*/
+	OutputGraph::ArcMap< int >	/**< arc maps: integer	*/
+		_out_rank;		/**< rank of want	*/
 	OutputGraph::ArcMap< bool >	/**< arc maps: boolean	*/
 		_chosen_arc;		/**< want has been chosen */
 

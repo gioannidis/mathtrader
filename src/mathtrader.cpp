@@ -51,7 +51,7 @@ MathTrader::MathTrader() :
 	_name( _input_graph ),
 	_username( _input_graph ),
 	_dummy( _input_graph, false ),
-	_rank( _input_graph, 0 ),
+	_in_rank( _input_graph, 0 ),
 
 	/* input-output (cross) references */
 	_node_in2out( _input_graph ),
@@ -63,6 +63,7 @@ MathTrader::MathTrader() :
 	_send( _output_graph ),
 	_receive( _output_graph ),
 	_trade( _output_graph, false ),
+	_out_rank( _output_graph ),
 	_chosen_arc( _output_graph, false )
 {
 }
@@ -86,7 +87,7 @@ MathTrader::graphReader( std::istream & is ) {
 		nodeMap( "item", _name ).
 		nodeMap( "dummy", _dummy ).
 		nodeMap( "username", _username ).
-		arcMap( "rank", _rank ).
+		arcMap( "rank", _in_rank ).
 		run();
 
 	/**
@@ -203,6 +204,10 @@ MathTrader::run() {
 		nodeCrossRef( _node_out2in ).
 		arcCrossRef( _arc_out2in ).
 		run();
+
+	mapCopy( _output_graph,
+			composeMap(_in_rank, _arc_out2in),
+			_out_rank);
 
 	this->_runFlowAlgorithm();
 }
@@ -560,7 +565,7 @@ MathTrader::_runFlowAlgorithm() {
 	for ( StartGraph::ArcIt a(start_graph); a != lemon::INVALID; ++ a ) {
 
 		auto const & match_arc = split_graph.arc(a);
-		const int rank = _rank[_arc_out2in[a]];
+		const int rank = _out_rank[a];
 
 		cost_map[ match_arc ] = _getCost(rank);
 		reverse_map[ match_arc ] = true;
