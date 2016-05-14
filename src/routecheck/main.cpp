@@ -21,7 +21,7 @@
  */
 #include "wantparser.hpp"
 #include "resultparser.hpp"
-#include "basemath.hpp"
+#include "routechecker.hpp"
 
 #include <exception>
 #include <iomanip>
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 	/**
 	 * The Math Trader object.
 	 */
-	BaseMath math_trader;
+	RouteChecker route_checker;
 
 	/*
 	 * Want lists and results parsers.
@@ -173,15 +173,14 @@ int main(int argc, char **argv) {
 
 	/**
 	 * Print the Nodes & Arcs;
-	 * forward them to Math Trader.
+	 * forward them to RouteChecker.
 	 */
-	std::stringstream ss;
-	want_parser.print(ss);
-
 	try {
 		lemon::TimeReport t("Passing input graph:  ");
+		std::stringstream ss;
+		want_parser.print(ss);
+		route_checker.graphReader(ss);
 
-		math_trader.graphReader(ss);
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during reading "
 			" the produced LGF file: "
@@ -193,6 +192,34 @@ int main(int argc, char **argv) {
 
 		std::cerr << "The produced LGF file"
 			" has been written to "
+			<< fn
+			<< std::endl;
+
+		return -1;
+	}
+
+	/**
+	 * Print the trade loops;
+	 * forward them to RouteChecker.
+	 */
+	try {
+		lemon::TimeReport t("Passing trade loops:  ");
+		std::stringstream ss;
+		result_parser.print(ss);
+		route_checker.loopReader(ss);
+
+	} catch ( std::exception & error ) {
+
+		std::cerr << "Error during reading "
+			" the trade loops: "
+			<< error.what()
+			<< std::endl;
+
+		const std::string fn = "error_loops.txt";
+		result_parser.print(fn);
+
+		std::cerr << "The extracted trade loops"
+			" have been written to "
 			<< fn
 			<< std::endl;
 
@@ -225,7 +252,7 @@ int main(int argc, char **argv) {
 			std::string priorities( ap["-priorities"] );
 			std::transform( priorities.begin(), priorities.end(),
 					priorities.begin(), ::toupper );
-			math_trader.setPriorities( priorities );
+			route_checker.setPriorities( priorities );
 
 		} else {
 
@@ -237,7 +264,7 @@ int main(int argc, char **argv) {
 			if ( priorities.length() > 0 ) {
 				std::transform( priorities.begin(), priorities.end(),
 						priorities.begin(), ::toupper );
-				math_trader.setPriorities( priorities );
+				route_checker.setPriorities( priorities );
 			}
 
 		}
@@ -302,7 +329,7 @@ int main(int argc, char **argv) {
 
 		want_parser.showOptions(os);
 		want_parser.showErrors(os);
-		//math_trader.tradeLoops(os);
+		//route_checker.tradeLoops(os);
 
 	} catch ( std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
@@ -339,7 +366,7 @@ int main(int argc, char **argv) {
 	 */
 	if ( ap.given("-export-input-dot-file") ) {
 		const std::string &fn = ap["-export-input-dot-file"];
-		math_trader.exportInputToDot(fn);
+		route_checker.exportInputToDot(fn);
 	}
 
 	return 0;
