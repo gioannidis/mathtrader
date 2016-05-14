@@ -58,7 +58,15 @@ RouteChecker::loopReader( std::istream & is ) {
 
 	while (std::getline( is, buffer )) {
 
-		_loop_list.push_back( buffer );
+		std::string item(buffer);
+		if ( item.back() == '"' ) {
+			item.pop_back();
+		}
+		if ( item.front() == '"' ) {
+			item = item.substr(1, std::string::npos);
+		}
+
+		_loop_list.push_back( item );
 	}
 
 	return *this;
@@ -103,7 +111,6 @@ RouteChecker::run() {
 		 * Look up node.
 		 */
 		auto const & n = mapFind( g, _name, item );
-		const int cur_id = g.id(n);
 
 		/**
 		 * Sanity check: node has been found
@@ -113,6 +120,7 @@ RouteChecker::run() {
 			throw std::runtime_error("Could not find item "
 					+ item);
 		}
+		const int cur_id = g.id(n);
 
 		if ( new_loop ) {
 			new_loop = false;
@@ -139,34 +147,8 @@ RouteChecker::run() {
 					 * accessible.
 					 */
 					found = true;
-					cost = _in_rank[a];
+					cost = _getCost(_in_rank[a], _dummy[s]);
 					break;
-
-				} else if ( _dummy[next] ) {
-
-					/**
-					 * Check if target can be found via a dummy node.
-					 * DFS to find a route.
-					 * NOTE: we can never be sure which dummy path was chosen!
-					 * FIXME: if complex dummy wants are specified,
-					 * it's difficult to verify the cost.
-					 */
-					typedef lemon::Dfs< RouteGraph > DType;
-					auto const & dummy = next;
-
-					/**
-					 * Run the dfs from s to t.
-					 * Sanity check if a path has been found.
-					 */
-					DType dfs(g);
-					bool rv = dfs.run(dummy,t);
-
-					/* Found a path */
-					if ( rv ) {
-						found = true;
-						cost = _in_rank[a];
-						break;
-					}
 				}
 			}
 

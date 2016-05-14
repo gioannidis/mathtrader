@@ -147,7 +147,7 @@ ResultParser::_parseLoop( const std::string & line ) {
 	static const std::regex FPAT_loop(
 		R"(\([^\)]+\))"		// Group 1: parentheses
 		"|"
-		R"([^\s]+)"		// Group 2: any non-whitespace
+		R"(\S+(-\([^\)]+\))?)"	// Group 2: any non-whitespace
 	);
 
 	/**
@@ -164,25 +164,30 @@ ResultParser::_parseLoop( const std::string & line ) {
 	 * is username.
 	 */
 
-	const std::string
-		& source = match[1],
-		& target = match[4];
+	std::string source = match[1], target = match[4];
 
 	if ( _new_loop ) {
 
 		/* New cycle */
+		_toUpper(source);
+		_quotationMarks(source);
 		_item_list.push_back( source );
 		_first_item = source;
 		_new_loop = false;
 
-	} else if ( target.compare(_first_item) == 0 ) {
+	}
+
+	/* Always add the target */
+	//TODO making uppercase? Check with options @ WantParser.
+	_toUpper( target );
+	_quotationMarks( target );
+	_item_list.push_back( target );
+
+	if ( target.compare(_first_item) == 0 ) {
 
 		/* Cycle end */
 		_new_loop = true;
 	}
-
-	/* Always add the target */
-	_item_list.push_back( target );
 
 	return *this;
 }
