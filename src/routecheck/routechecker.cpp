@@ -63,16 +63,15 @@ RouteChecker::loopReader( std::istream & is ) {
 
 
 /************************************//*
- * 	PUBLIC METHODS - OPTIONS
- **************************************/
-
-
-/************************************//*
  * 	PUBLIC METHODS - RUNNABLE
  **************************************/
 
 void
 RouteChecker::run() {
+
+	for ( auto const & item : _loop_list ) {
+
+	}
 }
 
 

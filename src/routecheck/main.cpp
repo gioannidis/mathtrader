@@ -282,6 +282,20 @@ int main(int argc, char **argv) {
 	 * 	EXECUTION - CHECK ROUTES
 	 ****************************************/
 
+	/**
+	 * Run the RouteChecker.
+	 */
+	try {
+		lemon::TimeReport t("RouteChecker execution:  ");
+		route_checker.run();
+
+	} catch ( std::exception & error ) {
+		std::cerr << "Error during execution: "
+			<< error.what()
+			<< std::endl;
+		return -1;
+	}
+
 
 	/**************************************//*
 	 * OUTPUT OPERATIONS - MATH TRADES
