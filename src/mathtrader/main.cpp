@@ -346,8 +346,6 @@ int main(int argc, char **argv) {
 
 	/**
 	 * Run the math trading algorithm.
-	 * Do not exit on error; there might be pending
-	 * output operations.
 	 */
 	try {
 		lemon::TimeReport t("Algorithm execution:  ");
