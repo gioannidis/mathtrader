@@ -139,7 +139,29 @@ ResultParser::_postParse() {
 ResultParser &
 ResultParser::_parseLoop( const std::string & line ) {
 
-	std::cout << line << std::endl;
+	static const std::regex FPAT_loop(
+		R"(\([^\)]+\))"		// Group 1: parentheses
+		"|"
+		R"([^\s]+)"		// Group 2: any non-whitespace
+	);
+
+	/**
+	 * Tokenize the line
+	 */
+	auto const match = _split( line, FPAT_loop );
+	if ( match.empty() ) {
+		throw std::runtime_error("Bad format of want list: "
+				+ line);
+	}
+
+	/**
+	 * TODO check if match[0]
+	 * is username.
+	 */
+	std::cout << match[1]
+		<< " "
+		<< match[4]
+		<< std::endl;
 
 	return *this;
 }
