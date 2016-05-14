@@ -39,6 +39,16 @@ public:
 	 */
 	~RouteChecker();
 
+	/**
+	 * @brief Read loops.
+	 * Reads loops from the given input stream.
+	 * Expected multiple loops in the following format:
+	 * 	A B C D E A K L M N K ...
+	 * @param is Input stream to read from
+	 * @return *this
+	 */
+	RouteChecker & loopReader( std::istream & is );
+
 	void run();
 
 private:

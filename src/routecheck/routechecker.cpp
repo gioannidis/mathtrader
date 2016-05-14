@@ -41,6 +41,12 @@ RouteChecker::~RouteChecker() {
  * 	PUBLIC METHODS - INPUT
  **************************************/
 
+RouteChecker &
+RouteChecker::loopReader( std::istream & is ) {
+
+	return *this;
+}
+
 
 /************************************//*
  * 	PUBLIC METHODS - OPTIONS
