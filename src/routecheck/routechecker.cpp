@@ -21,6 +21,7 @@
  */
 #include "routechecker.hpp"
 
+#include <lemon/maps.h>
 #include <stdexcept>
 
 
@@ -69,8 +70,70 @@ RouteChecker::loopReader( std::istream & is ) {
 void
 RouteChecker::run() {
 
+	/**
+	 * New loop flag.
+	 */
+	bool new_loop = true;
+
+	/**
+	 * Graph to be used.
+	 */
+	auto const & g = this->_input_graph;
+	using RouteGraph = InputGraph;
+
+	/**
+	 * Create static arc lookup to quickly find the arcs
+	 * between two nodes.
+	 * Node/Arc operations will be applied afterwards,
+	 * therefore we can use the static lookup.
+	 */
+	lemon::ArcLookUp< RouteGraph > arc_lookup(g);
+
+	/**
+	 * Frequency map
+	 */
+	RouteGraph::NodeMap< int > frequency_map(g, 0);
+	const RouteGraph::Node
+		*start = NULL,
+		*prev = NULL;
+
+	/**
+	 * Parse all items.
+	 */
 	for ( auto const & item : _loop_list ) {
 
+		/**
+		 * Look up node.
+		 */
+		auto const & n = mapFind(g, _name, item );
+
+		/**
+		 * Sanity check: node has been found
+		 */
+		if ( n == lemon::INVALID ) {
+			// TODO: don't use exceptions
+			throw std::runtime_error("Could not find item "
+					+ item);
+		}
+
+		if ( new_loop ) {
+			new_loop = false;
+			start = &n;
+
+		} else {
+
+			/**
+			 * DFS to find a route.
+			 */
+			//auto const & arc = arc_lookup( *prev, n );
+
+
+			if ( &n == start ) {
+				new_loop = true;
+			}
+		}
+
+		prev = &n;
 	}
 }
 
