@@ -80,6 +80,14 @@ public:
 	BaseMath & clearPriorities();
 
 	/**
+	 * @brief Run the BaseMath.
+	 * Calls the runnable method.
+	 * This is implementation-dependent
+	 * of the child classes.
+	 */
+	virtual void run() = 0;
+
+	/**
 	 * @brief Export input graph to dot format.
 	 * Writes the input graph
 	 * to the given output stream as .dot format.
