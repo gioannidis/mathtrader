@@ -45,26 +45,19 @@ int main(int argc, char **argv) {
 	/**
 	 * Input/Output
 	 */
-	ap.stringOption("f", "input official wants file (default: stdin)");
-	ap.synonym("-input-file", "f");
+	ap.stringOption("f", "input official wants file", "", true);
 	ap.synonym("-official-wants", "f");
+
+	ap.stringOption("r", "input official results file", "", true);
+	ap.synonym("-official-results", "r");
 
 	ap.stringOption("o", "output official results file (default: stdout)");
 	ap.synonym("-output-file", "o");
 	ap.synonym("-results-official", "o");
 
-	ap.stringOption("-input-lgf-file",
-			"parse directly a lemon graph format (LGF) file"
-			" (default: stdin);"
-			" no wants file will be read");
-
 	ap.stringOption("-output-lgf-file",
 			"print the lemon graph format (LGF) file"
 			" (default: stdout)");
-
-	ap.onlyOneGroup("input_file").
-		optionGroup("input_file", "f").
-		optionGroup("input_file", "-input-lgf-file");
 
 
 	/********************************************//*
@@ -138,92 +131,59 @@ int main(int argc, char **argv) {
 
 	/**
 	 * Input File Operations
-	 * - If "--input-lgf-file" is given
-	 *   we will skip the wantlist parser
-	 *   and directly read the graph.
-	 *
-	 * - Otherwise, we will invoke the wantlist parser.
+	 * Read file from wantlist
 	 */
-	const bool input_lgf_file = ap.given("-input-lgf-file");
-	if ( input_lgf_file ) {
+	try {
+		lemon::TimeReport t("Want-list reading:    ");
 
 		/**
-		 * Read LGF from file or stdin
+		 * Configure input file
 		 */
-		try {
-			lemon::TimeReport t("Input graph reading:  ");
-
-			const std::string & fn = ap["-input-lgf-file"];
+		if ( ap.given("f") ) {
+			const std::string & fn = ap["f"];
 			if ( fn.length() > 0 ) {
-				math_trader.graphReader(fn);
-			} else {
-				math_trader.graphReader();
+				want_parser.wantlist(fn);
 			}
-		} catch ( std::exception & error ) {
-			std::cerr << "Error during reading"
-				" the LGF file: "
-				<< error.what()
-				<< std::endl;
-			return -1;
 		}
-
-	} else {
 
 		/**
-		 * Read file from wantlist
+		 * Run the parser
 		 */
-		try {
-			lemon::TimeReport t("Want-list reading:    ");
+		want_parser.parse();
 
-			/**
-			 * Configure input file
-			 */
-			if ( ap.given("f") ) {
-				const std::string & fn = ap["f"];
-				if ( fn.length() > 0 ) {
-					want_parser.wantlist(fn);
-				}
-			}
-
-			/**
-			 * Run the parser
-			 */
-			want_parser.parse();
-
-		} catch ( std::exception & error ) {
-			std::cerr << "WantParser error: " << error.what()
-				<< std::endl;
-			return -1;
-		}
+	} catch ( std::exception & error ) {
+		std::cerr << "WantParser error: " << error.what()
+			<< std::endl;
+		return -1;
+	}
 
 
-		/**
-		 * Print the Nodes & Arcs;
-		 * forward them to Math Trader.
-		 */
-		std::stringstream ss;
-		want_parser.print(ss);
+	/**
+	 * Print the Nodes & Arcs;
+	 * forward them to Math Trader.
+	 */
+	std::stringstream ss;
+	want_parser.print(ss);
 
-		try {
-			lemon::TimeReport t("Passing input graph:  ");
+	try {
+		lemon::TimeReport t("Passing input graph:  ");
 
-			math_trader.graphReader(ss);
-		} catch ( std::exception & error ) {
-			std::cerr << "Error during reading "
-				" the produced LGF file: "
-				<< error.what()
-				<< std::endl;
+		math_trader.graphReader(ss);
+	} catch ( std::exception & error ) {
+		std::cerr << "Error during reading "
+			" the produced LGF file: "
+			<< error.what()
+			<< std::endl;
 
-			const std::string fn = "error_graph.lgf";
-			want_parser.print(fn);
+		const std::string fn = "error_graph.lgf";
+		want_parser.print(fn);
 
-			std::cerr << "The produced LGF file"
-				" has been written to "
-				<< fn
-				<< std::endl;
+		std::cerr << "The produced LGF file"
+			" has been written to "
+			<< fn
+			<< std::endl;
 
-			return -1;
-		}
+		return -1;
 	}
 
 
@@ -254,7 +214,7 @@ int main(int argc, char **argv) {
 					priorities.begin(), ::toupper );
 			math_trader.setPriorities( priorities );
 
-		} else if ( !input_lgf_file ) {
+		} else {
 
 			/* Get priority scheme from want file, if any.
 			 * Set the priorities if this option has been given.
