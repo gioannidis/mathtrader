@@ -659,8 +659,12 @@ MathTrader::exportInputToDot( const std::string & fn ) const {
 const MathTrader &
 MathTrader::exportOutputToDot( std::ostream & os ) const {
 
+	/**
+	 * TODO show non-trading items if specified.
+	 */
 	auto const & result_graph = this->_output_graph;
-	auto const cycle_forest = filterArcs( result_graph, this->_chosen_arc );
+	auto const & trading_graph = filterArcs( result_graph, _chosen_arc );
+	auto const cycle_forest = filterNodes( trading_graph, _trade );
 	typedef decltype(cycle_forest) CycleForest;
 
 	/**
