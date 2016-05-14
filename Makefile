@@ -54,7 +54,8 @@ ROUTEOBJECTS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(ROUTESOURCES))
 # Executables
 ###
 OBJECTS	= $(MATHOBJECTS) $(ROUTEOBJECTS)
-EXECUTABLES = mathtrader++ routechecker
+#EXECUTABLES = mathtrader++ routechecker
+EXECUTABLES = mathtrader++
 
 ###
 # Various
@@ -92,12 +93,14 @@ MKDIR  = mkdir -p
 # Default receipe
 ###
 
+.PHONY: all
 all: buildrepo $(EXECUTABLES)
 
 ###
 # Debug receipe
 ###
 
+.PHONY: debug
 debug: CXXFLAGS := $(filter-out $(OPTIM), $(CXXFLAGS))
 debug: CXXFLAGS += -O0
 debug: CXXFLAGS += $(DBGFLAGS)
