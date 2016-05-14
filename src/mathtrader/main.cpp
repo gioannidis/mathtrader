@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
 	/**
 	 * Argument parser object.
 	 * Will parse the command line options.
+	 * Make it throw in problems.
 	 */
 	lemon::ArgParser ap(argc,argv);
 	ap.throwOnProblems();
@@ -170,7 +171,6 @@ int main(int argc, char **argv) {
 	 * Want List parser.
 	 * Will parse the wantlist and configure
 	 * the Math Trader.
-	 * Make it throw in problems.
 	 */
 	WantParser want_parser;
 
