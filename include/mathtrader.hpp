@@ -22,10 +22,10 @@
 #ifndef _MATHTRADER_HPP_
 #define _MATHTRADER_HPP_
 
+#include "basemath.hpp"
 #include <lemon/list_graph.h>
-#include <lemon/smart_graph.h>
 
-class MathTrader {
+class MathTrader : public BaseMath {
 
 public:
 	/**
@@ -41,38 +41,6 @@ public:
 	~MathTrader();
 
 	/**
-	 * @brief Read graph from istream.
-	 * Constructs the input trade graph,
-	 * from the given input stream.
-	 * @param is input stream (default: stdin)
-	 * @return *this
-	 */
-	MathTrader & graphReader( std::istream & is = std::cin );
-
-	/**
-	 * @brief Read graph from file.
-	 * Constructs the input trade graph,
-	 * from the given file.
-	 * @param fn file name
-	 * @return *this
-	 */
-	MathTrader & graphReader( const std::string & fn );
-
-	/**
-	 * @brief Set priorities.
-	 * Set the priorities to be used by
-	 * the math trade algorithm.
-	 * If not called, no priorities will be used.
-	 * @param priorities The type of priorities to be used. Accepted values:
-	 * 	LINEAR-PRIORITIES
-	 * 	TRIANGLE-PRIORITIES
-	 * 	SQUARE-PRIORITIES
-	 * 	SCALED-PRIORITIES
-	 * @return *this
-	 */
-	MathTrader & setPriorities( const std::string & priorities );
-
-	/**
 	 * @brief Select Algorithm
 	 * Set the minimum cost flow algorithm to be used.
 	 * If not called, Network Simplex will be used.
@@ -84,14 +52,6 @@ public:
 	 * @return *this
 	 */
 	MathTrader & setAlgorithm( const std::string & algorithm );
-
-	/**
-	 * @brief Clear priorities.
-	 * Clears any previously given priorities.
-	 * No priorities will be used.
-	 * @return *this
-	 */
-	MathTrader & clearPriorities();
 
 	/**
 	 * @brief Hide non trades.
@@ -148,24 +108,6 @@ public:
 	const MathTrader & itemSummary( std::ostream & os = std::cout ) const ;
 
 	/**
-	 * @brief Export input graph to dot format.
-	 * Writes the input graph
-	 * to the given output stream as .dot format.
-	 * @param os output stream (default: stdout)
-	 * @return *this
-	 */
-	const MathTrader & exportInputToDot( std::ostream & os = std::cout ) const ;
-
-	/**
-	 * @brief Export input graph to dot format.
-	 * Writes the input graph
-	 * to the given file as .dot format.
-	 * @param fn file name to write to
-	 * @return *this
-	 */
-	const MathTrader & exportInputToDot( const std::string & fn ) const ;
-
-	/**
 	 * @brief Export output graph to dot format.
 	 * Writes the results graph
 	 * to the given output stream as .dot format.
@@ -185,20 +127,6 @@ public:
 
 private:
 	/**
-	 * @brief Priorities enum.
-	 * Enumerates all available priority implementations.
-	 * The priority will be set by the moderator.
-	 * Default is NO_PRIORITIES.
-	 */
-	enum PriorityScheme {
-		NO_PRIORITIES,
-		LINEAR_PRIORITIES,
-		TRIANGLE_PRIORITIES,
-		SQUARE_PRIORITIES,
-		SCALED_PRIORITIES,
-	};
-
-	/**
 	 * @brief Minimum Cost Flow Algorithms
 	 * Enumerates all available minimum cost flow algorithm implementations.
 	 * Default is NETWORK_SIMPLEX.
@@ -210,30 +138,9 @@ private:
 		CYCLE_CANCELING,
 	};
 
-	PriorityScheme _priority_scheme;
 	MCFA _mcfa;
 
 	bool _hide_non_trades;
-
-	/**
-	 * @brief Input Graph
-	 * Type of Input Graph, member and maps.
-	 * Nodes: items
-	 * Arc A->B: item A is offered for item B
-	 */
-	typedef lemon::SmartDigraph InputGraph;	/**< type of input graph */
-	const InputGraph _input_graph;		/**< actual input graph */
-
-
-	InputGraph::NodeMap< std::string >	/**< node maps: strings */
-		_name,				/**< official item name	*/
-		_username;			/**< owner's username	*/
-
-	InputGraph::NodeMap< bool >	/**< node maps: boolean	*/
-		_dummy;			/**< item is a dummy */
-
-	InputGraph::ArcMap< int >	/**< arc maps: integer	*/
-		_in_rank;		/**< rank of want	*/
 
 	/**
 	 * @brief Output Graph
@@ -269,28 +176,6 @@ private:
 	 * Runs the math trade algorithm on the whole graph.
 	 */
 	void _runFlowAlgorithm();
-
-	/**
-	 * @brief Convert rank to cost.
-	 * Receives the rank of an arc
-	 * and generates the cost to be used
-	 * for the minimum flow algorithm.
-	 * @param rank The rank of the arc.
-	 * @param dummy_source Indicates whether the source node is dummy.
-	 * @return The corresponding cost.
-	 */
-	int64_t _getCost( int rank, bool dummy_source ) const ;
-
-	/**
-	 * @brief Export to .dot format.
-	 * Exports a graph to a file compatible with
-	 * graphviz, to visualize the graph.
-	 */
-	template < typename DGR >
-	static void _exportToDot( std::ostream & os,
-			const DGR & g,
-			const std::string & title,
-			const typename DGR::template NodeMap< std::string > & name );
 };
 
 #endif /* _MATHTRADER_HPP_ */

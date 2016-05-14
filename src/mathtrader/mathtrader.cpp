@@ -22,16 +22,19 @@
 #include "mathtrader.hpp"
 #include "algowrapper.hpp"
 
+/* STL libraries */
+#include <fstream>
 #include <iomanip>
-#include <lemon/adaptors.h>
-#include <lemon/connectivity.h>
-#include <lemon/lgf_reader.h>
 #include <list>
 #include <map>
 #include <stdexcept>
 #include <unordered_map>
 
-/* Algorithms */
+/* Lemon base libraries */
+#include <lemon/adaptors.h>
+#include <lemon/connectivity.h>
+
+/* Lemon Algorithms */
 #include <lemon/capacity_scaling.h>
 #include <lemon/cost_scaling.h>
 #include <lemon/cycle_canceling.h>
@@ -43,16 +46,12 @@
  **************************************/
 
 MathTrader::MathTrader() :
+	/* Base class */
+	BaseMath(),
+
 	/* options */
-	_priority_scheme( NO_PRIORITIES ),	/**< Option: priorities */
 	_mcfa( NETWORK_SIMPLEX ),		/**< Option: algorithm 	*/
 	_hide_non_trades( false ),		/**< Option: hide non-trades */
-
-	/* input graph maps */
-	_name( _input_graph ),
-	_username( _input_graph ),
-	_dummy( _input_graph, false ),
-	_in_rank( _input_graph, 0 ),
 
 	/* input-output (cross) references */
 	_node_in2out( _input_graph ),
@@ -77,60 +76,10 @@ MathTrader::~MathTrader() {
  * 	PUBLIC METHODS - INPUT
  **************************************/
 
-MathTrader &
-MathTrader::graphReader( std::istream & is ) {
-
-	/**
-	 * The only instance where we are allowed to modify
-	 * the input graph.
-	 */
-	digraphReader( const_cast< InputGraph & >(_input_graph), is ).
-		nodeMap( "item", _name ).
-		nodeMap( "dummy", _dummy ).
-		nodeMap( "username", _username ).
-		arcMap( "rank", _in_rank ).
-		run();
-
-	return *this;
-}
-
-MathTrader &
-MathTrader::graphReader( const std::string & fn ) {
-
-	std::filebuf fb;
-	fb.open(fn, std::ios::in);
-	std::istream is(&fb);
-	graphReader(is);
-	fb.close();
-	return *this;
-}
-
 
 /************************************//*
  * 	PUBLIC METHODS - OPTIONS
  **************************************/
-
-MathTrader &
-MathTrader::setPriorities( const std::string & priorities ) {
-
-	typedef std::unordered_map< std::string, PriorityScheme > PrioMap_t;
-	static const PrioMap_t prioMap = {
-		{"LINEAR-PRIORITIES", LINEAR_PRIORITIES},
-		{"TRIANGLE-PRIORITIES", TRIANGLE_PRIORITIES},
-		{"SQUARE-PRIORITIES", SQUARE_PRIORITIES},
-		{"SCALED-PRIORITIES", SCALED_PRIORITIES},
-	};
-
-	auto const & it = prioMap.find( priorities );
-	if ( it == prioMap.end() ) {
-		throw std::runtime_error("Invalid priority scheme given: "
-				+ priorities);
-	}
-
-	_priority_scheme = it->second;
-
-	return *this;
-}
 
 MathTrader &
 MathTrader::setAlgorithm( const std::string & algorithm ) {
@@ -151,12 +100,6 @@ MathTrader::setAlgorithm( const std::string & algorithm ) {
 
 	_mcfa = it->second;
 
-	return *this;
-}
-
-MathTrader &
-MathTrader::clearPriorities() {
-	_priority_scheme = NO_PRIORITIES;
 	return *this;
 }
 
@@ -636,27 +579,6 @@ MathTrader::tradeLoops( std::ostream & os ) const {
  **************************************/
 
 const MathTrader &
-MathTrader::exportInputToDot( std::ostream & os ) const {
-
-	_exportToDot< InputGraph >( os, _input_graph,
-			"Input_Graph",
-			_name );
-
-	return *this;
-}
-
-const MathTrader &
-MathTrader::exportInputToDot( const std::string & fn ) const {
-
-	std::filebuf fb;
-	fb.open(fn, std::ios::out);
-	std::ostream os(&fb);
-	exportInputToDot(os);
-	fb.close();
-	return *this;
-}
-
-const MathTrader &
 MathTrader::exportOutputToDot( std::ostream & os ) const {
 
 	/**
@@ -913,68 +835,7 @@ MathTrader::_runFlowAlgorithm() {
  * 	PRIVATE METHODS - Parameters
  **************************************/
 
-int64_t
-MathTrader::_getCost( int rank, bool dummy_source ) const {
-
-	/**
-	 * If the source is dummy, assign zero cost,
-	 * no matter the scheme or the rank.
-	 */
-	if ( dummy_source ) {
-		return 0;
-	}
-
-	/**
-	 * Source: https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4
-	 */
-	switch ( this->_priority_scheme ) {
-		case NO_PRIORITIES:
-			return 1;
-			break;
-		case LINEAR_PRIORITIES:
-			return rank;
-			break;
-		case TRIANGLE_PRIORITIES:
-			return (rank*(rank+1))/2;
-			break;
-		case SQUARE_PRIORITIES:
-			return (rank*rank);
-		case SCALED_PRIORITIES:
-		default:
-			throw std::logic_error("No implementation of chosen priority scheme");
-			break;
-	}
-	return -1;
-}
-
 
 /************************************//*
  * 	PRIVATE METHODS - Utilities
  **************************************/
-
-template < typename DGR >
-void
-MathTrader::_exportToDot( std::ostream & os,
-		const DGR & g,
-		const std::string & title,
-		const typename DGR::template NodeMap< std::string > & name ) {
-
-	os << "digraph "
-		<< title
-		<< " {"
-		<< std::endl;
-
-	for ( typename DGR::NodeIt n(g); n != lemon::INVALID; ++n ) {
-		os << "\t"
-			<< "n" << g.id(n)
-			<< " [label=\"" << name[n] << "\"];"
-			<< std::endl;
-	}
-	for ( typename DGR::ArcIt a(g); a != lemon::INVALID; ++a ) {
-		os << "\t"
-			<< "n" << g.id( g.source(a) )
-			<< " -> " << "n" << g.id(g.target(a))
-			<< std::endl;
-	}
-	os << "}" << std::endl;
-}
