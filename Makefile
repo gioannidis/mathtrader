@@ -29,13 +29,18 @@ OBJDIR   = ./build
 CFGDIR   = ./cfg
 DOXYDIR  = ./doc
 
+SRCSUB = $(shell find $(SRCDIR) -type d)
+
 
 #===============================#
 #	Files			#
 #===============================#
 
-SOURCES    = $(wildcard $(SRCDIR)/*.cpp)
-OBJECTS    = $(addprefix $(OBJDIR)/,$(notdir $(SOURCES:.cpp=.o)))
+COMMONSOURCES = $(wildcard $(SRCDIR)/common/*.cpp)
+
+MATHSOURCES = $(COMMONSOURCES) $(wildcard $(SRCDIR)/mathtrader/*.cpp)
+MATHOBJECTS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(MATHSOURCES))
+
 EXECUTABLE = mathtrader++
 
 DOXYBIN	 = doxygen
@@ -71,7 +76,7 @@ MKDIR  = mkdir -p
 # Default receipe
 ###
 
-all: directories $(EXECUTABLE)
+all: buildrepo $(EXECUTABLE)
 
 ###
 # Debug receipe
@@ -84,21 +89,10 @@ debug: all
 
 
 #===============================#
-#	Directories Receipes	#
-#===============================#
-
-.PHONY: directories
-directories: $(OBJDIR)
-
-$(OBJDIR):
-	$(MKDIR) $(OBJDIR)
-
-
-#===============================#
 #	Executable Receipe	#
 #===============================#
 
-$(EXECUTABLE): $(OBJECTS)
+$(EXECUTABLE): $(MATHOBJECTS)
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 
@@ -130,3 +124,21 @@ clean:
 .PHONY: purge
 purge: clean
 	-$(RM) -rf $(DOXYDIR) $(OBJDIR)
+
+
+#=======================================#
+#          Object Repository            #
+#=======================================#
+
+# Replicate source directories under $(BLDIR)
+
+.PHONY: buildrepo
+buildrepo:
+	@$(call make-repo)
+
+define make-repo
+        for folder in $(SRCSUB); \
+        do \
+                $(MKDIR) $(OBJDIR)/$${folder#$(SRCDIR)} -v; \
+        done
+endef
