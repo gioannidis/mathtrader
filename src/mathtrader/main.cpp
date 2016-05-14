@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
 			if ( ap.given("f") ) {
 				const std::string & fn = ap["f"];
 				if ( fn.length() > 0 ) {
-					want_parser.wantlist(fn);
+					want_parser.inputFile(fn);
 				}
 			}
 

@@ -22,6 +22,8 @@
 #ifndef _WANTPARSER_HPP_
 #define _WANTPARSER_HPP_
 
+#include "baseparser.hpp"
+
 #include <iostream>
 #include <fstream>
 #include <list>
@@ -31,7 +33,7 @@
 #include <unordered_map>
 #include <vector>
 
-class WantParser {
+class WantParser : public BaseParser {
 
 public:
 	/**
@@ -45,24 +47,6 @@ public:
 	 * Details.
 	 */
 	~WantParser();
-
-	/**
-	 * @brief Set wantlist input file.
-	 * Sets the input file where the wantlist
-	 * will be read from.
-	 * If not called, std::cin will be used, instead.
-	 * @param fn file name
-	 * @return *this
-	 */
-	WantParser & wantlist( const std::string & fn );
-
-	/**
-	 * @brief Parse the wantlist.
-	 * Parses the wantlist from either
-	 * a previously given input file
-	 * or from std::cin.
-	 */
-	void parse();
 
 	/**
 	 * @brief Print LGF file.
@@ -88,15 +72,6 @@ public:
 	 * @return *this
 	 */
 	const WantParser & showOptions( std::ostream & os = std::cout ) const ;
-
-	/**
-	 * @brief Show errors.
-	 * Prints any logged errors that were encountered
-	 * during parse().
-	 * @param os The output stream (default: std::cout).
-	 * @return *this;
-	 */
-	const WantParser & showErrors( std::ostream & os = std::cout ) const ;
 
 	/**
 	 * @brief Get priority scheme.
@@ -250,25 +225,28 @@ private:
 	 */
 	std::unordered_map< std::string, int > _unknown_item_map;
 
-	/**
-	 * Errors list.
-	 */
-	std::list< std::string > _errors;
-
-	/**
-	 * @brief File Stream
-	 * File stream to read the want list from,
-	 * when applicable.
-	 */
-	std::ifstream _fs;
-
 
 	/********************************//*
 	 *  UTILITY NON_STATIC FUNCTIONS
 	 ***********************************/
 
 	/**
+	 * @brief Parse want file line.
+	 * Parses a want list file line:
+	 * options, official names and want lists.
+	 */
+	void _parse( const std::string & line );
+
+	/**
+	 * @brief Post Parsing
+	 * Marks unknown items.
+	 * @return *this
+	 */
+	WantParser & _postParse();
+
+	/**
 	 * @brief Parse option
+	 * @return *this
 	 */
 	WantParser & _parseOption( const std::string & option );
 
@@ -303,15 +281,6 @@ private:
 			const std::string username = "" );
 
 	/**
-	 * @brief Parse username.
-	 * Appends quotation marks and converts to uppercase.
-	 * Usernames on BGG are always case-insensitive.
-	 * @param username username to be parsed.
-	 * @return *this
-	 */
-	WantParser & _parseUsername( std::string & username );
-
-	/**
 	 * @brief Mark unknown items.
 	 * Parses all the arcs and checks
 	 * whether any target nodes are missing (unknown).
@@ -326,38 +295,12 @@ private:
 	 ***********************************/
 
 	/**
-	 * @brief Split string.
-	 * Splits the string based on a regular expression.
-	 * @param input The input string.
-	 * @param regex Regular expression defining the fields.
-	 * @return Vector with matches.
-	 */
-	static std::vector<std::string> _split( const std::string & input,
-			const std::string & regex);
-	static std::vector<std::string> _split( const std::string & input,
-			const std::regex & regex = _FPAT );
-
-	/**
 	 * @brief Check if item is dummy.
 	 * Parses the given item and checks if it's dummy (begins with '%').
 	 * @param item The item to be checked.
 	 * @return true if it's dummy, false otherwise.
 	 */
 	static bool _dummy( const std::string & item );
-
-	/**
-	 * @brief Append quotation marks.
-	 * Appends quotation marks to string,
-	 * except if there are opening/closing quotation marks.
-	 * @str Input string to modify.
-	 */
-	static void _quotationMarks( std::string & str );
-
-	/**
-	 * @brief Convert to uppercase.
-	 * Converts the given string to uppercase.
-	 */
-	static void _toUpper( std::string & str );
 
 
 	/***************************//*

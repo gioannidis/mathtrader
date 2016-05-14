@@ -30,6 +30,7 @@
  **************************************/
 
 WantParser::WantParser() :
+	BaseParser(),
 	_bool_options( MAX_BOOL_OPTIONS, false ),
 	_int_options( MAX_INT_OPTIONS ),
 	_priority_scheme( "" ),
@@ -44,154 +45,6 @@ WantParser::WantParser() :
 }
 
 WantParser::~WantParser() {
-
-	/**
-	 * Close file stream, if applicable.
-	 */
-	if ( _fs.is_open() ) {
-		_fs.close();
-	}
-}
-
-
-/************************************//*
- * 	PUBLIC METHODS - INPUT
- **************************************/
-	
-WantParser &
-WantParser::wantlist( const std::string & fn ) {
-
-	/**
-	 * Open file for reading
-	 */
-	_fs.open(fn, std::ios_base::in);
-	if ( _fs.fail() ) {
-		throw std::runtime_error("Could not open file "
-				+ fn + " for reading");
-	}
-	return *this;
-}
-
-
-/************************************//*
- * 	PUBLIC METHODS - PARSING
- **************************************/
-
-void
-WantParser::parse() {
-
-	/**
-	 * Read buffer
-	 */
-	const size_t BUFSIZE = (1<<10);
-	std::string buffer;
-	buffer.reserve(BUFSIZE);
-
-	/**
-	 * Input stream:
-	 * Given file, if applicable.
-	 * Else, std::cin.
-	 */
-	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
-
-	uint64_t line_n = 0;
-	while (std::getline( is, buffer )) {
-
-		++ line_n;
-		/**
-		 * Parse line by content:
-		 * - Empty lines
-		 * - Options: "#!"
-		 * - Other directives
-		 * - Comments
-		 * - Items
-		 */
-		try {
-			if ( buffer.empty() ) {
-
-				/**
-				 * Empty line; do nothing.
-				 */
-
-			} else if ( buffer.compare(0, 2, "#!") == 0 ) {
-
-				/**
-				 * Option line;
-				 * isolate option (exlude "#!") and parse it.
-				 */
-				const std::string option = buffer.substr(2, std::string::npos);
-				_parseOption( option );
-
-			} else if ( buffer.compare(0, 7, "#pragma") == 0 ) {
-
-				/**
-				 * No current implementation for #pragma
-				 */
-
-			} else if ( buffer.compare(0, 1, "#") == 0 ) {
-
-				/**
-				 * Comment line; do nothing.
-				 * NOTE: parsing any directive beginning with
-				 * "#" should go before this.
-				 */
-
-			} else if ( buffer.compare(0, 1, "!") == 0 ) {
-
-				/**
-				 * Directives.
-				 */
-				if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
-
-					_status = PARSE_NAMES;
-					continue ;
-
-				} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
-
-					_status = PARSE_WANTS;
-					continue ;
-
-				} else {
-					throw std::runtime_error("Unrecognized directive: "
-							+ buffer);
-				}
-			} else {
-				/**
-				 * Item to be parsed. This is the default option
-				 * and should be handled last.
-				 * Use appropriate handler for current status.
-				 */
-				switch ( _status ) {
-					case PARSE_NAMES:
-						_parseOfficialName( buffer );
-						break;
-					case PARSE_WANTS:
-						_parseWantList( buffer );
-						break;
-					default:
-						throw std::logic_error("Unknown handler for"
-								" internal status "
-								+ std::to_string(_status));
-						break;
-				}
-			}
-
-		} catch ( const std::runtime_error & e ) {
-
-			/**
-			 * Add the exception text to the error list.
-			 * Continue with the next line.
-			 */
-			this->_errors.push_back( std::to_string(line_n)
-					+ ":"
-					+ e.what() );
-		}
-	}
-
-	/**
-	 * Mark unknown items
-	 */
-	_markUnknownItems();
 }
 
 
@@ -292,18 +145,6 @@ WantParser::showOptions( std::ostream & os ) const {
 	return *this;
 }
 
-const WantParser &
-WantParser::showErrors( std::ostream & os ) const {
-
-	if ( ! _errors.empty() ) {
-		os << "ERRORS" << std::endl;
-		for ( auto const & err : _errors ) {
-			os << "**** " << err << std::endl;
-		}
-	}
-	return *this;
-}
-
 
 /************************************//*
  * 	PUBLIC METHODS - OPTIONS OUTPUT
@@ -329,6 +170,79 @@ WantParser::hideNonTrades() const {
  * 	PRIVATE METHODS - PARSING
  **************************************/
 
+void
+WantParser::_parse( const std::string & buffer ) {
+
+	/**
+	 * Parse line by content:
+	 * - Options: "#!"
+	 * - Other directives
+	 * - Comments
+	 * - Items
+	 */
+	try {
+		if ( buffer.compare(0, 2, "#!") == 0 ) {
+
+			/**
+			 * Option line;
+			 * isolate option (exlude "#!") and parse it.
+			 */
+			const std::string option = buffer.substr(2, std::string::npos);
+			_parseOption( option );
+
+		} else if ( buffer.compare(0, 1, "!") == 0 ) {
+
+			/**
+			 * Directives.
+			 */
+			if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
+
+				_status = PARSE_NAMES;
+
+			} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
+
+				_status = PARSE_WANTS;
+
+			} else {
+				throw std::runtime_error("Unrecognized directive: "
+						+ buffer);
+			}
+		} else {
+			/**
+			 * Item to be parsed. This is the default option
+			 * and should be handled last.
+			 * Use appropriate handler for current status.
+			 */
+			switch ( _status ) {
+				case PARSE_NAMES:
+					_parseOfficialName( buffer );
+					break;
+				case PARSE_WANTS:
+					_parseWantList( buffer );
+					break;
+				default:
+					throw std::logic_error("Unknown handler for"
+							" internal status "
+							+ std::to_string(_status));
+					break;
+			}
+		}
+
+	} catch ( const std::exception & e ) {
+		throw ;
+	}
+}
+
+WantParser &
+WantParser::_postParse() {
+
+	/**
+	 * Mark unknown items
+	 */
+	_markUnknownItems();
+	return *this;
+}
+
 WantParser &
 WantParser::_parseOption( const std::string & option_line ) {
 
@@ -336,7 +250,7 @@ WantParser::_parseOption( const std::string & option_line ) {
 	 * Tokenize option: ignore spaces or '='
 	 */
 	static const std::regex e("\\b([^\\s=]+)");
-	auto elems = _split( option_line, e );
+	auto elems = BaseParser::_split( option_line, e );
 
 	/**
 	 * Verify that we've found an option;
@@ -410,7 +324,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	/**
 	 * Tokenize the line
 	 */
-	auto match = _split( line );
+	auto match = _split( line, _FPAT );
 
 	/**
 	 * Sanity check for minimum number of matches
@@ -805,19 +719,6 @@ WantParser::_parseItemName( std::string & item,
 	return *this;
 }
 
-WantParser &
-WantParser::_parseUsername( std::string & username ) {
-
-	/**
-	 * Convert to uppercase.
-	 * Append quotation marks.
-	 */
-	_toUpper( username );
-	_quotationMarks( username );
-
-	return *this;
-}
-
 
 /************************************//*
  * 	PRIVATE METHODS - UTILS
@@ -853,23 +754,6 @@ WantParser::_markUnknownItems() {
 	return *this;
 }
 
-std::vector<std::string>
-WantParser::_split( const std::string & input, const std::string & str ) {
-
-	std::regex regex(str);
-	return _split( input, regex );
-}
-
-std::vector<std::string>
-WantParser::_split( const std::string & input, const std::regex & regex ) {
-
-	std::sregex_token_iterator
-		first{input.begin(), input.end(), regex, 0},
-		last;
-
-	return {first, last};
-}
-
 bool
 WantParser::_dummy( const std::string & item ) {
 
@@ -884,27 +768,6 @@ WantParser::_dummy( const std::string & item ) {
 	}
 
 	return ( item.compare(0 + offset, 1, "%") == 0 );
-}
-
-void
-WantParser::_quotationMarks( std::string & str ) {
-
-	/**
-	 * Add leading quotation mark, if needed.
-	 */
-	if ( str.front() != '"' ) {
-		str = "\"" + str;
-	}
-
-	/**
-	 * Add closing quotation mark
-	 */
-	str.push_back('"');
-}
-
-void
-WantParser::_toUpper( std::string & str ) {
-	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 }
 
 
