@@ -46,6 +46,7 @@ EXECUTABLE = mathtrader++
 DOXYBIN	 = doxygen
 DOXYFILE = $(CFGDIR)/doxyfile.cfg
 
+OBJECTS	= $(MATHOBJECTS)
 
 #===============================#
 #	Compiler/Linker Flags	#
