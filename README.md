@@ -22,14 +22,14 @@ developed by [B. Perry](https://www.boardgamegeek.com/user/Kayvon),
 was a popular choice among the users.
 
 In 2008, [Chris Okasaki](https://www.boardgamegeek.com/user/cokasaki)
-developed am algorithm which would run in polynomial time,
+developed an algorithm which would run in polynomial time,
 subsequently releasing the JAVA source code, dubbed as
 [TradeMaximizer](https://www.boardgamegeek.com/wiki/page/TradeMaximizer).
 This software has been used since then as the _de facto_ algorithm
 to resolve Math Trades on BGG.
 
 Since then, B. Perry
-implemented a compatiblen multithreadedd C++ version of the software,
+implemented a compatible multithreaded C++ version of the software,
 [TradeThing](https://sourceforge.net/projects/tradething/files/).
 According to preliminary results,
 the performance of _TradeThing_ is quite comparable to _TradeMaximizer_'s.
@@ -86,7 +86,7 @@ _Note that this guide applies mostly on Linux systems_
 
 Testcases from past trades may be found online
 at the [Online Want List Generator (OLWLG)](http://bgg.activityclub.org/olwlg/).
-The official wantlists of previous Math Trades are linked
+The official wantslists of previous Math Trades are linked
 under the respective `[WANT]` tag.
 
 On a terminal, you may download it using `wget`, e.g.:
