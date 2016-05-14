@@ -79,6 +79,12 @@ RouteChecker::run() {
  * 	PUBLIC METHODS - OUTPUT
  **************************************/
 
+const RouteChecker &
+RouteChecker::printResults() const {
+
+	return *this;
+}
+
 
 /************************************//*
  * 	PUBLIC METHODS - Utilities

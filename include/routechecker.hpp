@@ -51,7 +51,20 @@ public:
 	 */
 	RouteChecker & loopReader( std::istream & is );
 
+	/**
+	 * @brief Run the RouteChecker.
+	 * Checks the validity of the routes:
+	 * - No node shall be passed twice.
+	 * - An arc A->B must either exist directly
+	 *   or go through a dummy node.
+	 * - Calculate the total cost.
+	 */
 	void run();
+
+	/**
+	 * @brief Print RouteChecker results and stats.
+	 */
+	const RouteChecker & printResults() const ;
 
 private:
 	std::list< std::string > _loop_list;
