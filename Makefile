@@ -38,15 +38,30 @@ SRCSUB = $(shell find $(SRCDIR) -type d)
 
 COMMONSOURCES = $(wildcard $(SRCDIR)/common/*.cpp)
 
+###
+# MathTrader++ related files
+###
 MATHSOURCES = $(COMMONSOURCES) $(wildcard $(SRCDIR)/mathtrader/*.cpp)
 MATHOBJECTS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(MATHSOURCES))
 
-EXECUTABLE = mathtrader++
+###
+# RouteCheck related files
+###
+ROUTESOURCES = $(COMMONSOURCES) $(wildcard $(SRCDIR)/routecheck/*.cpp)
+ROUTEOBJECTS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(ROUTESOURCES))
 
+###
+# Executables
+###
+OBJECTS	= $(MATHOBJECTS) $(ROUTEOBJECTS)
+EXECUTABLES = mathtrader++ routecheck
+
+###
+# Various
+###
 DOXYBIN	 = doxygen
 DOXYFILE = $(CFGDIR)/doxyfile.cfg
 
-OBJECTS	= $(MATHOBJECTS)
 
 #===============================#
 #	Compiler/Linker Flags	#
@@ -77,7 +92,7 @@ MKDIR  = mkdir -p
 # Default receipe
 ###
 
-all: buildrepo $(EXECUTABLE)
+all: buildrepo $(EXECUTABLES)
 
 ###
 # Debug receipe
@@ -90,10 +105,13 @@ debug: all
 
 
 #===============================#
-#	Executable Receipe	#
+#	Executable Receipes	#
 #===============================#
 
-$(EXECUTABLE): $(MATHOBJECTS)
+mathtrader++: $(MATHOBJECTS)
+	$(CXX) $^ $(LDFLAGS) -o $@
+
+routecheck: $(ROUTEOBJECTS)
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 
@@ -120,7 +138,7 @@ html:
 
 .PHONY: clean
 clean:
-	-$(RM) -f $(OBJECTS) $(EXECUTABLE)
+	-$(RM) -f $(OBJECTS) $(EXECUTABLES)
 
 .PHONY: purge
 purge: clean
@@ -140,6 +158,6 @@ buildrepo:
 define make-repo
         for folder in $(SRCSUB); \
         do \
-                $(MKDIR) $(OBJDIR)/$${folder#$(SRCDIR)} -v; \
+                $(MKDIR) $(OBJDIR)/$${folder#$(SRCDIR)}; \
         done
 endef
