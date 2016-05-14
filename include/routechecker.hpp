@@ -24,6 +24,8 @@
 
 #include "basemath.hpp"
 
+#include <list>
+
 class RouteChecker : public BaseMath {
 
 public:
@@ -52,6 +54,7 @@ public:
 	void run();
 
 private:
+	std::list< std::string > _loop_list;
 };
 
 #endif /* _ROUTECHECKER_HPP_ */

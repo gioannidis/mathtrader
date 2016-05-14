@@ -44,6 +44,20 @@ RouteChecker::~RouteChecker() {
 RouteChecker &
 RouteChecker::loopReader( std::istream & is ) {
 
+	_loop_list.clear();
+
+	/**
+	 * Read buffer
+	 */
+	const size_t BUFSIZE = (1<<10);
+	std::string buffer;
+	buffer.reserve(BUFSIZE);
+
+	while (std::getline( is, buffer )) {
+
+		_loop_list.push_back( buffer );
+	}
+
 	return *this;
 }
 
