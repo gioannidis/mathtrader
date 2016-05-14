@@ -25,11 +25,8 @@
 #include <iostream>
 #include <fstream>
 #include <list>
-#include <map>
 #include <regex>
 #include <string>
-#include <unordered_map>
-#include <vector>
 
 class BaseParser {
 
@@ -57,8 +54,8 @@ public:
 	BaseParser & inputFile( const std::string & fn );
 
 	/**
-	 * @brief Parse the wantlist.
-	 * Parses the wantlist from either
+	 * @brief Parse the input.
+	 * Parses the input from either
 	 * a previously given input file
 	 * or from std::cin.
 	 */
