@@ -310,6 +310,7 @@ MathTrader::mergeDummyItems() {
 			if (( sender != NULL ) && ( receiver != NULL )
 					&& ( g.id(*sender) != start ) && ( g.id(*receiver) != start )) {
 
+#if 0
 				/**
 				 * First, calculate the rank
 				 * between receiver -> D1 -> D2 -> ... -> DN -> sender.
@@ -319,7 +320,6 @@ MathTrader::mergeDummyItems() {
 					*prev = receiver,
 					*next = prev;
 
-#if 0
 				/**
 				 * Get the minimum rank across the whole
 				 * want chain between A -> D1 -> D2 -> B
@@ -354,17 +354,17 @@ MathTrader::mergeDummyItems() {
 				 * Get the rank of A -> D1 only
 				 * across the chain between A -> D1 -> D2 -> B
 				 */
-				next = &(_receive[ *next ]);
-				auto const & arc = arc_lookup( *prev, *next );
+				auto const & next = _receive[*receiver];
+				auto const & arc = arc_lookup( *receiver, next );
 				if ( arc == lemon::INVALID ) {
 					throw std::runtime_error("Arc not found "
 							"between items "
-							+ _name[_node_out2in[*prev]]
+							+ _name[_node_out2in[*receiver]]
 							+ " and "
-							+ _name[_node_out2in[*next]]);
+							+ _name[_node_out2in[next]]);
 				}
 
-				rank = _out_rank[arc];
+				const int rank = _out_rank[arc];
 #endif
 				/**
 				 * We have found the real items of this chain.
@@ -622,7 +622,7 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 
 	int64_t total_cost = 0;
 	for ( FinalGraph::ArcIt a(final_graph); a != lemon::INVALID; ++ a ) {
-		total_cost += _getCost(_out_rank[a]);
+		total_cost += _getCost(_out_rank[a], _dummy[_node_out2in[final_graph.source(a)]]);
 	}
 	os << "Total cost = " << total_cost << std::endl;
 
@@ -774,7 +774,7 @@ MathTrader::_runFlowAlgorithm() {
 		auto const & match_arc = split_graph.arc(a);
 		const int rank = _out_rank[a];
 
-		cost_map[ match_arc ] = _getCost(rank);
+		cost_map[ match_arc ] = _getCost(rank, _dummy[_node_out2in[start_graph.source(a)]]);
 		reverse_map[ match_arc ] = true;
 	}
 
@@ -910,7 +910,15 @@ MathTrader::_runFlowAlgorithm() {
  **************************************/
 
 int64_t
-MathTrader::_getCost( int rank ) const {
+MathTrader::_getCost( int rank, bool dummy_source ) const {
+
+	/**
+	 * If the source is dummy, assign zero cost,
+	 * no matter the scheme or the rank.
+	 */
+	if ( dummy_source ) {
+		return 0;
+	}
 
 	/**
 	 * Source: https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4

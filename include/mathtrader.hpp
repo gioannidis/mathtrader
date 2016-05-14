@@ -276,9 +276,10 @@ private:
 	 * and generates the cost to be used
 	 * for the minimum flow algorithm.
 	 * @param rank The rank of the arc.
+	 * @param dummy_source Indicates whether the source node is dummy.
 	 * @return The corresponding cost.
 	 */
-	int64_t _getCost( int rank ) const ;
+	int64_t _getCost( int rank, bool dummy_source = false ) const ;
 
 	/**
 	 * @brief Export to .dot format.
