@@ -47,6 +47,10 @@ ResultParser::~ResultParser() {
 const ResultParser &
 ResultParser::print( std::ostream &os ) const {
 
+	for ( auto const & item : _item_list ) {
+		os << item << std::endl;
+	}
+
 	return *this;
 }
 
@@ -181,8 +185,3 @@ ResultParser::_parseLoop( const std::string & line ) {
 
 	return *this;
 }
-
-
-/************************************//*
- * 	PRIVATE METHODS - UTILS
- **************************************/
