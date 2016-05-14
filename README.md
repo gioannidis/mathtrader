@@ -114,14 +114,9 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 
 ## Future Tasks
 
-- [x] Fix Regular Expressions issues under g++-5.
-- [x] Investigate possible algorithm bug, as it does not maximize the trading items on larger inputs.
+- [ ] Resolve cost discrepancy vs other applications.
 - [ ] Implement scaled priority schemes.
-- [x] Implement BIG-STEP and SMALL-STEP.
-- [x] Add Doxygen documentation.
 - [ ] Add _users-trading_ as a metric.
-- [x] Integrate the file conversion with the main program.
-- [x] Allow spaces around colons `:` and semicolons `;` in want lists.
 - [ ] Catch user spelling errors by comparing items in official names with the given ones.
 - [ ] Handle corner cases where there are no want lists at all.
 - [ ] Allow multiple options in one line.
