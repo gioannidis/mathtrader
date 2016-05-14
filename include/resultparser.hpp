@@ -47,6 +47,7 @@ public:
 	 * @param os The output stream (default: std::cout).
 	 * @return *this
 	 */
+	using BaseParser::print;	/**< Consider base class overloads */
 	const ResultParser & print( std::ostream & os = std::cout ) const ;
 
 	/**

@@ -83,7 +83,6 @@ WantParser::print( std::ostream &os ) const {
 			<< std::endl;
 	}
 
-
 	/**
 	 * Print Arcs
 	 */
@@ -111,17 +110,6 @@ WantParser::print( std::ostream &os ) const {
 		}
 	}
 
-	return *this;
-}
-
-const WantParser &
-WantParser::print( const std::string & fn ) const {
-
-	std::filebuf fb;
-	fb.open(fn, std::ios::out);
-	std::ostream os(&fb);
-	print(os);
-	fb.close();
 	return *this;
 }
 

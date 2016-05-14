@@ -62,16 +62,20 @@ public:
 	void parse();
 
 	/**
-	 * @brief Print LGF file.
-	 * Prints the nodes & arcs in a lemon-LGF format.
+	 * @brief Print implementation-dependent output.
+	 * Prints the results of the parsing process.
+	 * The content and format is implementation-dependent
+	 * of the derived classes.
 	 * @param os The output stream (default: std::cout).
 	 * @return *this
 	 */
-	virtual const BaseParser & print( std::ostream & os = std::cout ) const ;
+	virtual const BaseParser & print( std::ostream & os = std::cout ) const = 0;
 
 	/**
-	 * @brief Print LGF file to output file.
-	 * Prints the nodes & arcs in a lemon-LGF format.
+	 * @brief Print implementation-dependent output.
+	 * Prints the results of the parsing process.
+	 * The content and format is implementation-dependent
+	 * of the derived classes.
 	 * @param fn The file output name.
 	 * @return *this
 	 */

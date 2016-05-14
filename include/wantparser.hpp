@@ -49,16 +49,8 @@ public:
 	 * @param os The output stream (default: std::cout).
 	 * @return *this
 	 */
+	using BaseParser::print;	/**< Consider base class overloads */
 	const WantParser & print( std::ostream & os = std::cout ) const ;
-
-	/**
-	 * @brief Print LGF file to output file.
-	 * Prints the nodes & arcs in a lemon-LGF format.
-	 * @param fn The file output name.
-	 * @return *this
-	 */
-	const WantParser & print( const std::string & fn ) const ;
-
 
 	/**
 	 * @brief Show options.
