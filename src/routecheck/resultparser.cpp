@@ -172,6 +172,7 @@ ResultParser::_parseLoop( const std::string & line ) {
 
 		/* New cycle */
 		_item_list.push_back( source );
+		_first_item = source;
 		_new_loop = false;
 
 	} else if ( target.compare(_first_item) == 0 ) {
