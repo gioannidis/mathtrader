@@ -99,7 +99,6 @@ RouteChecker::run() {
 	 */
 	for ( auto const & item : _loop_list ) {
 
-		std::cout << "Item: " << item << std::endl;
 		/**
 		 * Look up node.
 		 */
@@ -120,70 +119,71 @@ RouteChecker::run() {
 			start_id = cur_id;
 		} else {
 
-			/**
-			 * DFS to find a route.
-			 */
-			typedef lemon::Dfs< RouteGraph > DType;
-			DType::DistMap d(g);
-			DType::PredMap p(g);
+			bool found = false;
 
 			auto const & s = g.nodeFromId(prev_id);
 			auto const & t = n;
-
+			int64_t cost = 0;
 
 			/**
-			 * Run the dfs from s to t.
-			 * Sanity check if a path has been found.
+			 * Iterate all outgoing arcs of @s.
 			 */
-			DType dfs(g);
-			bool rv = dfs.run(s,t);
+			for ( RouteGraph::OutArcIt a(g,s); a != lemon::INVALID; ++a ) {
 
-			if ( !rv ) {
+				auto const & next = g.target(a);
+
+				if ( next == t ) {
+
+					/**
+					 * Target node is directly
+					 * accessible.
+					 */
+					found = true;
+					cost = _in_rank[a];
+					break;
+
+				} else if ( _dummy[next] ) {
+
+					/**
+					 * Check if target can be found via a dummy node.
+					 * DFS to find a route.
+					 * NOTE: we can never be sure which dummy path was chosen!
+					 * FIXME: if complex dummy wants are specified,
+					 * it's difficult to verify the cost.
+					 */
+					typedef lemon::Dfs< RouteGraph > DType;
+					auto const & dummy = next;
+
+					/**
+					 * Run the dfs from s to t.
+					 * Sanity check if a path has been found.
+					 */
+					DType dfs(g);
+					bool rv = dfs.run(dummy,t);
+
+					/* Found a path */
+					if ( rv ) {
+						found = true;
+						cost = _in_rank[a];
+						break;
+					}
+				}
+			}
+
+			if ( !found ) {
 				throw std::runtime_error("No path between items "
-						+ _name[s]
-						+ " and "
-						+ _name[t]);
+					+ _name[s]
+					+ " and "
+					+ _name[t]);
 			}
 
-			/**
-			 * Get the path to @t.
-			 */
-			lemon::Path< RouteGraph > pp = dfs.path(t);
-			if ( pp.empty() ) {
-				throw std::logic_error("Path between items "
-						+ _name[s]
-						+ " and "
-						+ _name[t]
-						+ " is empty, "
-						"but DFS found a solution");
-			}
-
-
-			/**
-			 * Get the first arc only.
-			 * Add its cost.
-			 */
-			auto const & arc = pp.front();
-			std::cout
-				<< "source: " << _name[g.source(arc)]
-				<< " target: " << _name[g.target(arc)]
-				<< std::endl;
-			_total_cost += _getCost( _in_rank[arc] );
-#if 0
-			std::cout << "rank of item "
-				<< _name[s] << " is "
-				<< _in_rank[arc]
-				<< " and its cost is "
-				<< _getCost( _in_rank[arc] )
-				<< std::endl;
-#endif
+			_total_cost += cost;
 
 			/**
 			 * Flag a new loop if needed.
 			 */
 			if ( cur_id == start_id ) {
 				new_loop = true;
-				std::cout << "----" << std::endl;
 			}
 		}
 		prev_id = cur_id;
