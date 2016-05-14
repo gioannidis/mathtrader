@@ -66,8 +66,9 @@ private:
 	 * Enum of current status
 	 */
 	enum Status {
-		PARSE_WANTS,
-		PARSE_NAMES,
+		BEGIN,		/**< Default */
+		TRADE_LOOPS,
+		ITEM_SUMMARY,
 		UNKNOWN,
 	};
 	Status _status;

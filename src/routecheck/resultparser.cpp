@@ -31,7 +31,7 @@
 
 ResultParser::ResultParser() :
 	BaseParser(),
-	_status( PARSE_WANTS )
+	_status( BEGIN )
 {
 }
 
@@ -90,6 +90,20 @@ ResultParser::_parse( const std::string & buffer ) {
 			 * do nothing.
 			 */
 
+		} else if ( buffer.compare(0, 11, "TRADE LOOPS") == 0 ) {
+
+			/**
+			 * Start parsing trade loops
+			 */
+			_status = TRADE_LOOPS;
+
+		} else if ( buffer.compare(0, 12, "ITEM SUMMARY") == 0 ) {
+
+			/**
+			 * Start parsing item summary
+			 */
+			_status = ITEM_SUMMARY;
+
 		} else {
 			/**
 			 * Item to be parsed. This is the default option
@@ -97,10 +111,13 @@ ResultParser::_parse( const std::string & buffer ) {
 			 * Use appropriate handler for current status.
 			 */
 			switch ( _status ) {
-				case PARSE_NAMES:
+				case BEGIN:
+				case ITEM_SUMMARY:
+					/* Do nothing */
+					break;
+				case TRADE_LOOPS:
 					_parseLoop( buffer );
 					break;
-				case PARSE_WANTS:
 				default:
 					throw std::logic_error("Unknown handler for"
 							" internal status "
@@ -121,6 +138,8 @@ ResultParser::_postParse() {
 
 ResultParser &
 ResultParser::_parseLoop( const std::string & line ) {
+
+	std::cout << line << std::endl;
 
 	return *this;
 }
