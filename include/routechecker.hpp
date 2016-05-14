@@ -72,6 +72,7 @@ private:
 	/**
 	 * @brief Total cost
 	 */
+	int _visited;
 	int64_t _total_cost;
 };
 

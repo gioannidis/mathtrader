@@ -94,12 +94,13 @@ RouteChecker::run() {
 	/**
 	 * Frequency map
 	 */
-	RouteGraph::NodeMap< int > frequency_map(g, 0);
+	RouteGraph::NodeMap< bool > visit(g, false);
 	int start_id = 0, prev_id = 0;
 
 	/**
 	 * Initialize total cost
 	 */
+	this->_visited = 0;
 	this->_total_cost = 0;
 
 	/**
@@ -166,6 +167,17 @@ RouteChecker::run() {
 			 */
 			if ( cur_id == start_id ) {
 				new_loop = true;
+			} else if ( visit[s] ) {
+				throw std::runtime_error("Multiple visits"
+						" for item " + _name[s]);
+			}
+			visit[s] = true;
+
+			/**
+			 * Count visited nodes
+			 */
+			if ( !_dummy[s] ) {
+				_visited ++ ;
 			}
 		}
 		prev_id = cur_id;
@@ -182,6 +194,7 @@ const RouteChecker &
 RouteChecker::printResults( std::ostream & os ) const {
 
 	os << "Total cost: " << _total_cost << std::endl;
+	os << "Visited: " << _visited << std::endl;
 	return *this;
 }
 
