@@ -31,7 +31,8 @@
 
 ResultParser::ResultParser() :
 	BaseParser(),
-	_status( BEGIN )
+	_status( BEGIN ),
+	_new_loop( true )
 {
 }
 
@@ -158,10 +159,25 @@ ResultParser::_parseLoop( const std::string & line ) {
 	 * TODO check if match[0]
 	 * is username.
 	 */
-	std::cout << match[1]
-		<< " "
-		<< match[4]
-		<< std::endl;
+
+	const std::string
+		& source = match[1],
+		& target = match[4];
+
+	if ( _new_loop ) {
+
+		/* New cycle */
+		_item_list.push_back( source );
+		_new_loop = false;
+
+	} else if ( target.compare(_first_item) == 0 ) {
+
+		/* Cycle end */
+		_new_loop = true;
+	}
+
+	/* Always add the target */
+	_item_list.push_back( target );
 
 	return *this;
 }

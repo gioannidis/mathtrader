@@ -84,7 +84,15 @@ private:
 	 * List to keep cycle nodes.
 	 * Expected: A B C D A E F G H E
 	 */
-	std::list< std::string > item_list;
+	std::list< std::string > _item_list;
+
+	/**
+	 * @brief Loop flags
+	 * Flag to indicate that a new loop will begin.
+	 * First item of cycle to detect its end.
+	 */
+	bool _new_loop;
+	std::string _first_item;
 
 
 	/********************************//*
