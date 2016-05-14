@@ -84,14 +84,6 @@ RouteChecker::run() {
 	using RouteGraph = InputGraph;
 
 	/**
-	 * Create static arc lookup to quickly find the arcs
-	 * between two nodes.
-	 * Node/Arc operations will be applied afterwards,
-	 * therefore we can use the static lookup.
-	 */
-	lemon::ArcLookUp< RouteGraph > arc_lookup(g);
-
-	/**
 	 * Frequency map
 	 */
 	RouteGraph::NodeMap< int > frequency_map(g, 0);
@@ -107,6 +99,7 @@ RouteChecker::run() {
 	 */
 	for ( auto const & item : _loop_list ) {
 
+		std::cout << "Item: " << item << std::endl;
 		/**
 		 * Look up node.
 		 */
@@ -171,13 +164,19 @@ RouteChecker::run() {
 			 * Add its cost.
 			 */
 			auto const & arc = pp.front();
+			std::cout
+				<< "source: " << _name[g.source(arc)]
+				<< " target: " << _name[g.target(arc)]
+				<< std::endl;
 			_total_cost += _getCost( _in_rank[arc] );
+#if 0
 			std::cout << "rank of item "
-				<< _name[n] << " is "
+				<< _name[s] << " is "
 				<< _in_rank[arc]
 				<< " and its cost is "
 				<< _getCost( _in_rank[arc] )
 				<< std::endl;
+#endif
 
 			/**
 			 * Flag a new loop if needed.
