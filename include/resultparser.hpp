@@ -80,57 +80,11 @@ private:
 	 *****************************/
 
 	/**
-	 * @brief Node struct
-	 * Structure to hold node information
+	 * @brief Cycle list.
+	 * List to keep cycle nodes.
+	 * Expected: A B C D A E F G H E
 	 */
-	typedef struct _Node_s {
-
-		std::string item;		/**< Item name; 0001-PUERTO */
-		std::string official_name;	/**< Official name; "Puerto Rico" */
-		std::string username;		/**< Username; "Aldie" */
-		bool dummy;			/**< Dummy node */
-
-		inline _Node_s ( const std::string & _item,
-				const std::string & _official,
-				const std::string & _user,
-				bool _dummy = false
-				) :
-			item( _item ),
-			official_name( _official ),
-			username( _user ),
-			dummy( _dummy ) {}
-
-	} _Node_t;
-
-	/**
-	 * @brief Arc struct
-	 * Structure to hold arc information
-	 */
-	typedef struct _Arc_s {
-
-		std::string item_s;	/**< Item name; source */
-		std::string item_t;	/**< Item name; target */
-		int rank;		/**< Rank of arc */
-		bool unknown;		/**< Unknown item; node is missing */
-
-		inline _Arc_s ( const std::string & _source,
-				const std::string & _target,
-				int _rank ) :
-			item_s( _source ),
-			item_t( _target ),
-			rank( _rank ),
-			unknown( false ){}
-
-	} _Arc_t;
-
-	/**
-	 * Node & Arc maps; the key is the item reference name,
-	 * e.g., 0042-PUERTO
-	 * The Arc Map maps to a vector of arcs.
-	 */
-	std::map< std::string , _Node_t > _node_map;
-	std::map< std::string ,
-		std::vector< _Arc_t > >  _arc_map;
+	std::list< std::string > item_list;
 
 
 	/********************************//*
