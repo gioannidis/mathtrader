@@ -114,7 +114,7 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 
 ## Future Tasks
 
-- [ ] Resolve cost discrepancy vs other applications.
+- [x] Resolve cost discrepancy vs other applications.
 - [ ] Implement scaled priority schemes.
 - [ ] Add _users-trading_ as a metric.
 - [ ] Catch user spelling errors by comparing items in official names with the given ones.

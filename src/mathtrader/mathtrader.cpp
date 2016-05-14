@@ -685,7 +685,7 @@ MathTrader::_runFlowAlgorithm() {
 	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
 
 		auto const & self_arc = split_graph.arc(n);
-		cost_map[ self_arc ] = ( _dummy[_node_out2in[n]] ) ? 1e7 : 1e9;
+		cost_map[ self_arc ] = ( _dummy[_node_out2in[n]] ) ? 0 : 1e9;
 		reverse_map[ self_arc ] = false;
 	}
 
