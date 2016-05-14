@@ -54,7 +54,7 @@ ROUTEOBJECTS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(ROUTESOURCES))
 # Executables
 ###
 OBJECTS	= $(MATHOBJECTS) $(ROUTEOBJECTS)
-EXECUTABLES = mathtrader++ routecheck
+EXECUTABLES = mathtrader++ routechecker
 
 ###
 # Various
@@ -111,7 +111,7 @@ debug: all
 mathtrader++: $(MATHOBJECTS)
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-routecheck: $(ROUTEOBJECTS)
+routechecker: $(ROUTEOBJECTS)
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 
