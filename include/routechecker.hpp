@@ -64,10 +64,15 @@ public:
 	/**
 	 * @brief Print RouteChecker results and stats.
 	 */
-	const RouteChecker & printResults() const ;
+	const RouteChecker & printResults( std::ostream & os = std::cout ) const ;
 
 private:
 	std::list< std::string > _loop_list;
+
+	/**
+	 * @brief Total cost
+	 */
+	int64_t _total_cost;
 };
 
 #endif /* _ROUTECHECKER_HPP_ */

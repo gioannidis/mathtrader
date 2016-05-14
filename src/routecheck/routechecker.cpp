@@ -21,7 +21,9 @@
  */
 #include "routechecker.hpp"
 
+#include <lemon/dfs.h>
 #include <lemon/maps.h>
+#include <lemon/path.h>
 #include <stdexcept>
 
 
@@ -93,9 +95,12 @@ RouteChecker::run() {
 	 * Frequency map
 	 */
 	RouteGraph::NodeMap< int > frequency_map(g, 0);
-	const RouteGraph::Node
-		*start = NULL,
-		*prev = NULL;
+	int start_id = 0, prev_id = 0;
+
+	/**
+	 * Initialize total cost
+	 */
+	this->_total_cost = 0;
 
 	/**
 	 * Parse all items.
@@ -105,7 +110,8 @@ RouteChecker::run() {
 		/**
 		 * Look up node.
 		 */
-		auto const & n = mapFind(g, _name, item );
+		auto const & n = mapFind( g, _name, item );
+		const int cur_id = g.id(n);
 
 		/**
 		 * Sanity check: node has been found
@@ -118,23 +124,72 @@ RouteChecker::run() {
 
 		if ( new_loop ) {
 			new_loop = false;
-			start = &n;
-
+			start_id = cur_id;
 		} else {
 
 			/**
 			 * DFS to find a route.
 			 */
-			//auto const & arc = arc_lookup( *prev, n );
+			typedef lemon::Dfs< RouteGraph > DType;
+			DType::DistMap d(g);
+			DType::PredMap p(g);
+
+			auto const & s = g.nodeFromId(prev_id);
+			auto const & t = n;
 
 
-			if ( &n == start ) {
+			/**
+			 * Run the dfs from s to t.
+			 * Sanity check if a path has been found.
+			 */
+			DType dfs(g);
+			bool rv = dfs.run(s,t);
+
+			if ( !rv ) {
+				throw std::runtime_error("No path between items "
+						+ _name[s]
+						+ " and "
+						+ _name[t]);
+			}
+
+			/**
+			 * Get the path to @t.
+			 */
+			lemon::Path< RouteGraph > pp = dfs.path(t);
+			if ( pp.empty() ) {
+				throw std::logic_error("Path between items "
+						+ _name[s]
+						+ " and "
+						+ _name[t]
+						+ " is empty, "
+						"but DFS found a solution");
+			}
+
+
+			/**
+			 * Get the first arc only.
+			 * Add its cost.
+			 */
+			auto const & arc = pp.front();
+			_total_cost += _getCost( _in_rank[arc] );
+			std::cout << "rank of item "
+				<< _name[n] << " is "
+				<< _in_rank[arc]
+				<< " and its cost is "
+				<< _getCost( _in_rank[arc] )
+				<< std::endl;
+
+			/**
+			 * Flag a new loop if needed.
+			 */
+			if ( cur_id == start_id ) {
 				new_loop = true;
+				std::cout << "----" << std::endl;
 			}
 		}
+		prev_id = cur_id;
 
-		prev = &n;
-	}
+	} /* end for loop */
 }
 
 
@@ -143,8 +198,9 @@ RouteChecker::run() {
  **************************************/
 
 const RouteChecker &
-RouteChecker::printResults() const {
+RouteChecker::printResults( std::ostream & os ) const {
 
+	os << "Total cost: " << _total_cost << std::endl;
 	return *this;
 }
 

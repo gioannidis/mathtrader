@@ -139,7 +139,7 @@ protected:
 	 * @param dummy_source Indicates whether the source node is dummy.
 	 * @return The corresponding cost.
 	 */
-	int64_t _getCost( int rank, bool dummy_source ) const ;
+	int64_t _getCost( int rank, bool dummy_source = false ) const ;
 
 	/**
 	 * @brief Export to .dot format.
