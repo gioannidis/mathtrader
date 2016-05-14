@@ -20,6 +20,7 @@
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "wantparser.hpp"
+#include "resultparser.hpp"
 #include "basemath.hpp"
 
 #include <exception>
@@ -38,6 +39,7 @@ int main(int argc, char **argv) {
 	/**
 	 * Argument parser object.
 	 * Will parse the command line options.
+	 * Make it throw in problems.
 	 */
 	lemon::ArgParser ap(argc,argv);
 	ap.throwOnProblems();
@@ -122,11 +124,12 @@ int main(int argc, char **argv) {
 	BaseMath math_trader;
 
 	/*
-	 * Results parser.
-	 * Will parse the result file.
-	 * Make it throw in problems.
+	 * Want lists and results parsers.
+	 * Will parse the the want-list
+	 * and the result files.
 	 */
-	WantParser want_parser;
+	WantParser   want_parser;
+	ResultParser result_parser;
 
 	/**
 	 * Input File Operations
@@ -134,16 +137,8 @@ int main(int argc, char **argv) {
 	 */
 	try {
 		lemon::TimeReport t("Want-list reading:    ");
-
-		/**
-		 * Configure input file
-		 */
-		if ( ap.given("f") ) {
-			const std::string & fn = ap["f"];
-			if ( fn.length() > 0 ) {
-				want_parser.inputFile(fn);
-			}
-		}
+		const std::string & fn = ap["f"];
+		want_parser.inputFile(fn);
 
 		/**
 		 * Run the parser
@@ -156,6 +151,25 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
+	/**
+	 * Input File Operations
+	 * Read file from results.
+	 */
+	try {
+		lemon::TimeReport t("Result reading:       ");
+		const std::string & fn = ap["r"];
+		result_parser.inputFile(fn);
+
+		/**
+		 * Run the parser
+		 */
+		result_parser.parse();
+
+	} catch ( std::exception & error ) {
+		std::cerr << "ResultParser error: " << error.what()
+			<< std::endl;
+		return -1;
+	}
 
 	/**
 	 * Print the Nodes & Arcs;
