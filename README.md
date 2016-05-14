@@ -122,3 +122,4 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 - [ ] Allow multiple options in one line.
 - [ ] Handle ``EXPLICIT-PRIORITIES``.
 - [ ] Resolve cost of items protected by duplicate protection.
+- [ ] Add priorities within dummy items; probably an order of magnitude less.
