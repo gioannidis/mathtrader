@@ -61,10 +61,6 @@ int main(int argc, char **argv) {
 			" (default: stdin);"
 			" no wants file will be read");
 
-	ap.stringOption("-output-lgf-file",
-			"print the lemon graph format (LGF) file"
-			" (default: stdout)");
-
 	ap.onlyOneGroup("input_file").
 		optionGroup("input_file", "f").
 		optionGroup("input_file", "-input-lgf-file");
@@ -134,6 +130,12 @@ int main(int argc, char **argv) {
 	ap.boolOption("-show-dummy-items",
 			"show the dummy items instead of merging them; "
 			"only useful for debugging purposes");
+
+	/**
+	 * Export input to lgf file.
+	 */
+	ap.stringOption("-export-input-lgf-file",
+			"export the input graph to .lgf (LEMON) formatted file");
 
 	/**
 	 * Export input or output to dot files.
@@ -459,9 +461,9 @@ int main(int argc, char **argv) {
 	/**
 	 * Print the produced lgf file, if requested.
 	 */
-	if ( ap.given("-output-lgf-file") ) {
+	if ( ap.given("-export-input-lgf-file") ) {
 
-		const std::string &fn = ap["-output-lgf-file"];
+		const std::string &fn = ap["-export-input-lgf-file"];
 		want_parser.print(fn);
 	}
 
