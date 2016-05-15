@@ -133,7 +133,7 @@ MathTrader::hideSummary( bool v ) {
 
 MathTrader &
 MathTrader::sortByItem( bool v ) {
-	_hide_stats = v;
+	_sort_by_item = v;
 	return *this;
 }
 
@@ -400,196 +400,240 @@ MathTrader::writeResults( std::ostream & os ) const {
 	typedef decltype(final_graph) FinalGraph;
 
 	/**
-	 * TRADE LOOPS
+	 * Calculate statistics
 	 */
 	FinalGraph::NodeMap< int > component_id( final_graph );
 	const int n_cycles = stronglyConnectedComponents( final_graph, component_id );
-	int counted_cycles = 0;
+	const int total_trades = countArcs( final_graph );
 
-	/**
-	 * For each trade cycle: find a starting node.
-	 */
-	std::vector< int > cycle_start_vec( n_cycles, -1 );
 
-	for ( FinalGraph::NodeIt n(final_graph); (n != lemon::INVALID) && (counted_cycles < n_cycles); ++ n ) {
+	/***********************************//*
+	 * 	TRADE LOOPS
+	 ************************************/
+	if ( !_hide_loops ) {
 
-		const int cycle_id = component_id[n];
-		int & cycle_start = cycle_start_vec[ cycle_id ];
+		int counted_cycles = 0;
+		/**
+		 * For each trade cycle: find a starting node.
+		 */
+		std::vector< int > cycle_start_vec( n_cycles, -1 );
 
-		if ( cycle_start < 0 ) {
-			cycle_start = result_graph.id(n);
-			++ counted_cycles;
+		for ( FinalGraph::NodeIt n(final_graph); (n != lemon::INVALID) && (counted_cycles < n_cycles); ++ n ) {
+
+			const int cycle_id = component_id[n];
+			int & cycle_start = cycle_start_vec[ cycle_id ];
+
+			if ( cycle_start < 0 ) {
+				cycle_start = result_graph.id(n);
+				++ counted_cycles;
+			}
+		}
+
+		os << "TRADE LOOPS (" << total_trades << " total trades):" << std::endl;
+
+		/**
+		 * Users trading
+		 */
+		std::unordered_map< std::string, int > users_trading;
+
+		/**
+		 * For each trade cycle: print it
+		 * Start from @cycle_start and continue
+		 * until the next node is the cycle start.
+		 * This will also print no-trades (unconnected nodes)
+		 * unless the moderator has chosen not to show no-trades.
+		 * TODO: replace with DFS.
+		 */
+		for ( int cycle_start : cycle_start_vec ) {
+
+			auto const & g = final_graph;
+			const auto start_node  = g.nodeFromId( cycle_start );
+
+			if ( this->_trade[start_node] ) {
+
+				auto cur_node = start_node;
+				do {
+					auto it = users_trading.emplace( _username[_node_out2in[cur_node]], 0 );
+					int & count = it.first->second;
+					++ count;
+
+					auto const next_node = _receive[cur_node];
+
+					os << std::left
+						<< std::setw(TABWIDTH)
+						<< "(" + _username[_node_out2in[cur_node]] + ") "
+						+ _name[_node_out2in[cur_node]]
+						<< "receives (" + _username[_node_out2in[next_node]] + ") "
+						+ _name[_node_out2in[next_node]]
+						<< std::endl;
+
+					cur_node = next_node;
+
+				} while ( cur_node != start_node );
+				os << std::endl;
+			}
 		}
 	}
-	os << "n_cycles: " << n_cycles << " counted_cycles: " << counted_cycles
-		<< std::endl;
 
-	const int total_trades = countArcs( final_graph );
-	os << "TRADE LOOPS (" << total_trades << " total trades):" << std::endl;
 
-	/**
-	 * Users trading
-	 */
-	std::unordered_map< std::string, int > users_trading;
+	/***********************************//*
+	 * 	ITEM SUMMARY
+	 ************************************/
+	if ( !_hide_summary ) {
 
-	/**
-	 * For each trade cycle: print it
-	 * Start from @cycle_start and continue
-	 * until the next node is the cycle start.
-	 * This will also print no-trades (unconnected nodes)
-	 * unless the moderator has chosen not to show no-trades.
-	 */
-	for ( int cycle_start : cycle_start_vec ) {
+		os << "ITEM SUMMARY (" << total_trades << " total trades):" << std::endl;
+		os << std::endl;
 
-		auto const & g = final_graph;
-		const auto start_node  = g.nodeFromId( cycle_start );
+		/**
+		 * Structure to summarize an item
+		 */
+		typedef struct Summary_s {
+			const std::string
+				user,
+				item_name,
+				receive_user,
+				receive_item,
+				send_user,
+				send_item;
 
-		if ( this->_trade[start_node] ) {
+			Summary_s(
+					const std::string & user_,
+					const std::string & item_,
+					const std::string & ruser_ = "",
+					const std::string & ritem_ = "",
+					const std::string & suser_ = "",
+					const std::string & sitem_ = ""
+					) :
+				user( user_ ),
+				item_name( item_ ),
+				receive_user( ruser_ ),
+				receive_item( ritem_ ),
+				send_user( suser_ ),
+				send_item( sitem_ )
+			{}
 
-			auto cur_node = start_node;
-			do {
-				auto it = users_trading.emplace( _username[_node_out2in[cur_node]], 0 );
-				int & count = it.first->second;
-				++ count;
+		} Summary_t;
 
-				auto const next_node = _receive[cur_node];
+		std::multimap< std::string, Summary_t > summary_multimap;
 
+		for ( FinalGraph::NodeIt n(final_graph); n != lemon::INVALID; ++ n ){
+
+			/**
+			 * Usernames and item names are contained in
+			 * a map tied to the input graph.
+			 * Get the corresponding input graph node.
+			 */
+			const InputGraph::Node & ni = _node_out2in[n];
+
+			/**
+			 * Key
+			 */
+			const std::string
+				/* This user */
+				& user	= _username[ni],
+				& item	= _name[ni],
+				& key	= (!_sort_by_item) ? user : item;
+
+			if ( _trade[n] ) {
+
+				const std::string
+					/* User she receives from */
+					& ruser	= _username[ _node_out2in[_receive[n]] ],
+					& ritem	=     _name[ _node_out2in[_receive[n]] ],
+
+					/* User she sends to */
+					& suser	= _username[ _node_out2in[_send[n]] ],
+					& sitem	=     _name[ _node_out2in[_send[n]] ];
+
+				summary_multimap.emplace(key,
+						Summary_t(user,item,
+							ruser,ritem,
+							suser,sitem));
+			} else if ( !_hide_non_trades ) {
+
+				summary_multimap.emplace(key,
+						Summary_t(user,item));
+			}
+		}
+
+		for ( auto const & item_set : summary_multimap ) {
+			auto const & item = item_set.second;
+
+			if ( item.receive_item.length() > 0 ) {
+
+				/**
+				 * Trading item summary.
+				 */
 				os << std::left
 					<< std::setw(TABWIDTH)
-					<< "(" + _username[_node_out2in[cur_node]] + ") "
-					+ _name[_node_out2in[cur_node]]
-					<< "receives (" + _username[_node_out2in[next_node]] + ") "
-					+ _name[_node_out2in[next_node]]
+					<< "(" + item.user + ") "
+					+ item.item_name
+					<< std::setw(TABWIDTH)
+					<< "receives ("
+					+ item.receive_user + ") "
+					+ item.receive_item
+					<< "and sends to ("
+					+ item.send_user + ") "
+					+ item.send_item
 					<< std::endl;
 
-				cur_node = next_node;
+			} else if ( !_hide_non_trades ) {
 
-			} while ( cur_node != start_node );
-			os << std::endl;
+				/**
+				 * Non-trading item summary.
+				 * Show only if we're not hiding non-trades.
+				 */
+				os << std::left
+					<< std::setw(TABWIDTH)
+					<< "(" + item.user + ") "
+					+ item.item_name
+					<< "does not trade"
+					<< std::endl;
+			}
 		}
+		/**
+		 * Final endline to conclude the summary
+		 */
+		os << std::endl;
 	}
 
-	/**
-	 * Print item summary,
-	 * sorted by username.
-	 */
-	os << "ITEM SUMMARY (" << total_trades << " total trades):" << std::endl;
-	os << std::endl;
 
-	/**
-	 * Structure to summarize an item
-	 */
-	typedef struct Summary_s {
-		const std::string
-			user,
-			item_name,
-			receive_user,
-			receive_item,
-			send_user,
-			send_item;
+	/***********************************//*
+	 * 	STATISTICS
+	 ************************************/
+	if ( !_hide_stats ) {
 
-		Summary_s(
-				const std::string & user_,
-				const std::string & item_,
-				const std::string & ruser_ = "",
-				const std::string & ritem_ = "",
-				const std::string & suser_ = "",
-				const std::string & sitem_ = ""
-				) :
-			user( user_ ),
-			item_name( item_ ),
-			receive_user( ruser_ ),
-			receive_item( ritem_ ),
-			send_user( suser_ ),
-			send_item( sitem_ )
-		{}
-
-	} Summary_t;
-
-	std::multimap< std::string, Summary_t > summary_multimap;
-
-	for ( FinalGraph::NodeIt n(final_graph); n != lemon::INVALID; ++ n ){
+		int64_t total_cost = 0;
+		for ( FinalGraph::ArcIt a(final_graph); a != lemon::INVALID; ++ a ) {
+			total_cost += _getCost(_out_rank[a], _dummy[_node_out2in[final_graph.source(a)]]);
+		}
 
 		/**
-		 * Usernames and item names are contained in
-		 * a map tied to the input graph.
-		 * Get the corresponding input graph node.
+		 * Calculate statistics
+		 * TODO users_trading
+		 * TODO group sizes
 		 */
-		const InputGraph::Node & ni = _node_out2in[n];
+		const int n_trades = countArcs( cycle_forest );
+		const int n_items = countNodes( result_graph );
+		const int n_groups = n_cycles;
 
-		/**
-		 * Key
-		 */
-		const std::string
-			/* This user */
-			& user	= _username[ni],
-			& item	= _name[ni],
-			& key	= user;
-
-		if ( _trade[n] ) {
-
-			const std::string
-				/* User she receives from */
-				& ruser	= _username[ _node_out2in[_receive[n]] ],
-				& ritem	=     _name[ _node_out2in[_receive[n]] ],
-
-				/* User she sends to */
-				& suser	= _username[ _node_out2in[_send[n]] ],
-				& sitem	=     _name[ _node_out2in[_send[n]] ];
-
-			summary_multimap.emplace(key,
-					Summary_t(user,item,
-						ruser,ritem,
-						suser,sitem));
-		} else if ( !_hide_non_trades ) {
-
-			summary_multimap.emplace(key,
-					Summary_t(user,item));
-		}
+		os << "TRADE STATISTICS"
+			<< std::endl
+			<< std::endl	/**< Twice */
+			<< "Num trades = "
+			<< n_trades << " of " << n_items << " items"
+			<< " ("
+			<< std::setprecision(3)
+			<< (100.0 * static_cast< double >(n_trades) / n_items )
+			<< std::fixed
+			<< "%)"
+			<< std::endl
+			<< "Total cost = " << total_cost
+			<< std::endl
+			<< "Num groups = " << n_groups
+			<< std::endl;
+		//os << "Users trading: " << users_trading.size() << std::endl;
 	}
-
-	for ( auto const & item_set : summary_multimap ) {
-		auto const & item = item_set.second;
-
-		if ( item.receive_item.length() > 0 ) {
-
-			/**
-			 * Trading item summary.
-			 */
-			os << std::left
-				<< std::setw(TABWIDTH)
-				<< "(" + item.user + ") "
-				+ item.item_name
-				<< std::setw(TABWIDTH)
-				<< "receives ("
-				+ item.receive_user + ") "
-				+ item.receive_item
-				<< "and sends to ("
-				+ item.send_user + ") "
-				+ item.send_item
-				<< std::endl;
-
-		} else if ( !_hide_non_trades ) {
-
-			/**
-			 * Non-trading item summary.
-			 * Show only if we're not hiding non-trades.
-			 */
-			os << std::left
-				<< std::setw(TABWIDTH)
-				<< "(" + item.user + ") "
-				+ item.item_name
-				<< "does not trade"
-				<< std::endl;
-		}
-	}
-
-	int64_t total_cost = 0;
-	for ( FinalGraph::ArcIt a(final_graph); a != lemon::INVALID; ++ a ) {
-		total_cost += _getCost(_out_rank[a], _dummy[_node_out2in[final_graph.source(a)]]);
-	}
-	os << "Total cost = " << total_cost << std::endl;
-	os << "Users trading: " << users_trading.size() << std::endl;
 
 	return *this;
 #undef TABWIDTH
