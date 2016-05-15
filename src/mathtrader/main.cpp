@@ -200,14 +200,6 @@ int main(int argc, char **argv) {
 	 **********************************************/
 
 	/**
-	 * Start the timer after parsing the arguments.
-	 */
-	std::stringstream time_ss;
-	time_ss << std::left << std::setw(TABWIDTH)
-		<< "Total execution time:";
-	lemon::TimeReport t(time_ss.str());
-
-	/**
 	 * Construct the Interface.
 	 * Note that it cannot change the ArgParser
 	 * in any way.
@@ -262,7 +254,19 @@ Interface::~Interface() {
 int
 Interface::run() {
 
+	/**
+	 * Start the global timer
+	 */
+	std::stringstream time_ss;
+	time_ss << std::left << std::setw(TABWIDTH)
+		<< "Total execution time:";
+	lemon::TimeReport t(time_ss.str());
+
+	/**
+	 * Argument Parsing reference.
+	 */
 	auto const & ap = this->_ap;
+
 
 	/**************************************//*
 	 * OPEN OUTPUT STREAM
@@ -647,9 +651,19 @@ Interface::run() {
 		return -1;
 	}
 
+
 	/**
-	 * Close output file stream if needed.
+	 * End of STANDARD mathtrader++ operations.
+	 * The LAST thing to append to the standard output (file)
+	 * is the elapsed REAL time until here.
+	 * The elapsed real time of the application might
+	 * be greater if further export operations have been defined.
+	 * Finally, close the output file stream if needed.
 	 */
+	os << "Elapsed real time = "
+		<< t.realTime()
+		<< "s"
+		<< std::endl;
 	if ( fs.is_open() ) {
 		fs.close();
 	}
