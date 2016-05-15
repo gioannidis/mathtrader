@@ -123,3 +123,4 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 - [ ] Handle ``EXPLICIT-PRIORITIES``.
 - [x] Resolve cost of items protected by duplicate protection.
 - [ ] Add I/O checksums.
+- [ ] Echo overridden options to results.
