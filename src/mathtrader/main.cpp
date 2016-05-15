@@ -48,6 +48,11 @@ private:
 	 * when writing to a file.
 	 */
 	std::ofstream _ofs;
+
+	/**
+	 * Make uppercase
+	 */
+	static void _toUpper( std::string & );
 };
 
 
@@ -409,6 +414,7 @@ Interface::run() {
 			/* Do nothing;
 			 * override want file.
 			 */
+			math_trader.clearPriorities();
 
 		} else if ( ap.given("-priorities") ) {
 
@@ -416,20 +422,18 @@ Interface::run() {
 			 * override want file.
 			 */
 			std::string priorities( ap["-priorities"] );
-			std::transform( priorities.begin(), priorities.end(),
-					priorities.begin(), ::toupper );
+			_toUpper( priorities );
 			math_trader.setPriorities( priorities );
 
 		} else if ( !input_lgf_file ) {
 
 			/* Get priority scheme from want file, if any.
 			 * Set the priorities if this option has been given.
-			 * TODO avoid code repetition in making uppercase.
+			 * Make uppercase.
 			 */
 			std::string priorities = want_parser.getPriorityScheme();
 			if ( priorities.length() > 0 ) {
-				std::transform( priorities.begin(), priorities.end(),
-						priorities.begin(), ::toupper );
+				_toUpper( priorities );
 				math_trader.setPriorities( priorities );
 			}
 
@@ -574,4 +578,11 @@ Interface::run() {
 	}
 
 	return 0;
+}
+
+void
+Interface::_toUpper( std::string & str ) {
+
+	std::transform( str.begin(), str.end(),
+			str.begin(), ::toupper );
 }
