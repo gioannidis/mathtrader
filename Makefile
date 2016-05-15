@@ -66,8 +66,7 @@ ROUTEOBJECTS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(ROUTESOURCES))
 # Executables
 ###
 OBJECTS	= $(MATHOBJECTS) $(ROUTEOBJECTS)
-#EXECUTABLES = mathtrader++ routechecker
-EXECUTABLES = mathtrader++
+EXECUTABLES = mathtrader++ routechecker
 
 ###
 # Various
@@ -92,7 +91,13 @@ MKDIR  = mkdir -p
 ###
 # Default receipe
 ###
+.DEFAULT_GOAL := default
+.PHONY: default
+default: buildrepo mathtrader++
 
+###
+# Build all executables
+###
 .PHONY: all
 all: buildrepo $(EXECUTABLES)
 
