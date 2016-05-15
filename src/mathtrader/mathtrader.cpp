@@ -345,7 +345,7 @@ MathTrader::mergeDummyItems() {
 
 
 const MathTrader &
-MathTrader::tradeLoops( std::ostream & os ) const {
+MathTrader::writeResults( std::ostream & os ) const {
 
 #define TABWIDTH 50
 

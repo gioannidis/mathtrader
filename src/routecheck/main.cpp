@@ -342,7 +342,7 @@ int main(int argc, char **argv) {
 		lemon::TimeReport t("Result report:        ");
 
 		want_parser.showErrors(os);
-		route_checker.printResults(os);
+		route_checker.writeResults(os);
 
 	} catch ( const std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()

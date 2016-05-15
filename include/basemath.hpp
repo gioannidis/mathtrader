@@ -88,6 +88,14 @@ public:
 	virtual void run() = 0;
 
 	/**
+	 * @brief Print (Write) the results.
+	 * Writes the results to the given output stream.
+	 * Implementation-dependent.
+	 * Default stream: std::cout.
+	 */
+	virtual const BaseMath & writeResults( std::ostream & os = std::cout ) const = 0;
+
+	/**
 	 * @brief Export input graph to dot format.
 	 * Writes the input graph
 	 * to the given output stream as .dot format.

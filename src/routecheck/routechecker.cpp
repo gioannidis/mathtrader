@@ -196,7 +196,7 @@ RouteChecker::run() {
  **************************************/
 
 const RouteChecker &
-RouteChecker::printResults( std::ostream & os ) const {
+RouteChecker::writeResults( std::ostream & os ) const {
 
 	os << "Total cost: " << _total_cost << std::endl;
 	os << "Visited: " << _visited << std::endl;

@@ -79,7 +79,7 @@ public:
 	/**
 	 * @brief Merge dummies.
 	 * If not run, dummy nodes will be printed
-	 * by tradeLoops().
+	 * by writeResults().
 	 * Run to merge them.
 	 * @return *this
 	 */
@@ -92,7 +92,7 @@ public:
 	 * @param os output stream (default: stdout)
 	 * @return *this
 	 */
-	const MathTrader & tradeLoops( std::ostream & os = std::cout ) const ;
+	const MathTrader & writeResults( std::ostream & os = std::cout ) const ;
 
 	/**
 	 * @brief Display item summary.

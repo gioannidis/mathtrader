@@ -642,8 +642,7 @@ Interface::run() {
 		 * - Set output options (TODO)
 		 * Report the results.
 		 */
-		math_trader.tradeLoops(os);
-		//math_trader.itemSummary(os);
+		math_trader.writeResults(os);
 
 	} catch ( const std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()

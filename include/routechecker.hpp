@@ -64,7 +64,7 @@ public:
 	/**
 	 * @brief Print RouteChecker results and stats.
 	 */
-	const RouteChecker & printResults( std::ostream & os = std::cout ) const ;
+	const RouteChecker & writeResults( std::ostream & os = std::cout ) const ;
 
 private:
 	std::list< std::string > _loop_list;
