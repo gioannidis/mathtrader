@@ -403,7 +403,7 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 		<< std::endl;
 
 	const int total_trades = countArcs( final_graph );
-	os << "trades: " << total_trades << std::endl;
+	os << "TRADE LOOPS (" << total_trades << " total trades):" << std::endl;
 
 	/**
 	 * Users trading
@@ -446,7 +446,6 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 			os << std::endl;
 		}
 	}
-	os << "Users trading: " << users_trading.size() << std::endl;
 
 	/**
 	 * Print item summary,
@@ -568,6 +567,7 @@ MathTrader::tradeLoops( std::ostream & os ) const {
 		total_cost += _getCost(_out_rank[a], _dummy[_node_out2in[final_graph.source(a)]]);
 	}
 	os << "Total cost = " << total_cost << std::endl;
+	os << "Users trading: " << users_trading.size() << std::endl;
 
 	return *this;
 #undef TABWIDTH
