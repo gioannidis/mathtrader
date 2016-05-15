@@ -95,19 +95,6 @@ public:
 	const MathTrader & writeResults( std::ostream & os = std::cout ) const ;
 
 	/**
-	 * @brief Display item summary.
-	 * Displays the item summary
-	 * to the given output stream.
-	 * - If trading
-	 * - Sending item
-	 * - Receiving item
-	 * Items are sorted by usernames.
-	 * @param os output stream (default: stdout)
-	 * @return *this
-	 */
-	const MathTrader & itemSummary( std::ostream & os = std::cout ) const ;
-
-	/**
 	 * @brief Export output graph to dot format.
 	 * Writes the results graph
 	 * to the given output stream as .dot format.
