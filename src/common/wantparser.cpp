@@ -169,6 +169,11 @@ WantParser::hideSummary() const {
 }
 
 bool
+WantParser::showElapsedTime() const {
+	return _bool_options[SHOW_ELAPSED_TIME];
+}
+
+bool
 WantParser::sortByItem() const {
 	return _bool_options[SORT_BY_ITEM];
 }

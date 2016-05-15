@@ -110,6 +110,14 @@ public:
 	bool hideSummary() const ;
 
 	/**
+	 * @brief Show "SHOW-ELAPSED-TIME".
+	 * Shows if the elapsed real time should be appended
+	 * to the results.
+	 * @return true if SHOW-ELAPSED-TIME has been given.
+	 */
+	bool showElapsedTime() const ;
+
+	/**
 	 * @brief Show "SORT-BY-ITEM".
 	 * Shows if mathtrader should sort the item summary
 	 * by item, instead of by username.
@@ -139,6 +147,7 @@ private:
 		HIDE_REPEATS,
 		REQUIRE_COLONS,
 		REQUIRE_USERNAMES,
+		SHOW_ELAPSED_TIME,
 		SHOW_MISSING,
 		/* External options */
 		HIDE_ERRORS,
@@ -148,7 +157,6 @@ private:
 		HIDE_SUMMARY,
 		SORT_BY_ITEM,
 		/* Not implemented */
-		SHOW_ELAPSED_TIME,
 		MAX_BOOL_OPTIONS	/**< Not an option; always LAST */
 	};
 	enum IntOption {	/**< Int options enum */
