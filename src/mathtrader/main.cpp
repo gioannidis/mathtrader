@@ -655,15 +655,20 @@ Interface::run() {
 	/**
 	 * End of STANDARD mathtrader++ operations.
 	 * The LAST thing to append to the standard output (file)
-	 * is the elapsed REAL time until here.
+	 * is the elapsed REAL time until here,
+	 * if it has been requested by the moderator.
 	 * The elapsed real time of the application might
 	 * be greater if further export operations have been defined.
 	 * Finally, close the output file stream if needed.
 	 */
-	os << "Elapsed real time = "
-		<< t.realTime()
-		<< "s"
-		<< std::endl;
+	if ( want_parser.showElapsedTime() ) {
+		os << "Elapsed real time = "
+			<< t.realTime()
+			<< "s"
+			<< std::endl;
+	}
+
+	/* Close file stream */
 	if ( fs.is_open() ) {
 		fs.close();
 	}
