@@ -31,7 +31,7 @@
 
 int main(int argc, char **argv) {
 
-	std::cout << "mathtrader++ version 1.0" << std::endl;
+	std::cout << "mathtrader++ version 1.1b" << std::endl;
 
 	/**************************************//*
 	 * COMMAND LINE ARGUMENT PARSING
