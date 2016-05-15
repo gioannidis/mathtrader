@@ -121,5 +121,5 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 - [ ] Handle corner cases where there are no want lists at all.
 - [ ] Allow multiple options in one line.
 - [ ] Handle ``EXPLICIT-PRIORITIES``.
-- [ ] Resolve cost of items protected by duplicate protection.
-- [ ] Add priorities within dummy items; probably an order of magnitude less.
+- [x] Resolve cost of items protected by duplicate protection.
+- [ ] Add I/O checksums.
