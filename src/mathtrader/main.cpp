@@ -28,10 +28,34 @@
 #include <lemon/time_measure.h>
 #include <sstream>
 
+#define VERSION "1.1b"
+
+class Interface {
+
+public:
+	Interface( const lemon::ArgParser & ap );
+	~Interface();
+	int run();
+
+private:
+	/**
+	 * Argument parser
+	 */
+	const lemon::ArgParser & _ap;
+
+	/**
+	 * Output file stream,
+	 * when writing to a file.
+	 */
+	std::ofstream _ofs;
+};
+
+
+/**********************************************//*
+ * 		MAIN FUNCTION
+ ************************************************/
 
 int main(int argc, char **argv) {
-
-	std::cout << "mathtrader++ version 1.1b" << std::endl;
 
 	/**************************************//*
 	 * COMMAND LINE ARGUMENT PARSING
@@ -160,6 +184,41 @@ int main(int argc, char **argv) {
 	 * Start the timer after parsing the arguments.
 	 */
 	lemon::TimeReport t("Total execution time: ");
+
+	Interface runner(ap);
+	runner.run();
+
+	return 0;
+}
+
+
+
+/**********************************************//*
+ * 		INTERFACE Methods
+ ************************************************/
+
+Interface::Interface( const lemon::ArgParser & ap ) :
+	_ap( ap )
+{
+}
+
+Interface::~Interface() {
+
+	/**
+	 * On destruction: always close file stream
+	 * if applicable
+	 */
+	if ( _ofs.is_open() ) {
+		_ofs.close();
+	}
+}
+
+int
+Interface::run() {
+
+	auto const & ap = this->_ap;
+
+	std::cout << "mathtrader++ version 1.1b" << std::endl;
 
 
 	/**************************************//*
@@ -398,7 +457,7 @@ int main(int argc, char **argv) {
 	 * or std::cout.
 	 * Open the output file, if needed.
 	 */
-	std::ofstream fs;
+	std::ofstream & fs = this->_ofs;
 	bool write_to_file = ap.given("o");
 
 	if ( write_to_file ) {
