@@ -639,10 +639,17 @@ Interface::run() {
 		/**
 		 * Process the results:
 		 * - Eliminate dummies
-		 * - Set output options (TODO)
+		 * - Set output options
+		 * TODO provide a better interface
+		 * that checks command line overrides.
 		 * Report the results.
 		 */
-		math_trader.writeResults(os);
+		math_trader.
+			hideLoops( want_parser.hideLoops() ).
+			hideStats( want_parser.hideStats() ).
+			hideSummary( want_parser.hideSummary() ).
+			sortByItem( want_parser.sortByItem() ).
+			writeResults(os);
 
 	} catch ( const std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
