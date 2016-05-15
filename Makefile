@@ -20,6 +20,18 @@
 # along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
 
 #===============================#
+#	Compiler/Linker Flags	#
+#===============================#
+
+CXX      = g++
+DBGFLAGS = -g
+OPTIM    = -O3
+INCLUDE  = -I $(INCDIR)
+CXXFLAGS = $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11
+LDFLAGS  = -lemon
+
+
+#===============================#
 #	Directories		#
 #===============================#
 
@@ -62,18 +74,6 @@ EXECUTABLES = mathtrader++
 ###
 DOXYBIN	 = doxygen
 DOXYFILE = $(CFGDIR)/doxyfile.cfg
-
-
-#===============================#
-#	Compiler/Linker Flags	#
-#===============================#
-
-CXX      = g++
-DBGFLAGS = -g
-OPTIM    = -O3
-INCLUDE  = -I $(INCDIR)
-CXXFLAGS = $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11 -Wno-strict-aliasing
-LDFLAGS  = -lemon
 
 
 #===============================#
