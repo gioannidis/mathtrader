@@ -74,11 +74,49 @@ public:
 	std::string getPriorityScheme() const ;
 
 	/**
-	 * @brief Hide non-trades at output.
-	 * Shows if we should hide non-trades.
+	 * @brief Show "HIDE-ERRORS".
+	 * Shows if wantparser should hide errors.
+	 * @return true if HIDE-ERRORS has been given.
+	 */
+	bool hideErrors() const ;
+
+	/**
+	 * @brief Show "HIDE-LOOPS".
+	 * Shows if mathtrader should hide trade loops.
+	 * @return true if HIDE-LOOPS has been given.
+	 */
+	bool hideLoops() const ;
+
+	/**
+	 * @brief Show "HIDE-NONTRADES".
+	 * Shows if mathtrader should hide non-trades.
 	 * @return true if HIDE-NONTRADES has been given.
 	 */
 	bool hideNonTrades() const ;
+
+	/**
+	 * @brief Show "HIDE-STATS".
+	 * Shows if mathtrader should hide result statistics
+	 * (other than number of trades).
+	 * @return true if HIDE-NONTRADES has been given.
+	 */
+	bool hideStats() const ;
+
+	/**
+	 * @brief Show "HIDE-SUMMARY".
+	 * Shows if mathtrader should hide the item summary.
+	 * @return true if HIDE-NONTRADES has been given.
+	 */
+	bool hideSummary() const ;
+
+	/**
+	 * @brief Show "SORT-BY-ITEM".
+	 * Shows if mathtrader should sort the item summary
+	 * by item, instead of by username.
+	 * If hideSummary() is false, this option has no effect.
+	 * @return true if SORT-BY-ITEM has been given.
+	 */
+	bool sortByItem() const ;
 
 private:
 	/***************************//*
@@ -95,20 +133,23 @@ private:
 	 * Boolean & integer options enum
 	 */
 	enum BoolOption {	/**< Bool options enum */
+		/* Internal options */
 		ALLOW_DUMMIES,
+		CASE_SENSITIVE,
+		HIDE_REPEATS,
 		REQUIRE_COLONS,
 		REQUIRE_USERNAMES,
-		HIDE_LOOPS,
-		HIDE_SUMMARY,
-		HIDE_NONTRADES,
-		HIDE_ERRORS,
-		HIDE_REPEATS,
-		HIDE_STATS,
-		SORT_BY_ITEM,
-		CASE_SENSITIVE,
 		SHOW_MISSING,
+		/* External options */
+		HIDE_ERRORS,
+		HIDE_LOOPS,
+		HIDE_NONTRADES,
+		HIDE_STATS,
+		HIDE_SUMMARY,
+		SORT_BY_ITEM,
+		/* Not implemented */
 		SHOW_ELAPSED_TIME,
-		MAX_BOOL_OPTIONS	/**< Not an option */
+		MAX_BOOL_OPTIONS	/**< Not an option; always LAST */
 	};
 	enum IntOption {	/**< Int options enum */
 		SMALL_STEP,

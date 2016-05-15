@@ -135,7 +135,7 @@ WantParser::showOptions( std::ostream & os ) const {
 
 
 /************************************//*
- * 	PUBLIC METHODS - OPTIONS OUTPUT
+ * PUBLIC METHODS - EXTERNAL OPTIONS OUTPUT
  **************************************/
 
 std::string
@@ -144,8 +144,33 @@ WantParser::getPriorityScheme() const {
 }
 
 bool
+WantParser::hideErrors() const {
+	return _bool_options[HIDE_ERRORS];
+}
+
+bool
+WantParser::hideLoops() const {
+	return _bool_options[HIDE_LOOPS];
+}
+
+bool
 WantParser::hideNonTrades() const {
 	return _bool_options[HIDE_NONTRADES];
+}
+
+bool
+WantParser::hideStats() const {
+	return _bool_options[HIDE_STATS];
+}
+
+bool
+WantParser::hideSummary() const {
+	return _bool_options[HIDE_SUMMARY];
+}
+
+bool
+WantParser::sortByItem() const {
+	return _bool_options[SORT_BY_ITEM];
 }
 
 
@@ -799,22 +824,24 @@ WantParser::_dummy( const std::string & item ) {
 
 /**
  * Unordered_map to map string-options to enums.
+ * Tip: list them alphabetically here
+ * to ease error-detection.
  */
 const std::unordered_map< std::string, WantParser::BoolOption  >
 WantParser::_bool_option_map = {
 	{"ALLOW-DUMMIES",	ALLOW_DUMMIES},
-	{"REQUIRE-COLONS",	REQUIRE_COLONS},
-	{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},
-	{"HIDE-LOOPS",		HIDE_LOOPS},
-	{"HIDE-SUMMARY",	HIDE_SUMMARY},
-	{"HIDE-NONTRADES",	HIDE_NONTRADES},
+	{"CASE_SENSITIVE",	CASE_SENSITIVE},
 	{"HIDE-ERRORS",		HIDE_ERRORS},
+	{"HIDE-LOOPS",		HIDE_LOOPS},
+	{"HIDE-NONTRADES",	HIDE_NONTRADES},
 	{"HIDE-REPEATS",	HIDE_REPEATS},
 	{"HIDE-STATS",		HIDE_STATS},
-	{"SORT-BY-ITEM",	SORT_BY_ITEM},
-	{"HIDE-REPEATS",	CASE_SENSITIVE},
-	{"SHOW-MISSING",	SHOW_MISSING},
+	{"HIDE-SUMMARY",	HIDE_SUMMARY},
+	{"REQUIRE-COLONS",	REQUIRE_COLONS},
+	{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},
 	{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},
+	{"SHOW-MISSING",	SHOW_MISSING},
+	{"SORT-BY-ITEM",	SORT_BY_ITEM},
 };
 
 
