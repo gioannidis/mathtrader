@@ -56,10 +56,10 @@ Therefore, we are also dealing with an algorithmic challenge.
 
 The Math Trading problem may be formally stated as:
 
-> We are given a directed graph G=(V,E) whose arcs have costs.
-> Find a set of vertex-disjoint cycles that maximizes
+> Given a weighted directed graph `G=(V,E)` with weights `w(E)`,
+> find a set of vertex-disjoint cycles that maximizes
 > the number of covered vertices
-> and minimizes the total arc cost among the
+> and minimizes the total edge cost among the
 > set of optimal solutions.
 
 
