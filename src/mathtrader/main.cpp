@@ -28,7 +28,16 @@
 #include <lemon/time_measure.h>
 #include <sstream>
 
+/* Version */
 #define MT_VERSION "1.1b"
+
+/* Tabular width for timer output */
+#define TABWIDTH (30)
+
+
+/**********************************************//*
+ * 		INTERFACE DECLARATION
+ ************************************************/
 
 class Interface {
 
@@ -188,7 +197,10 @@ int main(int argc, char **argv) {
 	/**
 	 * Start the timer after parsing the arguments.
 	 */
-	lemon::TimeReport t("Total execution time: ");
+	std::stringstream time_ss;
+	time_ss << std::left << std::setw(TABWIDTH)
+		<< "Total execution time:";
+	lemon::TimeReport t(time_ss.str());
 
 	/**
 	 * Construct the Interface.
@@ -322,14 +334,25 @@ Interface::run() {
 		 * Read LGF from file or stdin
 		 */
 		try {
-			lemon::TimeReport t("Input graph reading:  ");
+			/**
+			 * Start the timer
+			 */
+			std::stringstream time_ss;
+			time_ss << std::left << std::setw(TABWIDTH)
+				<< "Reading the input graph:";
+			lemon::TimeReport t(time_ss.str());
 
+			/**
+			 * Read the input LGF,
+			 * from either std::cin or file.
+			 */
 			const std::string & fn = ap["-input-lgf-file"];
 			if ( fn.length() > 0 ) {
 				math_trader.graphReader(fn);
 			} else {
 				math_trader.graphReader();
 			}
+
 		} catch ( const std::exception & error ) {
 			std::cerr << "Error during reading"
 				" the LGF file: "
@@ -344,7 +367,13 @@ Interface::run() {
 		 * Read file from wantlist
 		 */
 		try {
-			lemon::TimeReport t("Want-list reading:    ");
+			/**
+			 * Start the timer
+			 */
+			std::stringstream time_ss;
+			time_ss << std::left << std::setw(TABWIDTH)
+				<< "Reading the want lists:";
+			lemon::TimeReport t(time_ss.str());
 
 			/**
 			 * Configure input file
@@ -376,9 +405,19 @@ Interface::run() {
 		want_parser.print(ss);
 
 		try {
-			lemon::TimeReport t("Passing input graph:  ");
+			/**
+			 * Start the timer
+			 */
+			std::stringstream time_ss;
+			time_ss << std::left << std::setw(TABWIDTH)
+				<< "Passing input graph:";
+			lemon::TimeReport t(time_ss.str());
 
+			/**
+			 * Start the reading
+			 */
 			math_trader.graphReader(ss);
+
 		} catch ( const std::exception & error ) {
 			std::cerr << "Error during reading "
 				" the produced LGF file: "
@@ -513,8 +552,19 @@ Interface::run() {
 	 * Run the math trading algorithm.
 	 */
 	try {
-		lemon::TimeReport t("Algorithm execution:  ");
+		/**
+		 * Start the timer
+		 */
+		std::stringstream time_ss;
+		time_ss << std::left << std::setw(TABWIDTH)
+			<< "Execution:";
+		lemon::TimeReport t(time_ss.str());
+
+		/**
+		 * Start the execution
+		 */
 		math_trader.run();
+
 	} catch ( const std::exception & error ) {
 		std::cerr << "Error during execution: "
 			<< error.what()
@@ -561,8 +611,20 @@ Interface::run() {
 	 * or the output file.
 	 */
 	try {
-		lemon::TimeReport t("Result report:        ");
+		/**
+		 * Start the timer
+		 */
+		std::stringstream time_ss;
+		time_ss << std::left << std::setw(TABWIDTH)
+			<< "Result processing & report:";
+		lemon::TimeReport t(time_ss.str());
 
+		/**
+		 * Process the results:
+		 * - Eliminate dummies
+		 * - Set output options (TODO)
+		 * Report the results.
+		 */
 		want_parser.showOptions(os);
 		want_parser.showErrors(os);
 		math_trader.tradeLoops(os);
