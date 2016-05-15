@@ -185,8 +185,32 @@ int main(int argc, char **argv) {
 	 */
 	lemon::TimeReport t("Total execution time: ");
 
+	/**
+	 * Construct the Interface.
+	 * Note that it cannot change the ArgParser
+	 * in any way.
+	 */
 	Interface runner(ap);
-	runner.run();
+
+	/**
+	 * Run the application.
+	 * Any caught exceptions should be considered FATAL.
+	 * In general, class Interface should handle exceptions
+	 * and re-throw them only when FATAL.
+	 */
+	try {
+		runner.run();
+	} catch ( const std::exception & error ) {
+		std::cerr << "FATAL error: "
+			<< error.what()
+			<< std::endl;
+		return -1;
+	} catch ( ... ) {
+		std::cerr << "FATAL error: "
+			<< "unknown exception caught"
+			<< std::endl;
+		return -1;
+	}
 
 	return 0;
 }
@@ -218,7 +242,48 @@ Interface::run() {
 
 	auto const & ap = this->_ap;
 
-	std::cout << "mathtrader++ version 1.1b" << std::endl;
+	/**************************************//*
+	 * OPEN OUTPUT STREAM
+	 ****************************************/
+
+	/**
+	 * First operation is always to open the output file stream.
+	 * The output will be written to either a file or std::cout.
+	 * Open the output file, if needed.
+	 */
+	std::ofstream & fs = this->_ofs;
+	bool write_to_file = ap.given("o");
+
+	if ( write_to_file ) {
+
+		const std::string & fn = ap["o"];
+		fs.open(fn, std::ios_base::out);
+
+		/**
+		 * On fail, just append to std::cout
+		 * TODO consider printing this at the destructor,
+		 * in order to be printed last,
+		 * as the user might not see it.
+		 */
+		if ( fs.fail() ) {
+			std::cerr << "Error opening output file "
+				+ fn
+				+ "; will append to standard output instead."
+				<< std::endl;
+			write_to_file = false;
+		}
+	}
+
+	/**
+	 * Set the output stream to the file stream
+	 * or std::cout, whichever is applicable.
+	 */
+	std::ostream & os = (write_to_file) ? fs : std::cout;
+
+	/**
+	 * Header of output: always the version.
+	 */
+	os << "mathtrader++ version " << VERSION << std::endl;
 
 
 	/**************************************//*
@@ -452,37 +517,6 @@ Interface::run() {
 		}
 	}
 
-	/**
-	 * We will print the the output to either a file
-	 * or std::cout.
-	 * Open the output file, if needed.
-	 */
-	std::ofstream & fs = this->_ofs;
-	bool write_to_file = ap.given("o");
-
-	if ( write_to_file ) {
-
-		const std::string & fn = ap["o"];
-		fs.open(fn, std::ios_base::out);
-
-		/**
-		 * On fail, just append to std::cout
-		 */
-		if ( fs.fail() ) {
-			std::cerr << "Error opening output file "
-				+ fn
-				+ "; will append to standard output instead."
-				<< std::endl;
-			write_to_file = false;
-		}
-
-	}
-
-	/**
-	 * Set the output stream to the file stream
-	 * or std::cout, whichever is applicable.
-	 */
-	std::ostream & os = (write_to_file) ? fs : std::cout;
 
 	/**
 	 * Print the WantParser and the MathTrader results
