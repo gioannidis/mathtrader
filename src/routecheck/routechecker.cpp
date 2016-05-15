@@ -167,7 +167,12 @@ RouteChecker::run() {
 			 */
 			if ( cur_id == start_id ) {
 				new_loop = true;
-			} else if ( visit[s] ) {
+			}
+
+			/**
+			 * Check if already visited.
+			 */
+			if ( visit[s] ) {
 				throw std::runtime_error("Multiple visits"
 						" for item " + _name[s]);
 			}
