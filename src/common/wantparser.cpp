@@ -310,9 +310,43 @@ WantParser &
 WantParser::_parseOfficialName( const std::string & line ) {
 
 	/**
+	 * Regular expression to separate fields.
+	 *
+	 * Example of an official name line:
+	 * 0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
+	 *
+	 * $1	0042-PUERTO
+	 * $2	==>
+	 * $3	"Puerto Rico"
+	 * $4	(from username)
+	 * $5	[copy 1 of 2]
+	 *
+	 * We may also parse single-nested quotation marks, e.g.:
+	 * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
+	 *
+	 * NOTE: regexes are eager, meaning that the longest/more specialized
+	 * matching should be put first.
+	 * A g++-4.9 bug might produce the correct results if group W
+	 * is in the wrong position. g++-5.3 fixes this.
+	 */
+	static const std::regex FPAT_names(
+		R"(\"([\"]|[^\"])+\")"	// Group 1: quotation mark pairs
+					// with possible quotation marks included.
+					// This finds the longest stream of quotation marks.
+					// TODO If usernames or descriptions have
+					// quotation marks, we will have a problem here.
+		"|"
+		R"(\([^\)]+\))"		// Group 2: parentheses
+		"|"
+		R"(\[[^\]]+\])"		// Group 3: brackets
+		"|"
+		R"(\S+)"		// Group 4: any non-whitespace
+	);
+
+	/**
 	 * Tokenize the line
 	 */
-	auto match = _split( line, _FPAT );
+	auto match = _split( line, FPAT_names );
 
 	/**
 	 * Sanity check for minimum number of matches
@@ -793,39 +827,3 @@ WantParser::_int_option_map = {
 	{"BIG-STEP",		BIG_STEP},
 	{"NONTRADE_COST",	NONTRADE_COST},
 };
-
-
-/**
- * Regular expression to separate fields.
- *
- * Example of an official name line:
- * 0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
- *
- * $1	0042-PUERTO
- * $2	==>
- * $3	"Puerto Rico"
- * $4	(from username)
- * $5	[copy 1 of 2]
- *
- * We may also parse single-nested quotation marks, e.g.:
- * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
- *
- * NOTE: regexes are eager, meaning that the longest/more specialized
- * matching should be put first.
- * A g++-4.9 bug might produce the correct results if group W
- * is in the wrong position. g++-5.3 fixes this.
- */
-const std::regex
-WantParser::_FPAT(
-	R"(\"([\"]|[^\"])+\")"	// Group Q: quotation mark pairs
-				// with possible quotation marks included.
-				// This finds the longest stream of quotation marks.
-				// TODO If usernames or descriptions have
-				// quotation marks, we will have a problem here.
-	"|"
-	R"(\([^\)]+\))"		// Group P: parentheses
-	"|"
-	R"(\[[^\]]+\])"		// Group B: brackets
-	"|"
-	R"(\S+)"		// Group W: any non-whitespace
-);

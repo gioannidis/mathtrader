@@ -288,19 +288,6 @@ private:
 	 * @return true if it's dummy, false otherwise.
 	 */
 	static bool _dummy( const std::string & item );
-
-
-	/***************************//*
-	 * UTILITY STATIC MEMBERS
-	 *****************************/
-
-	/**
-	 * Regex to define fields.
-	 * The regular expression defines what the fields **are**,
-	 * therefore it's not a field separator.
-	 * It's used like FPAT from gawk.
-	 */
-	static const std::regex _FPAT;
 };
 
 #endif /* _WANTPARSER_HPP_ */
