@@ -194,6 +194,11 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+
+	/********************************************//*
+	 * 	Running MathTrader++
+	 **********************************************/
+
 	/**
 	 * Start the timer after parsing the arguments.
 	 */
@@ -226,7 +231,7 @@ int main(int argc, char **argv) {
 		std::cerr << "FATAL error: "
 			<< "unknown exception caught"
 			<< std::endl;
-		return -1;
+		return -2;
 	}
 
 	return 0;
