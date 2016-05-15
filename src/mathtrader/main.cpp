@@ -28,7 +28,7 @@
 #include <lemon/time_measure.h>
 #include <sstream>
 
-#define VERSION "1.1b"
+#define MT_VERSION "1.1b"
 
 class Interface {
 
@@ -288,7 +288,7 @@ Interface::run() {
 	/**
 	 * Header of output: always the version.
 	 */
-	os << "mathtrader++ version " << VERSION << std::endl;
+	os << "mathtrader++ version " << MT_VERSION << std::endl;
 
 
 	/**************************************//*
@@ -409,6 +409,7 @@ Interface::run() {
 		/**
 		 * Set the priority scheme.
 		 * Make uppercase.
+		 * Fallback to default value on error.
 		 */
 		try {
 
@@ -468,6 +469,7 @@ Interface::run() {
 		/**
 		 * Algorithm to be used
 		 * Make uppercase.
+		 * Fallback to default value on error.
 		 */
 		try {
 			if ( ap.given("-algorithm") ) {
@@ -493,6 +495,8 @@ Interface::run() {
 		}
 
 	} catch ( const std::exception & error ) {
+
+		/* Any unhandled exceptions */
 		std::cerr << "Error during initialization: " << error.what()
 			<< std::endl;
 
@@ -567,7 +571,6 @@ Interface::run() {
 	} catch ( const std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
 			<< std::endl;
-		fs.close();
 		return -1;
 	}
 
@@ -579,13 +582,18 @@ Interface::run() {
 	}
 
 
-
 	/**************************************//*
 	 * OUTPUT OPERATIONS - UTILITIES
 	 ****************************************/
 
 	/**
-	 * Print the produced lgf file, if requested.
+	 * NOTE: none of these operations
+	 * should write to the default output stream,
+	 */
+
+	/**
+	 * Export the input graph to .lgf file,
+	 * if requested.
 	 */
 	if ( ap.given("-export-input-lgf-file") ) {
 
