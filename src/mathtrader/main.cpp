@@ -402,52 +402,66 @@ Interface::run() {
 	 * PARAMETER CONFIGURATION
 	 ****************************************/
 
+	/* Outermost try to configure parameters.
+	 * We should only catch unhandled exceptions.
+	 */
 	try {
 		/**
-		 * Priority scheme:
-		 * - Any option from command line overrides given options
-		 *   in the want file.
+		 * Set the priority scheme.
 		 * Make uppercase.
 		 */
-		if ( ap.given("-no-priorities") ) {
+		try {
 
-			/* Do nothing;
-			 * override want file.
-			 */
-			math_trader.clearPriorities();
+			if ( ap.given("-no-priorities") ) {
 
-		} else if ( ap.given("-priorities") ) {
+				/* Do nothing;
+				 * override want file.
+				 */
+				math_trader.clearPriorities();
 
-			/* Set priorities;
-			 * override want file.
-			 */
-			std::string priorities( ap["-priorities"] );
-			_toUpper( priorities );
-			math_trader.setPriorities( priorities );
+			} else if ( ap.given("-priorities") ) {
 
-		} else if ( !input_lgf_file ) {
-
-			/* Get priority scheme from want file, if any.
-			 * Set the priorities if this option has been given.
-			 * Make uppercase.
-			 */
-			std::string priorities = want_parser.getPriorityScheme();
-			if ( priorities.length() > 0 ) {
+				/* Set priorities;
+				 * override want file.
+				 */
+				std::string priorities( ap["-priorities"] );
 				_toUpper( priorities );
 				math_trader.setPriorities( priorities );
+
+			} else if ( !input_lgf_file ) {
+
+				/* Get priority scheme from want file, if any.
+				 * Set the priorities if this option has been given.
+				 * Make uppercase.
+				 */
+				std::string priorities = want_parser.getPriorityScheme();
+				if ( priorities.length() > 0 ) {
+					_toUpper( priorities );
+					math_trader.setPriorities( priorities );
+				}
+
 			}
 
+		} catch ( const std::runtime_error & error ) {
+
+			/* Catch only runtime errors */
+			std::cerr << "Error in setting the priority scheme: "
+				<< error.what()
+				<< std::endl;
+
+			/* On error: clear the priorities */
+			math_trader.clearPriorities();
+			std::cerr << "Warning: falling back to "
+				<< "no priorities"
+				<< std::endl;
 		}
 
 		/**
 		 * Show/Hide non-trading items
 		 */
 		if ( ap.given("-show-non-trades") ) {
-
 			math_trader.showNonTrades();
-
 		} else if ( ap.given("-hide-non-trades") || want_parser.hideNonTrades() ) {
-
 			math_trader.hideNonTrades();
 		}
 
@@ -455,12 +469,27 @@ Interface::run() {
 		 * Algorithm to be used
 		 * Make uppercase.
 		 */
-		if ( ap.given("-algorithm") ) {
+		try {
+			if ( ap.given("-algorithm") ) {
 
-			std::string algorithm( ap["-algorithm"] );
-			std::transform( algorithm.begin(), algorithm.end(),
-					algorithm.begin(), ::toupper );
+				std::string algorithm( ap["-algorithm"] );
+				_toUpper( algorithm );
+				math_trader.setAlgorithm( algorithm );
+			}
+
+		} catch ( const std::runtime_error & error ) {
+
+			/* Catch only runtime errors */
+			std::cerr << "Error in setting the algorithm: "
+				<< error.what()
+				<< std::endl;
+
+			/* On error: set the default algorithm */
+			const std::string algorithm("NETWORK-SIMPLEX");
 			math_trader.setAlgorithm( algorithm );
+			std::cerr << "Warning: falling back to "
+				<< algorithm
+				<< std::endl;
 		}
 
 	} catch ( std::exception & error ) {
