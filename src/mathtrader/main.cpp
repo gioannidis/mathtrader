@@ -625,13 +625,19 @@ Interface::run() {
 		lemon::TimeReport t(time_ss.str());
 
 		/**
+		 * Print want_parser information
+		 */
+		want_parser.showOptions(os);
+		if ( !want_parser.hideErrors() ) {
+			want_parser.showErrors(os);
+		}
+
+		/**
 		 * Process the results:
 		 * - Eliminate dummies
 		 * - Set output options (TODO)
 		 * Report the results.
 		 */
-		want_parser.showOptions(os);
-		want_parser.showErrors(os);
 		math_trader.tradeLoops(os);
 		//math_trader.itemSummary(os);
 
