@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 
 	try {
 		ap.parse();
-	} catch ( lemon::ArgParserException & error ) {
+	} catch ( const lemon::ArgParserException & error ) {
 		return 1;
 	}
 
@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 		 */
 		want_parser.parse();
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "WantParser error: " << error.what()
 			<< std::endl;
 		return -1;
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
 		 */
 		result_parser.parse();
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "ResultParser error: " << error.what()
 			<< std::endl;
 		return -1;
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 		want_parser.print(ss);
 		route_checker.graphReader(ss);
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "Error during reading "
 			" the produced LGF file: "
 			<< error.what()
@@ -208,7 +208,7 @@ int main(int argc, char **argv) {
 		result_parser.print(ss);
 		route_checker.loopReader(ss);
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 
 		std::cerr << "Error during reading "
 			" the trade loops: "
@@ -269,7 +269,7 @@ int main(int argc, char **argv) {
 
 		}
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "Error during initialization: " << error.what()
 			<< std::endl;
 
@@ -289,7 +289,7 @@ int main(int argc, char **argv) {
 		lemon::TimeReport t("RouteChecker execution:  ");
 		route_checker.run();
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "Error during execution: "
 			<< error.what()
 			<< std::endl;
@@ -344,7 +344,7 @@ int main(int argc, char **argv) {
 		want_parser.showErrors(os);
 		route_checker.printResults(os);
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
 			<< std::endl;
 		fs.close();

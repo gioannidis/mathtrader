@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 
 	try {
 		ap.parse();
-	} catch ( lemon::ArgParserException & error ) {
+	} catch ( const lemon::ArgParserException & error ) {
 		return 1;
 	}
 
@@ -330,7 +330,7 @@ Interface::run() {
 			} else {
 				math_trader.graphReader();
 			}
-		} catch ( std::exception & error ) {
+		} catch ( const std::exception & error ) {
 			std::cerr << "Error during reading"
 				" the LGF file: "
 				<< error.what()
@@ -361,7 +361,7 @@ Interface::run() {
 			 */
 			want_parser.parse();
 
-		} catch ( std::exception & error ) {
+		} catch ( const std::exception & error ) {
 			std::cerr << "WantParser error: " << error.what()
 				<< std::endl;
 			return -1;
@@ -379,7 +379,7 @@ Interface::run() {
 			lemon::TimeReport t("Passing input graph:  ");
 
 			math_trader.graphReader(ss);
-		} catch ( std::exception & error ) {
+		} catch ( const std::exception & error ) {
 			std::cerr << "Error during reading "
 				" the produced LGF file: "
 				<< error.what()
@@ -492,7 +492,7 @@ Interface::run() {
 				<< std::endl;
 		}
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "Error during initialization: " << error.what()
 			<< std::endl;
 
@@ -511,7 +511,7 @@ Interface::run() {
 	try {
 		lemon::TimeReport t("Algorithm execution:  ");
 		math_trader.run();
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "Error during execution: "
 			<< error.what()
 			<< std::endl;
@@ -543,7 +543,7 @@ Interface::run() {
 	if ( !ap.given("-show-dummy-items") ) {
 		try {
 			math_trader.mergeDummyItems();
-		} catch ( std::exception & error ) {
+		} catch ( const std::exception & error ) {
 			std::cerr << "Error during merging dummy items: "
 				<< error.what()
 				<< std::endl;
@@ -564,7 +564,7 @@ Interface::run() {
 		math_trader.tradeLoops(os);
 		//math_trader.itemSummary(os);
 
-	} catch ( std::exception & error ) {
+	} catch ( const std::exception & error ) {
 		std::cerr << "Error during printing the results: " << error.what()
 			<< std::endl;
 		fs.close();

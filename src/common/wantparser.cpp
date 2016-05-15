@@ -432,7 +432,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	std::string username;
 	try {
 		username = from_username.substr(6, std::string::npos); /**< remove "(from " */
-	} catch ( std::out_of_range & e ) {
+	} catch ( const std::out_of_range & e ) {
 		std::cerr << "Out of range when parsing username: "
 			<< from_username
 			<< " in line "
@@ -445,7 +445,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 			std::cerr << "\t" << token << std::endl;
 		}
 		return *this;
-	} catch ( std::exception & e ) {
+	} catch ( const std::exception & e ) {
 		throw;
 	}
 
