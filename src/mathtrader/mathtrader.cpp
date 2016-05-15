@@ -51,7 +51,11 @@ MathTrader::MathTrader() :
 
 	/* options */
 	_mcfa( NETWORK_SIMPLEX ),		/**< Option: algorithm 	*/
-	_hide_non_trades( false ),		/**< Option: hide non-trades */
+	_hide_loops( false ),
+	_hide_non_trades( false ),
+	_hide_stats( false ),
+	_hide_summary( false ),
+	_sort_by_item( false ),
 
 	/* input-output (cross) references */
 	_node_in2out( _input_graph ),

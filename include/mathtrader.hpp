@@ -140,7 +140,19 @@ private:
 
 	MCFA _mcfa;
 
-	bool _hide_non_trades;
+	/**
+	 * @brief Output Options
+	 * Options that will determine what should be printed
+	 * or not by writeResults().
+	 * Default value is false.
+	 */
+	bool _hide_loops;	/**< hide trade loops */
+	bool _hide_non_trades;	/**< hide non-trading items */
+	bool _hide_stats;	/**< hide statistics, apart from items traded */
+	bool _hide_summary;	/**< hide item summary */
+	bool _sort_by_item;	/**< sort item summary by item name;
+				  * _hide_summary must be false
+				  */
 
 	/**
 	 * @brief Output Graph
