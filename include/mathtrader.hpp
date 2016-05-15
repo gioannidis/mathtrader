@@ -54,23 +54,6 @@ public:
 	MathTrader & setAlgorithm( const std::string & algorithm );
 
 	/**
-	 * @brief Hide non trades.
-	 * Items not being traded will not be shown
-	 * in the results.
-	 * @return *this
-	 */
-	MathTrader & hideNonTrades();
-
-	/**
-	 * @brief Show non trades.
-	 * Items not being traded will be shown
-	 * in the results.
-	 * This is the default behavior.
-	 * @return *this
-	 */
-	MathTrader & showNonTrades();
-
-	/**
 	 * @brief MathTrade algorithm.
 	 * Runs the MathTrade algorithm.
 	 */
@@ -84,6 +67,53 @@ public:
 	 * @return *this
 	 */
 	MathTrader & mergeDummyItems();
+
+	/**
+	 * @brief Hide loops.
+	 * Trade loops will not be shown
+	 * in the results.
+	 * @param option Set the option (default: true)
+	 * @return *this
+	 */
+	MathTrader & hideLoops( bool option = true );
+
+	/**
+	 * @brief Hide non-trades.
+	 * Items not being traded will not be shown
+	 * in the results.
+	 * @param option Set the option (default: true)
+	 * @return *this
+	 */
+	MathTrader & hideNonTrades( bool option = true );
+
+	/**
+	 * @brief Hide stats.
+	 * No statistics will be shown
+	 * in the results, except trading items.
+	 * @param option Set the option (default: true)
+	 * @return *this
+	 */
+	MathTrader & hideStats( bool option = true );
+
+	/**
+	 * @brief Hide item summary.
+	 * Items summary will not be shown
+	 * in the results.
+	 * @param option Set the option (default: true)
+	 * @return *this
+	 */
+	MathTrader & hideSummary( bool option = true );
+
+	/**
+	 * @brief Sort items summary by item name.
+	 * Items shown in the item summary
+	 * will be sorted by item name, instead of username.
+	 * If hideSummary() has been called,
+	 * this option has no effect.
+	 * @param option Set the option (default: true)
+	 * @return *this
+	 */
+	MathTrader & sortByItem( bool option = true );
 
 	/**
 	 * @brief Display trade loops.

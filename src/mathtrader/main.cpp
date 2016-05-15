@@ -509,7 +509,7 @@ Interface::run() {
 		 * Show/Hide non-trading items
 		 */
 		if ( ap.given("-show-non-trades") ) {
-			math_trader.showNonTrades();
+			math_trader.hideNonTrades(false);
 		} else if ( ap.given("-hide-non-trades") || want_parser.hideNonTrades() ) {
 			math_trader.hideNonTrades();
 		}

@@ -77,12 +77,7 @@ MathTrader::~MathTrader() {
 
 
 /************************************//*
- * 	PUBLIC METHODS - INPUT
- **************************************/
-
-
-/************************************//*
- * 	PUBLIC METHODS - OPTIONS
+ * 	PUBLIC METHODS - INPUT OPTIONS
  **************************************/
 
 MathTrader &
@@ -107,15 +102,38 @@ MathTrader::setAlgorithm( const std::string & algorithm ) {
 	return *this;
 }
 
+
+/************************************//*
+ * 	PUBLIC METHODS - OUTPUT OPTIONS
+ **************************************/
+
 MathTrader &
-MathTrader::hideNonTrades() {
-	_hide_non_trades = true;
+MathTrader::hideLoops( bool v ) {
+	_hide_loops = v;
 	return *this;
 }
 
 MathTrader &
-MathTrader::showNonTrades() {
-	_hide_non_trades = false;
+MathTrader::hideNonTrades( bool v ) {
+	_hide_non_trades = v;
+	return *this;
+}
+
+MathTrader &
+MathTrader::hideStats( bool v ) {
+	_hide_stats = v;
+	return *this;
+}
+
+MathTrader &
+MathTrader::hideSummary( bool v ) {
+	_hide_summary = v;
+	return *this;
+}
+
+MathTrader &
+MathTrader::sortByItem( bool v ) {
+	_hide_stats = v;
 	return *this;
 }
 
