@@ -724,34 +724,14 @@ WantParser::_parseWantList( const std::string & line ) {
 	}
 
 	/**
-	 * Create ArcMap entry with empty vector.
+	 * Create ArcMap entry for item;
+	 * in C++11 we can directly move the items from the original list
+	 * to the vector; we don't have to copy them!
 	 */
-	auto rv_a = _arc_map.emplace( item, std::vector< _Arc_t >() );
-
-	/**
-	 * Failed to emplace arc list?
-	 * This should not happen, as we already checked
-	 * that the list was empty.
-	 */
-	if ( !rv_a.second ) {
-		throw std::logic_error("Want list for item "
-				+ item + " already exists, "
-				"but was initially empty");
-	}
-
-	/**
-	 * Optimization: reserve adequate space.
-	 * The first n_pos elems were not wanted items.
-	 */
-	const unsigned max_arcs = match.size() - first_wanted_pos;
-	_arc_map[item].reserve( max_arcs );
-
-	/**
-	 * Emplace all scheduled arcs
-	 */
-	for ( auto const & arc : arcs_to_add ) {
-		_arc_map[item].push_back(arc);
-	}
+	_arc_map.emplace( item, std::vector< _Arc_t > {
+			std::make_move_iterator(std::begin(arcs_to_add)),
+			std::make_move_iterator(std::end(arcs_to_add)) }
+			);
 
 	return *this;
 }
