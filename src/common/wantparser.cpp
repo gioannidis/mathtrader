@@ -69,18 +69,24 @@ WantParser::print( std::ostream &os ) const {
 
 	for ( auto const & node : _node_map ) {
 
-		const std::string
-			&item = node.second.item,
-			&official_name = node.second.official_name,
-			&username = node.second.username;
-		bool dummy = node.second.dummy;
+		/**
+		 * Skip if want list is missing
+		 **/
+		if ( node.second.has_wantlist ) {
 
-		os << item << "\t"	/**< item also used as label */
-			<< item << "\t"
-			<< official_name << "\t"
-			<< username << "\t"
-			<< dummy << "\t"
-			<< std::endl;
+			const std::string
+				&item = node.second.item,
+				&official_name = node.second.official_name,
+				&username = node.second.username;
+			bool dummy = node.second.dummy;
+
+			os << item << "\t"	/**< item also used as label */
+				<< item << "\t"
+				<< official_name << "\t"
+				<< username << "\t"
+				<< dummy << "\t"
+				<< std::endl;
+		}
 	}
 
 	/**
@@ -98,10 +104,22 @@ WantParser::print( std::ostream &os ) const {
 
 		for ( auto const & arc : arc_vector ) {
 
+			auto const
+				& source = arc.item_s,
+				& target = arc.item_t;
+
 			/**
-			 * Skip unknown items.
+			 * Valid if:
+			 * 1) Arc is not unknown.
+			 * 2) Target is present
+			 * 	(TODO same as (1)?)
+			 * 3) Target has want list
 			 */
-			if ( !arc.unknown ) {
+			const bool valid = (!arc.unknown)
+				&& (_node_map.find(target) != _node_map.end())
+				&& (_node_map.find(target)->second.has_wantlist);
+
+			if ( valid ) {
 				os << arc.item_s << "\t"
 					<< arc.item_t << "\t"
 					<< arc.rank
@@ -541,14 +559,14 @@ WantParser::_parseWantList( const std::string & line ) {
 
 
 	/**********************************//*
-	 *	OFFERING ITEM NAME (source)
+	 *	OFFERED ITEM NAME (source)
 	 *************************************/
 
 	/**
 	 * Check whether there is a wanted item name.
 	 */
 	if ( match.size() < (n_pos + 1) ) {
-		throw std::runtime_error("Missing offering item from want list: "
+		throw std::runtime_error("Missing offered item from want list: "
 				+ line);
 	}
 	const std::string &source = match[n_pos];
@@ -580,9 +598,23 @@ WantParser::_parseWantList( const std::string & line ) {
 	 * Normally, non-dummy nodes will have already been inserted
 	 * if the official names are given.
 	 * Item name is used as official name.
+	 * Mark that item has a want list.
 	 */
 	if ( _node_map.find(item) == _node_map.end() ) {
-		this->_node_map.emplace( item, _Node_s(item,item,username,_dummy(item)) );
+		this->_node_map.emplace(item,
+				_Node_s(item, item, username, _dummy(item), true));
+	} else {
+
+		auto const & it = _node_map.find(item);
+		bool & has_wantlist = it->second.has_wantlist;
+
+		if ( has_wantlist ) {
+			throw std::runtime_error("Ignoring multiple wantlist for item "
+					+ item
+					+ " : "
+					+ line);
+		}
+		has_wantlist = true;
 	}
 
 	/**
@@ -789,15 +821,15 @@ WantParser::_markUnknownItems() {
 			/**
 			 * Target not found?
 			 */
-			const std::string & item = arc.item_t;
-			if ( _node_map.find(item) == _node_map.end() ) {
+			const std::string & target = arc.item_t;
+			if ( _node_map.find(target) == _node_map.end() ) {
 				arc.unknown = true;
 
-				auto it = _unknown_item_map.find(item);
+				auto it = _unknown_item_map.find(target);
 				if ( it != _unknown_item_map.end()) {
 					it->second ++ ;
 				} else {
-					_unknown_item_map.emplace(item,1);
+					_unknown_item_map.emplace(target,1);
 				}
 			}
 		}

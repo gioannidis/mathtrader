@@ -198,6 +198,11 @@ private:
 	};
 	Status _status;
 
+	/**
+	 * Indicates whether official names have been given.
+	 */
+	bool _official_given;
+
 
 	/***************************//*
 	 * INTERNAL DATA STRUCTURES
@@ -213,16 +218,19 @@ private:
 		std::string official_name;	/**< Official name; "Puerto Rico" */
 		std::string username;		/**< Username; "Aldie" */
 		bool dummy;			/**< Dummy node */
+		bool has_wantlist;		/**< Wantlist has been given */
 
 		inline _Node_s ( const std::string & _item,
 				const std::string & _official,
 				const std::string & _user,
-				bool _dummy = false
+				bool _dummy = false,
+				bool _has_wantlist = false
 				) :
 			item( _item ),
 			official_name( _official ),
 			username( _user ),
-			dummy( _dummy ) {}
+			dummy( _dummy ),
+			has_wantlist( _has_wantlist ) {}
 
 	} _Node_t;
 
