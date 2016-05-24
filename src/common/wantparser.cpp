@@ -34,7 +34,7 @@ WantParser::WantParser() :
 	_bool_options( MAX_BOOL_OPTIONS, false ),
 	_int_options( MAX_INT_OPTIONS ),
 	_priority_scheme( "" ),
-	_status( PARSE_WANTS )
+	_status( BEGIN )
 {
 	/**
 	 * Default integer options.
@@ -221,10 +221,21 @@ WantParser::_parse( const std::string & buffer ) {
 
 			/**
 			 * Option line;
-			 * isolate option (exlude "#!") and parse it.
+			 * May only be given at the beginning.
+			 * Isolate option (exlude "#!") and parse it.
 			 */
-			const std::string option = buffer.substr(2, std::string::npos);
-			_parseOption( option );
+			switch ( _status ) {
+				case BEGIN: {
+					const std::string option = buffer.substr(2, std::string::npos);
+					_parseOption( option );
+					break;
+				}
+				default:
+					throw std::runtime_error("Options can only"
+							" be given at the beginning"
+							" of the file");
+					break;
+			}
 
 		} else if ( buffer.compare(0, 1, "!") == 0 ) {
 
@@ -233,11 +244,31 @@ WantParser::_parse( const std::string & buffer ) {
 			 */
 			if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
 
-				_status = PARSE_NAMES;
+				switch ( _status ) {
+					case BEGIN:
+						_status = PARSE_NAMES;
+						break;
+
+					case PARSE_NAMES:
+						throw std::runtime_error("Official names"
+								" are already being given");
+						break;
+
+					case PARSE_WANTS_WITHNAMES:
+						throw std::runtime_error("Official names"
+								" have already been given");
+						break;
+
+					default:
+						throw std::runtime_error("Official names"
+								" can only be declared"
+								" before the want lists");
+						break;
+				}
 
 			} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
 
-				_status = PARSE_WANTS;
+				_status = PARSE_WANTS_WITHNAMES;
 
 			} else {
 				throw std::runtime_error("Unrecognized directive: "
@@ -250,11 +281,21 @@ WantParser::_parse( const std::string & buffer ) {
 			 * Use appropriate handler for current status.
 			 */
 			switch ( _status ) {
+				case BEGIN:
+					/**
+					 * Always first.
+					 * Do not break.
+					 * Set status and continue.
+					 */
+					_status = PARSE_WANTS_NONAMES;
+
+				case PARSE_WANTS_NONAMES:
+				case PARSE_WANTS_WITHNAMES:
+					_parseWantList( buffer );
+					break;
+
 				case PARSE_NAMES:
 					_parseOfficialName( buffer );
-					break;
-				case PARSE_WANTS:
-					_parseWantList( buffer );
 					break;
 				default:
 					throw std::logic_error("Unknown handler for"

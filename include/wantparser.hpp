@@ -192,9 +192,10 @@ private:
 	 * Enum of current status
 	 */
 	enum Status {
-		PARSE_WANTS,
-		PARSE_NAMES,
-		UNKNOWN,
+		BEGIN,			/**< options may be given */
+		PARSE_NAMES,		/**< parsing official names */
+		PARSE_WANTS_NONAMES,	/**< parsing wants; no given official names */
+		PARSE_WANTS_WITHNAMES,	/**< parsing wants; official names given */
 	};
 	Status _status;
 
