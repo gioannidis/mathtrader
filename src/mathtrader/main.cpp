@@ -29,7 +29,7 @@
 #include <sstream>
 
 /* Version */
-#define MT_VERSION "1.1c"
+#define MT_VERSION "1.1"
 
 /* Tabular width for timer output */
 #define TABWIDTH (30)
