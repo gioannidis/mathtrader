@@ -30,6 +30,7 @@
 
 /* Version */
 #define MT_VERSION "1.2a"
+#define MT_YEAR "2016"
 
 /* Tabular width for timer output */
 #define TABWIDTH (30)
@@ -45,6 +46,8 @@ public:
 	Interface( const lemon::ArgParser & ap );
 	~Interface();
 	int run();
+
+	static void showVersion( std::ostream & os = std::cout );
 
 private:
 	/**
@@ -183,6 +186,12 @@ int main(int argc, char **argv) {
 	ap.stringOption("-export-output-dot-file",
 			"export the result graph to .dot formatted file");
 
+	/**
+	 * Show version
+	 */
+	ap.boolOption("-version", "show version information and exit");
+	ap.synonym("v", "-version");
+
 
 	/********************************************//*
 	 * 	Argument Parsing
@@ -192,6 +201,25 @@ int main(int argc, char **argv) {
 		ap.parse();
 	} catch ( const lemon::ArgParserException & error ) {
 		return 1;
+	}
+
+
+	/********************************************//*
+	 * 	Show version
+	 **********************************************/
+
+	if ( ap.given("-version") ) {
+		Interface::showVersion();
+		std::cout << "Copyright (C) " << MT_YEAR << "."
+			<< std::endl
+			<< "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>"
+			<< std::endl
+			<< "There is NO WARRANTY; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+			<< std::endl
+			<< "Written by George Ioannidis."
+			<< std::endl;
+
+		return 0;
 	}
 
 
@@ -309,7 +337,7 @@ Interface::run() {
 	/**
 	 * Header of output: always the version.
 	 */
-	os << "mathtrader++ version " << MT_VERSION << std::endl;
+	showVersion(os);
 
 
 	/**************************************//*
@@ -726,4 +754,9 @@ Interface::_toUpper( std::string & str ) {
 
 	std::transform( str.begin(), str.end(),
 			str.begin(), ::toupper );
+}
+
+void
+Interface::showVersion( std::ostream & os ) {
+	os << "mathtrader++ version " << MT_VERSION << std::endl;
 }
