@@ -53,12 +53,20 @@ public:
 	const WantParser & print( std::ostream & os = std::cout ) const ;
 
 	/**
-	 * @brief Show options.
+	 * @brief Print options.
 	 * Prints the options of WantParser.
 	 * @param os The output stream (default: std::cout).
 	 * @return *this
 	 */
 	const WantParser & printOptions( std::ostream & os = std::cout ) const ;
+
+	/**
+	 * @brief Print missing items.
+	 * Prints all non-dummy items without a want list.
+	 * @param os The output stream (default: std::cout).
+	 * @return *this
+	 */
+	const WantParser & printMissing( std::ostream & os = std::cout ) const ;
 
 	/**
 	 * @brief Get priority scheme.

@@ -151,6 +151,22 @@ WantParser::printOptions( std::ostream & os ) const {
 	return *this;
 }
 
+const WantParser &
+WantParser::printMissing( std::ostream & os ) const {
+
+	for ( auto const & node_pair : _node_map ) {
+
+		const std::string & item = node_pair.first;
+		auto const & node = node_pair.second;
+		if ( !_dummy(item) && !node.has_wantlist ) {
+			os << "**** Missing want list for item "
+				<< item
+				<< std::endl;
+		}
+	}
+	return *this;
+}
+
 
 /************************************//*
  * PUBLIC METHODS - EXTERNAL OPTIONS OUTPUT
