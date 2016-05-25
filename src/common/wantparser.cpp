@@ -717,16 +717,22 @@ WantParser::_parseWantList( const std::string & line ) {
 	 *	CHECK COLONS
 	 *************************************/
 
-	const bool has_colon = ((match.size() >= (n_pos + 1))
-			&& (match[n_pos].compare(":") == 0));
-
 	/**
-	 * Advance n_pos if we have a colon
+	 * Dependent scope, to limit
+	 * the unnecessary variables.
 	 */
-	if ( has_colon ) {
-		++ n_pos;
-	} else if ( _bool_options[REQUIRE_COLONS] ) {
-		throw std::runtime_error("Missing colon from want list");
+	{
+		const bool has_colon = ((match.size() >= (n_pos + 1))
+				&& (match[n_pos].compare(":") == 0));
+
+		/**
+		 * Advance n_pos if we have a colon
+		 */
+		if ( has_colon ) {
+			++ n_pos;
+		} else if ( _bool_options[REQUIRE_COLONS] ) {
+			throw std::runtime_error("Missing colon from want list");
+		}
 	}
 
 
