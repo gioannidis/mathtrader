@@ -29,7 +29,7 @@
 #include <sstream>
 
 /* Version */
-#define MT_VERSION "1.2a"
+#define MT_VERSION "1.2b"
 #define MT_YEAR "2016"
 
 /* Tabular width for timer output */
