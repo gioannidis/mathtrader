@@ -631,7 +631,7 @@ Interface::run() {
 		/**
 		 * Print want_parser information
 		 */
-		want_parser.showOptions(os);
+		want_parser.printOptions(os);
 		if ( !want_parser.hideErrors() ) {
 			want_parser.showErrors(os);
 		}

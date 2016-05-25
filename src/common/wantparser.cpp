@@ -132,7 +132,7 @@ WantParser::print( std::ostream &os ) const {
 }
 
 const WantParser &
-WantParser::showOptions( std::ostream & os ) const {
+WantParser::printOptions( std::ostream & os ) const {
 
 	/**
 	 * TODO: add int options if not default?

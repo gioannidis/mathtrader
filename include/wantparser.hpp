@@ -58,7 +58,7 @@ public:
 	 * @param os The output stream (default: std::cout).
 	 * @return *this
 	 */
-	const WantParser & showOptions( std::ostream & os = std::cout ) const ;
+	const WantParser & printOptions( std::ostream & os = std::cout ) const ;
 
 	/**
 	 * @brief Get priority scheme.
