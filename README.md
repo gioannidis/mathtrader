@@ -124,3 +124,4 @@ and subsequently the wantlist is piped to `mathtrader++`, where we also request 
 - [x] Resolve cost of items protected by duplicate protection.
 - [ ] Add I/O checksums.
 - [ ] Echo overridden options to results.
+- [ ] Integrate ``libcurl`` to optionally fetch the want lists remotely.

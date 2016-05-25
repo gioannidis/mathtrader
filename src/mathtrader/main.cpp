@@ -20,13 +20,19 @@
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "wantparser.hpp"
-#include "mathtrader.hpp"
 
-#include <exception>
-#include <iomanip>
+/* LEMON libraries */
+#include "mathtrader.hpp"
 #include <lemon/arg_parser.h>
 #include <lemon/time_measure.h>
+
+/* Standard libraries */
+#include <exception>
+#include <iomanip>
 #include <sstream>
+
+/* curl libraries */
+#include <curl/curl.h>
 
 /* Version */
 #define MT_VERSION "1.2a"
