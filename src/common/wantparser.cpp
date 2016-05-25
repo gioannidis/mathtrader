@@ -674,7 +674,6 @@ WantParser::_parseWantList( const std::string & line ) {
 								+ " has no official name."
 								" Hint: spelling error?");
 					}
-
 					break;
 				}
 
@@ -692,17 +691,6 @@ WantParser::_parseWantList( const std::string & line ) {
 			auto const & pair = this->_node_map.emplace(item,
 					_Node_s(item, item, username, _dummy(item)));
 			it = pair.first;
-#if 0
-		} else if ( it->second.has_wantlist ) {
-
-			/**
-			 * Sanity check; the item was already in the node_map.
-			 * It should always have a wantlist.
-			 * We should never get here.
-			 */
-			throw std::logic_error("Item " + item
-					+ " exists, but has no wantlist");
-#endif
 		}
 
 		/**
@@ -750,6 +738,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	 * Check if want list already exists.
 	 * This may happen if a user has defined multiple want lists
 	 * or another line was split over two lines.
+	 * FIXME use "has_wantlist" pointer?
 	 */
 	if ( _arc_map.find(item) != _arc_map.end() ) {
 		throw std::runtime_error("Multiple want lists for item "
