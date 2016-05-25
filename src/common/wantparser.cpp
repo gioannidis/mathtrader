@@ -105,9 +105,7 @@ WantParser::print( std::ostream &os ) const {
 
 		for ( auto const & arc : arc_vector ) {
 
-			auto const
-				& source = arc.item_s,
-				& target = arc.item_t;
+			auto const & target = arc.item_t;
 
 			/**
 			 * Valid if:
