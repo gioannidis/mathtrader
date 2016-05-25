@@ -633,8 +633,9 @@ WantParser::_parseWantList( const std::string & line ) {
 	/**
 	 * Check if the item is present in node_map.
 	 * Handle cases when present or not.
-	 * Mark that the item has a want list.
+	 * Check if it has a want list.
 	 */
+	bool * has_wantlist = NULL;	/**< Will point to has_wantlist member */
 	{
 		auto it = _node_map.find(item);
 
@@ -708,15 +709,13 @@ WantParser::_parseWantList( const std::string & line ) {
 		 * Now, iterator @it should point to the item's entry,
 		 * whether it's just been added or not.
 		 * Check if it has a wantlist
-		 * TODO switch "has wantlist" on after inserting the wantlist.
 		 */
-		bool & has_wantlist = it->second.has_wantlist;
+		has_wantlist = &(it->second.has_wantlist);
 
-		if ( has_wantlist ) {
+		if ( *has_wantlist ) {
 			throw std::runtime_error("Ignoring multiple wantlist for item "
 					+ item);
 		}
-		has_wantlist = true;
 	}
 
 	/**
@@ -730,7 +729,8 @@ WantParser::_parseWantList( const std::string & line ) {
 	 *	CHECK COLONS
 	 *************************************/
 
-	bool has_colon = ((match.size() >= (n_pos + 1)) && (match[n_pos].compare(":") == 0));
+	const bool has_colon = ((match.size() >= (n_pos + 1))
+			&& (match[n_pos].compare(":") == 0));
 
 	/**
 	 * Advance n_pos if we have a colon
@@ -833,6 +833,17 @@ WantParser::_parseWantList( const std::string & line ) {
 			std::make_move_iterator(std::begin(arcs_to_add)),
 			std::make_move_iterator(std::end(arcs_to_add)) }
 			);
+
+	/**
+	 * Mark the item has having a want_list.
+	 */
+	if ( has_wantlist != NULL ) {
+		*has_wantlist = true;
+	} else {
+		/* Should never get here */
+		throw std::logic_error("Internal has_wantlist pointer"
+				" is NULL");
+	}
 
 	return *this;
 }
