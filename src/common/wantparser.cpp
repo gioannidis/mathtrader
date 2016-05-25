@@ -635,18 +635,85 @@ WantParser::_parseWantList( const std::string & line ) {
 	_parseUsername( username );
 
 	/**
-	 * Insert node if not already present.
-	 * Normally, non-dummy nodes will have already been inserted
-	 * if the official names are given.
-	 * Item name is used as official name.
-	 * Mark that item has a want list.
+	 * Check if the item is present in node_map.
+	 * Handle cases when present or not.
+	 * Mark that the item has a want list.
 	 */
-	if ( _node_map.find(item) == _node_map.end() ) {
-		this->_node_map.emplace(item,
-				_Node_s(item, item, username, _dummy(item), true));
-	} else {
+	{
+		auto it = _node_map.find(item);
 
-		auto const & it = _node_map.find(item);
+		if ( it == _node_map.end() ) {
+
+			/**
+			 * Handle case when offering item
+			 * is NOT in node_map:
+			 * --> dependent on when official names
+			 *     have been given or not.
+			 */
+			switch ( _status ) {
+				case PARSE_WANTS_NONAMES: {
+
+					/**
+					 * No official names have been given;
+					 * there should be no entry.
+					 * Sanity check:
+					 * If an entry is found, then it should have a wantlist.
+					 */
+					break;
+				}
+
+				case PARSE_WANTS_WITHNAMES: {
+
+					/**
+					 * Official names have been given;
+					 * there SHOULD be an entry,
+					 * unless it's a dummy item.
+					 * This check usually catches spelling errors.
+					 */
+					if ( !_dummy(item) ) {
+
+						throw std::runtime_error("Non-dummy item "
+								+ item
+								+ " has no official name."
+								" Hint: spelling error?");
+					}
+
+					break;
+				}
+
+				default:
+					throw std::logic_error("Bad internal status during"
+							" want list parsing: "
+							+ std::to_string( _status ));
+					break;
+			}
+
+			/**
+			 * Insert the item in the node_map.
+			 * Point the iterator to the new item.
+			 */
+			auto const & pair = this->_node_map.emplace(item,
+					_Node_s(item, item, username, _dummy(item)));
+			it = pair.first;
+#if 0
+		} else if ( it->second.has_wantlist ) {
+
+			/**
+			 * Sanity check; the item was already in the node_map.
+			 * It should always have a wantlist.
+			 * We should never get here.
+			 */
+			throw std::logic_error("Item " + item
+					+ " exists, but has no wantlist");
+#endif
+		}
+
+		/**
+		 * Now, iterator @it should point to the item's entry,
+		 * whether it's just been added or not.
+		 * Check if it has a wantlist
+		 * TODO switch "has wantlist" on after inserting the wantlist.
+		 */
 		bool & has_wantlist = it->second.has_wantlist;
 
 		if ( has_wantlist ) {
