@@ -442,8 +442,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 * TODO the description (4th item) is optional.
 	 */
 	if ( match.size() < 4 ) {
-		throw std::runtime_error("Bad format of official name line:"
-				+ line);
+		throw std::runtime_error("Bad format of official name line");
 	}
 
 	/**
@@ -568,8 +567,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	 */
 	auto const match = _split( line, FPAT_want );
 	if ( match.empty() ) {
-		throw std::runtime_error("Bad format of want list: "
-				+ line);
+		throw std::runtime_error("Bad format of want list");
 	}
 
 
@@ -594,8 +592,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	if ( has_username ) {
 		++ n_pos ;
 	} else if (  _bool_options[ REQUIRE_USERNAMES ] ) {
-		throw std::runtime_error("Missing username from want list: "
-				+ line);
+		throw std::runtime_error("Missing username from want list");
 	}
 
 
@@ -607,8 +604,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	 * Check whether there is a wanted item name.
 	 */
 	if ( match.size() < (n_pos + 1) ) {
-		throw std::runtime_error("Missing offered item from want list: "
-				+ line);
+		throw std::runtime_error("Missing offered item from want list");
 	}
 	const std::string &source = match[n_pos];
 
@@ -718,9 +714,7 @@ WantParser::_parseWantList( const std::string & line ) {
 
 		if ( has_wantlist ) {
 			throw std::runtime_error("Ignoring multiple wantlist for item "
-					+ item
-					+ " : "
-					+ line);
+					+ item);
 		}
 		has_wantlist = true;
 	}
@@ -744,8 +738,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	if ( has_colon ) {
 		++ n_pos;
 	} else if ( _bool_options[REQUIRE_COLONS] ) {
-		throw std::runtime_error("Missing colon from want list: "
-				+ line);
+		throw std::runtime_error("Missing colon from want list");
 	}
 
 
@@ -806,8 +799,8 @@ WantParser::_parseWantList( const std::string & line ) {
 		if ( target.compare(";") == 0 ) {
 			rank += big_step;
 		} else if ( target.compare(":") == 0 ) {
-			throw std::runtime_error("Wrong position for semicolon in want list: "
-					+ line);
+			throw std::runtime_error("Colon occurence at invalid position "
+					+ std::to_string(i+1));
 		} else {
 
 			/**
