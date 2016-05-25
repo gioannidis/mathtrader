@@ -126,6 +126,14 @@ public:
 	bool showElapsedTime() const ;
 
 	/**
+	 * @brief Show "SHOW-MISSING".
+	 * Shows if non-dummy items without a want list
+	 * should be shown to the output.
+	 * @return true if SHOW-MISSING has been given.
+	 */
+	bool showMissing() const ;
+
+	/**
 	 * @brief Show "SORT-BY-ITEM".
 	 * Shows if mathtrader should sort the item summary
 	 * by item, instead of by username.
@@ -156,13 +164,13 @@ private:
 		REQUIRE_COLONS,
 		REQUIRE_USERNAMES,
 		SHOW_ELAPSED_TIME,
-		SHOW_MISSING,
 		/* External options */
 		HIDE_ERRORS,
 		HIDE_LOOPS,
 		HIDE_NONTRADES,
 		HIDE_STATS,
 		HIDE_SUMMARY,
+		SHOW_MISSING,
 		SORT_BY_ITEM,
 		/* Not implemented */
 		MAX_BOOL_OPTIONS	/**< Not an option; always LAST */

@@ -22,6 +22,7 @@
 #include "wantparser.hpp"
 
 #include <regex>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -154,16 +155,32 @@ WantParser::printOptions( std::ostream & os ) const {
 const WantParser &
 WantParser::printMissing( std::ostream & os ) const {
 
+	unsigned count = 0;
+	std::stringstream ss;
+
 	for ( auto const & node_pair : _node_map ) {
 
 		const std::string & item = node_pair.first;
 		auto const & node = node_pair.second;
 		if ( !_dummy(item) && !node.has_wantlist ) {
-			os << "**** Missing want list for item "
+			count ++ ;
+			ss << "**** Missing want list for item "
 				<< item
 				<< std::endl;
 		}
 	}
+
+	if ( count > 0 ) {
+		os << "MISSING ITEMS: "
+			<< "(" << count
+			<< " occurrence"
+			<< ((count > 1)?"s":"")
+			<< ")"
+			<< std::endl
+			<< ss.rdbuf()
+			<< std::endl;
+	}
+
 	return *this;
 }
 
@@ -205,6 +222,11 @@ WantParser::hideSummary() const {
 bool
 WantParser::showElapsedTime() const {
 	return _bool_options[SHOW_ELAPSED_TIME];
+}
+
+bool
+WantParser::showMissing() const {
+	return _bool_options[SHOW_MISSING];
 }
 
 bool

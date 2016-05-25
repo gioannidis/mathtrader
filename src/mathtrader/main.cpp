@@ -629,11 +629,17 @@ Interface::run() {
 		lemon::TimeReport t(time_ss.str());
 
 		/**
-		 * Print want_parser information
+		 * Print want_parser information:
+		 * - Options
+		 * - Errors
+		 * - Missing items
 		 */
 		want_parser.printOptions(os);
 		if ( !want_parser.hideErrors() ) {
 			want_parser.showErrors(os);
+		}
+		if ( want_parser.showMissing() ) {
+			want_parser.printMissing(os);
 		}
 
 		/**
