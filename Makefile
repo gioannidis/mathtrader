@@ -28,7 +28,7 @@ DBGFLAGS = -g
 OPTIM    = -O3
 INCLUDE  = -I $(INCDIR)
 CXXFLAGS = $(OPTIM) $(INCLUDE) -Wall -Wextra -std=c++11
-LDFLAGS  = -lemon -lcurl
+LDFLAGS  = -lemon
 
 
 #===============================#
