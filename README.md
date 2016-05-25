@@ -103,14 +103,14 @@ or as a file:
 The results will be printed to the standard output.
 You may redirect the output to a file:
 
-    ./mathtrader++ < 207635-officialwants.txt > 207635-results.txt
-    ./mathtrader++ --input-file 207635-officialwants.txt --output-file 207635-results.txt
+    ./mathtrader++ < 207635-officialwants.txt > 207635-results-official.txt
+    ./mathtrader++ --input-file 207635-officialwants.txt --output-file 207635-results-official.txt
 
 In the following example,
 the input file is downloaded from OLWLG and saved to the standard output
 and subsequently the wantlist is piped to `mathtrader++`, where we also request to hide non-trading items.
 
-     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | ./mathtrader++ --hide-no-trades > 207635-results.txt
+     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | ./mathtrader++ --hide-no-trades > 207635-results-official.txt
 
 ## Future Tasks
 
