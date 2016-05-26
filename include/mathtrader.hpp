@@ -208,6 +208,14 @@ private:
 	void _runMaximizeTrades();
 
 	/**
+	 * @brief Solve the trade; maximize trading items
+	 * Runs the math trading algorithm.
+	 * The goal is to maximize the trading users
+	 * and secondly the trading items.
+	 */
+	void _runMaximizeUsers();
+
+	/**
 	 * @brief Run math trade algorithm.
 	 * Runs the math trade algorithm on a given map and provides
 	 * the flow map.
