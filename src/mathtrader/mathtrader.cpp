@@ -732,7 +732,7 @@ MathTrader::exportOutputToDot( const std::string & fn ) const {
 
 
 /************************************//*
- * 	PRIVATE METHODS - Flows
+ * 	PRIVATE METHODS - Trade Graphs
  **************************************/
 
 void
@@ -895,6 +895,15 @@ MathTrader::_runMaximizeTrades() {
 		}
 	}
 }
+
+void
+MathTrader::_runMaximizeUsers() {
+}
+
+
+/************************************//*
+ * 	PRIVATE METHODS - SOLVER
+ **************************************/
 
 template < typename DGR >
 void
