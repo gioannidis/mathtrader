@@ -775,7 +775,7 @@ MathTrader::_runMaximizeTrades() {
 	 * In-nodes have a supply of +1
 	 * Out-nodes have a supply of -1
 	 */
-	for ( SplitDirect::NodeIt n( split_graph ); n != lemon::INVALID; ++ n ) {
+	for ( SplitOrient::NodeIt n( split_orient ); n != lemon::INVALID; ++ n ) {
 
 		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
 	}
