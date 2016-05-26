@@ -201,10 +201,28 @@ private:
 
 
 	/**
-	 * @brief Run math trade algorithm.
-	 * Runs the math trade algorithm on the whole graph.
+	 * @brief Solve the trade; maximize trading items
+	 * Runs the math trading algorithm.
+	 * The goal is to maximize the trading items.
 	 */
-	void _runFlowAlgorithm();
+	void _runMaximizeTrades();
+
+	/**
+	 * @brief Run math trade algorithm.
+	 * Runs the math trade algorithm on a given map and provides
+	 * the flow map.
+	 * @param g the trade graph
+	 * @param supply the supply node map
+	 * @param capacity the capacity arc map
+	 * @param cost the cost arc map
+	 * @param flow the flow arc map
+	 */
+	template < typename DGR >
+	void _runFlowAlgorithm( const DGR & g,
+			const typename DGR::template NodeMap< int64_t > & supply,
+			const typename DGR::template  ArcMap< int64_t > & capacity,
+			const typename DGR::template  ArcMap< int64_t > & cost,
+			      typename DGR::template  ArcMap< int64_t > & flow );
 };
 
 #endif /* _MATHTRADER_HPP_ */

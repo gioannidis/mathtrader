@@ -160,7 +160,7 @@ MathTrader::run() {
 			composeMap(_in_rank, _arc_out2in),
 			_out_rank);
 
-	this->_runFlowAlgorithm();
+	this->_runMaximizeTrades();
 }
 
 
@@ -687,7 +687,7 @@ MathTrader::exportOutputToDot( const std::string & fn ) const {
  **************************************/
 
 void
-MathTrader::_runFlowAlgorithm() {
+MathTrader::_runMaximizeTrades() {
 
 	typedef OutputGraph StartGraph;
 	const StartGraph & start_graph = this->_output_graph;
@@ -780,69 +780,19 @@ MathTrader::_runFlowAlgorithm() {
 		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
 	}
 
-
 	/**
-	 * Define and apply the solver
-	 */
-	std::unique_ptr< AlgoAbstract< SplitOrient > > trade_ptr;
-
-	switch ( _mcfa ) {
-		case NETWORK_SIMPLEX: {
-			typedef lemon::NetworkSimplex< SplitOrient, int64_t > FlowAlgorithm;
-			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, SplitOrient >
-				(split_orient, supply_map, capacity_map, cost_map));
-			break;
-		}
-
-		case COST_SCALING: {
-			typedef lemon::CostScaling< SplitOrient, int64_t > FlowAlgorithm;
-			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, SplitOrient >
-				(split_orient, supply_map, capacity_map, cost_map));
-			break;
-		}
-
-		case CAPACITY_SCALING: {
-			typedef lemon::CapacityScaling< SplitOrient, int64_t > FlowAlgorithm;
-			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, SplitOrient >
-				(split_orient, supply_map, capacity_map, cost_map));
-			break;
-		}
-
-		case CYCLE_CANCELING: {
-			typedef lemon::CycleCanceling< SplitOrient, int64_t > FlowAlgorithm;
-			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, SplitOrient >
-				(split_orient, supply_map, capacity_map, cost_map));
-			break;
-		}
-
-		default: {
-			throw std::logic_error("No implementation for "
-					"minimum cost flow algorithm "
-					+ std::to_string(_mcfa));
-			break;
-		}
-	}
-
-	/**
-	 * Run and get the Problem Type
-	 */
-	trade_ptr->run();
-
-	/**
-	 * Check if perfect match has been found.
-	 */
-	if ( !trade_ptr->optimalSolution() ) {
-		throw std::runtime_error("No optimal solution found");
-	}
-
-	/**
-	 * Get the flow map
+	 * Flow map; the solver will populate it.
 	 */
 	SplitOrient::ArcMap< int64_t > flow_map( split_orient );
-	trade_ptr->flowMap( flow_map );
 
 	/**
-	 * Map it back to the original graph.
+	 * Run flow algorithm.
+	 */
+	this->_runFlowAlgorithm( split_orient,
+			supply_map, capacity_map, cost_map, flow_map );
+
+	/**
+	 * Map the flow map back to the original graph.
 	 */
 	for ( StartGraph::ArcIt a(start_graph); a != lemon::INVALID; ++a ) {
 
@@ -894,6 +844,74 @@ MathTrader::_runFlowAlgorithm() {
 			_send[ sender ] = receiver;
 		}
 	}
+}
+
+template < typename DGR >
+void
+MathTrader::_runFlowAlgorithm( const DGR & g,
+		const typename DGR::template NodeMap< int64_t > & supply_map,
+		const typename DGR::template  ArcMap< int64_t > & capacity_map,
+		const typename DGR::template  ArcMap< int64_t > & cost_map,
+		      typename DGR::template  ArcMap< int64_t > & flow_map ) {
+
+	/**
+	 * Define and apply the solver
+	 */
+	std::unique_ptr< AlgoAbstract< DGR > > trade_ptr;
+
+	switch ( _mcfa ) {
+		case NETWORK_SIMPLEX: {
+			typedef lemon::NetworkSimplex< DGR, int64_t > FlowAlgorithm;
+			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, DGR >
+				(g, supply_map, capacity_map, cost_map));
+			break;
+		}
+
+		case COST_SCALING: {
+			typedef lemon::CostScaling< DGR, int64_t > FlowAlgorithm;
+			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, DGR >
+				(g, supply_map, capacity_map, cost_map));
+			break;
+		}
+
+		case CAPACITY_SCALING: {
+			typedef lemon::CapacityScaling< DGR, int64_t > FlowAlgorithm;
+			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, DGR >
+				(g, supply_map, capacity_map, cost_map));
+			break;
+		}
+
+		case CYCLE_CANCELING: {
+			typedef lemon::CycleCanceling< DGR, int64_t > FlowAlgorithm;
+			trade_ptr.reset(new AlgoWrapper< FlowAlgorithm, DGR >
+				(g, supply_map, capacity_map, cost_map));
+			break;
+		}
+
+		default: {
+			throw std::logic_error("No implementation for "
+					"minimum cost flow algorithm "
+					+ std::to_string(_mcfa));
+			break;
+		}
+	}
+
+	/**
+	 * Run and get the Problem Type
+	 */
+	trade_ptr->run();
+
+	/**
+	 * Check if perfect match has been found.
+	 */
+	if ( !trade_ptr->optimalSolution() ) {
+		throw std::runtime_error("No optimal solution found");
+	}
+
+	/**
+	 * Get the flow map
+	 */
+	trade_ptr->flowMap( flow_map );
 }
 
 
