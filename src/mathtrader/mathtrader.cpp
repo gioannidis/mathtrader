@@ -974,13 +974,27 @@ MathTrader::_runMaximizeUsers() {
 
 	/**
 	 * Structure per USERNAME;
-	 * keeps the parent (source) node
-	 * and the non-trade (pseudo-sink) node.
+	 * keep notrade_in, notrade_out and trading items.
+	 *
+	 * Items not trading will match:
+	 *
+	 * A+ -> no_in -> no_out -> A-
+	 * B+ -> no_in -> no_out -> B-
 	 */
 	typedef struct Parent_s {
-		TradeGraph::Node parent, notrade;
-		Parent_s ( TradeGraph::Node _p, TradeGraph::Node _no ) :
-			parent( _p ), notrade( _no ) {}
+
+		TradeGraph::Node
+			notrade_in,
+			notrade_out;
+
+		int count;	/**< Number of items the user is trading */
+
+		Parent_s (TradeGraph::Node _no_in,
+				TradeGraph::Node _no_out) :
+
+			notrade_in( _no_in ),
+			notrade_out( _no_out ),
+			count(0) {}
 	} Parent_t;
 
 	/**
@@ -1009,9 +1023,11 @@ MathTrader::_runMaximizeUsers() {
 		auto const & trade_in  = node_split2trade[  in_node ];
 
 		/**
-		 * In-nodes should be always sinks.
+		 * Trade-out nodes are sources.
+		 * Trade-in  nodes are sinks.
 		 */
-		supply_map[ trade_in ] = -1;
+		supply_map[ trade_out ] = +1;
+		supply_map[ trade_in  ] = -1;
 
 		/**
 		 * Is it a dummy item?
@@ -1032,7 +1048,6 @@ MathTrader::_runMaximizeUsers() {
 			capacity_map[ bind_arc ] = 1;
 			cost_map[ bind_arc ] = 0;
 
-			supply_map[ trade_out ] = +1;
 
 		} else {
 
@@ -1051,18 +1066,20 @@ MathTrader::_runMaximizeUsers() {
 				 * Create new parent node.
 				 * Initial supplies are zero.
 				 * We will set the parent supply maps later.
+				 * We will add the bind-arcs between notrade_in
+				 * and notrade_out later.
 				 */
-				auto const &  parent_node = trade_graph.addNode();
-				auto const & notrade_node = trade_graph.addNode();
+				auto const &   notrade_in  = trade_graph.addNode();
+				auto const &   notrade_out = trade_graph.addNode();
 
-				supply_map[  parent_node ] = 0;
-				supply_map[ notrade_node ] = 0;
+				supply_map[ notrade_in  ] = 0;
+				supply_map[ notrade_out ] = 0;
+
 
 				/**
 				 * Insert parent node to parent_map
 				 */
-				auto pair = parent_map.emplace(username,
-						Parent_t(parent_node, notrade_node));
+				auto pair = parent_map.emplace(username, Parent_t(notrade_in, notrade_out));
 
 				/**
 				 * Sanity check
@@ -1079,26 +1096,26 @@ MathTrader::_runMaximizeUsers() {
 			}
 
 			/**
-			 * Retrieve parent node.
+			 * Retrieve non-trading nodes.
 			 */
-			auto const &  parent_node = it->second.parent;
-			auto const & notrade_node = it->second.notrade;
+			auto const & notrade_in  = it->second.notrade_in;
+			auto const & notrade_out = it->second.notrade_out;
+			++ (it->second.count);
 
 			/**
-			 * Add arc from parent  node to item_out.
-			 * Add arc from notrade node to item_in.
+			 * Add the non-trading arcs.
 			 */
-			auto const & trade_arc = trade_graph.addArc(parent_node, trade_out),
-			     & notrade_arc = trade_graph.addArc(notrade_node, trade_in);
+			auto const & notrade_arc_out = trade_graph.addArc( trade_out, notrade_in );
+			auto const & notrade_arc_in  = trade_graph.addArc( notrade_out, trade_in );
 
 			/**
 			 * Cost: always zero.
 			 * Capacity: always unit.
 			 */
-			capacity_map[   trade_arc ] = 1;
-			capacity_map[ notrade_arc ] = 1;
-			cost_map[   trade_arc ] = 0;
-			cost_map[ notrade_arc ] = 0;
+			capacity_map[ notrade_arc_out ] = 1;
+			capacity_map[ notrade_arc_in  ] = 1;
+			cost_map[ notrade_arc_out ] = 0;
+			cost_map[ notrade_arc_in  ] = 0;
 		}
 	}
 
@@ -1107,32 +1124,16 @@ MathTrader::_runMaximizeUsers() {
 	 */
 	for ( auto const & pair : parent_map ) {
 
-		auto const &  parent_node = pair.second.parent;
-		auto const & notrade_node = pair.second.notrade;
+		auto const & notrade_out = pair.second.notrade_out;
+		auto const & notrade_in  = pair.second.notrade_in;
 
 		/**
-		 * Count out arcs of parent_node.
-		 * Count out arcs of notrade_node.
+		 * Number of trading items: of user.
 		 */
-		const int parent_out  = countOutArcs( trade_graph,  parent_node );
-		const int notrade_out = countOutArcs( trade_graph, notrade_node );
-
-		if ( parent_out != notrade_out ) {
-			throw std::logic_error("Outgoing arcs from parent node"
-					" (" + std::to_string(parent_out) + ")"
-					" not equal to outgoing arcs at notrade node"
-					" (" + std::to_string(notrade_out) + ")");
-		}
+		const int n_items = pair.second.count;
 
 		/**
-		 * Number of trading items: outgoing arcs from parent.
-		 * That's the supply of the parent node.
-		 */
-		const int n_items = parent_out;
-		supply_map[ parent_node ] = n_items;
-
-		/**
-		 * Add arcs from parent to notrade.
+		 * Add arcs from notrade_in to notrade_out.
 		 * Orange arc:
 		 * - Capacity: n_items - 1
 		 * - Cost: lower
@@ -1140,7 +1141,7 @@ MathTrader::_runMaximizeUsers() {
 		 * - Capacity: unit
 		 * - Cost: higher
 		 */
-		auto const & red_arc = trade_graph.addArc( parent_node, notrade_node );
+		auto const & red_arc = trade_graph.addArc( notrade_in, notrade_out );
 		capacity_map[ red_arc ] = 1;
 		cost_map[ red_arc ] = _COST_NONTRADE;
 
@@ -1149,7 +1150,7 @@ MathTrader::_runMaximizeUsers() {
 		 * i.e., user is trading more than one item.
 		 */
 		if ( n_items > 1 ) {
-			auto const & orange_arc = trade_graph.addArc( parent_node, notrade_node );
+			auto const & orange_arc = trade_graph.addArc( notrade_in, notrade_out );
 			capacity_map[ orange_arc ] = (n_items - 1);
 			cost_map[ orange_arc ] = _COST_NONTRADE; //_COST_MORETRADES
 		}
@@ -1262,12 +1263,12 @@ MathTrader::_runMaximizeUsers() {
 	 */
 	for ( auto const & pair : parent_map ) {
 
-		auto const &  parent_node = pair.second.parent;
-		auto const & notrade_node = pair.second.notrade;
+		auto const & notrade_in  = pair.second.notrade_in;
+		auto const & notrade_out = pair.second.notrade_out;
 		auto const & username = pair.first;
 
-		label[parent_node] = username;
-		label[notrade_node] = "no";
+		label[notrade_in]  = "no-in";
+		label[notrade_out] = "no-out";
 	}
 
 	/**
