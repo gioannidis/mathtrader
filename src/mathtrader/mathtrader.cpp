@@ -980,6 +980,11 @@ MathTrader::_runMaximizeUsers() {
 		auto const & trade_out = node_start2trade[ out_node ];
 
 		/**
+		 * In-nodes should be always sinks.
+		 */
+		supply_map[ trade_in ] = -1;
+
+		/**
 		 * Is it a dummy item?
 		 */
 		if ( _dummy[_node_out2in[n]] ) {
@@ -992,14 +997,13 @@ MathTrader::_runMaximizeUsers() {
 			 * as "trading items". It's fine not to trade a dummy item.
 			 *
 			 * Add a zero-cost bind-arc between the in-out nodes.
-			 * Make in-out nodes sources & sinks.
+			 * Make out nodes sources.
 			 */
 			auto const & bind_arc = trade_graph.addArc( trade_in, trade_out );
 			capacity_map[ bind_arc ] = 1;
 			cost_map[ bind_arc ] = 0;
 
-			supply_map[ trade_in  ] = +1;
-			supply_map[ trade_out ] = -1;
+			supply_map[ trade_out  ] = +1;
 
 		} else {
 
@@ -1015,11 +1019,15 @@ MathTrader::_runMaximizeUsers() {
 				/**
 				 * Parent node NOT found.
 				 * This should be the first item from this username.
-				 * Create new parent node;
-				 * we will set the supply maps later.
+				 * Create new parent node.
+				 * Initial supplies are zero.
+				 * We will set the parent supply maps later.
 				 */
 				auto const &  parent_node = trade_graph.addNode();
 				auto const & notrade_node = trade_graph.addNode();
+
+				supply_map[  parent_node ] = 0;
+				supply_map[ notrade_node ] = 0;
 
 				/**
 				 * Insert parent node to parent_map
