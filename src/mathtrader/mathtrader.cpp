@@ -917,6 +917,7 @@ MathTrader::_runMaximizeUsers() {
 
 	/* references */
 	StartGraph::NodeMap< TradeGraph::Node > node_start2trade( start_graph );
+	StartGraph::ArcMap < TradeGraph::Arc  >  arc_start2trade( start_graph );
 	/* cross-references */
 	TradeGraph::NodeMap< StartGraph::Node > node_trade2start( trade_graph );
 	TradeGraph::ArcMap < StartGraph::Arc  >  arc_trade2start( trade_graph );
@@ -970,10 +971,19 @@ MathTrader::_runMaximizeUsers() {
 		 */
 		digraphCopy( split_nonbinds, trade_graph ).
 			nodeRef( node_start2trade ).
+			arcRef(   arc_start2trade ).
 			nodeCrossRef( node_trade2start ).
 			arcCrossRef( arc_trade2start ).
 			run();
 	}
+
+	/**
+	 * Create cost & capacity maps
+	 */
+	TradeGraph::ArcMap< int64_t >
+		capacity_map( trade_graph, 1 ),
+		cost_map( trade_graph, 0 );
+
 }
 
 
