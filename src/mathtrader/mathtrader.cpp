@@ -1113,7 +1113,8 @@ MathTrader::_runMaximizeUsers() {
 			 * The capacity of the bind arc is half the default:
 			 * 	1/2 * 2 = 1 (unit).
 			 */
-			cost_map[ bind_arc ] = _COST_NONTRADE;
+			auto _COST_BIND = _COST_MORETRADES;
+			cost_map[ bind_arc ] = _COST_BIND;
 			capacity_map[ bind_arc ] = 1;
 
 			/**
@@ -1163,14 +1164,12 @@ MathTrader::_runMaximizeUsers() {
 			 * Retrieve non-trading nodes.
 			 */
 			auto const & notrade_in  = it->second.notrade_in;
-			auto const & notrade_out = it->second.notrade_out;
 			++ (it->second.count);
 
 			/**
-			 * Add the non-trading arcs.
+			 * Add the non-trading arc.
 			 */
 			auto const & notrade_arc_out = trade_graph.addArc( trade_out, notrade_in );
-			auto const & notrade_arc_in  = trade_graph.addArc( notrade_out, trade_in );
 
 			/**
 			 * Cost: always zero.
@@ -1178,19 +1177,18 @@ MathTrader::_runMaximizeUsers() {
 			 * - Default is 2, so 1/2 * 2 = 1 (unit)
 			 */
 			capacity_map[ notrade_arc_out ] = 1;
-			capacity_map[ notrade_arc_in  ] = 1;
 			cost_map[ notrade_arc_out ] = 0;
-			cost_map[ notrade_arc_in  ] = 0;
 		}
 	}
 
 	/**
+	 * Setup non-trade cost arcs and sink.
 	 * Iterate all parent nodes
 	 */
 	for ( auto const & pair : parent_map ) {
 
-		auto const & notrade_out = pair.second.notrade_out;
-		auto const & notrade_in  = pair.second.notrade_in;
+		auto const & notrade_in = pair.second.notrade_in;
+		auto const & sink = pair.second.notrade_out;
 
 		/**
 		 * Number of trading items: of user.
@@ -1206,7 +1204,7 @@ MathTrader::_runMaximizeUsers() {
 		 * - Capacity: unit
 		 * - Cost: higher
 		 */
-		auto const & red_arc = trade_graph.addArc( notrade_in, notrade_out );
+		auto const & red_arc = trade_graph.addArc( notrade_in, sink );
 		capacity_map[ red_arc ] = 1;
 		cost_map[ red_arc ] = _COST_NONTRADE;
 
@@ -1215,10 +1213,17 @@ MathTrader::_runMaximizeUsers() {
 		 * i.e., user is trading more than one item.
 		 */
 		if ( n_items > 1 ) {
-			auto const & orange_arc = trade_graph.addArc( notrade_in, notrade_out );
+			auto const & orange_arc = trade_graph.addArc( notrade_in, sink );
 			capacity_map[ orange_arc ] = (n_items - 1);
 			cost_map[ orange_arc ] = _COST_NONTRADE; //_COST_MORETRADES
 		}
+
+		/**
+		 * Finally, make the notrade_out node a sink.
+		 * It should have a capacity of n_items
+		 * (as all flows here have unit capacity).
+		 */
+		supply_map[ sink ] = (-1) * n_items;
 	}
 
 
@@ -1237,6 +1242,61 @@ MathTrader::_runMaximizeUsers() {
 	this->_runFlowAlgorithm( trade_graph,
 			supply_map, capacity_map, cost_map, flow_map );
 
+
+	/********************************************//**
+	 *	EXPORT PRODUCED TRADE GRAPH TO DOT
+	 ***********************************************/
+
+#if 1
+	TradeGraph::NodeMap< std::string > label( trade_graph );
+
+	/**
+	 * All nodes except parent nodes
+	 */
+	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
+
+		auto const & out_node = split_bind_graph.outNode(n);
+		auto const &  in_node = split_bind_graph.inNode(n);
+		auto const & trade_out = node_split2trade[ out_node ];
+		auto const & trade_in  = node_split2trade[  in_node ];
+
+		label[trade_out] = _name[_node_out2in[n]] + "+";
+		label[trade_in]  = _name[_node_out2in[n]] + "-";
+	}
+
+	/**
+	 * Parent nodes
+	 */
+	for ( auto const & pair : parent_map ) {
+
+		auto const & notrade_in  = pair.second.notrade_in;
+		auto const & notrade_out = pair.second.notrade_out;
+		auto const & username = pair.first;
+
+		label[notrade_in]  = "no-in";
+		label[notrade_out] = "no-out";
+	}
+
+	/**
+	 * Make arc label map
+	 */
+	TradeGraph::ArcMap< std::string > arc_label( trade_graph, "" );
+	for ( TradeGraph::ArcIt a(trade_graph); a != lemon::INVALID; ++a ) {
+
+		int64_t flows = flow_map[a];
+		const bool chosen = (flows > 0);
+		if ( chosen ) {
+			const std::string color = (capacity_map[a] == flows) ? "green" : "orange";
+			arc_label[a] = "[color=" + color + ", label=\"f="
+				+ std::to_string(flows) +"\"]";
+		}
+	}
+
+	/**
+	 * Export the graph to file
+	 */
+	_exportToDot( "trade.dot", trade_graph, "Trade_Graph", label, arc_label );
+#endif
 
 	/********************************************//**
 	 *	MAP THE FLOW RESULTS TO START-GRAPH
@@ -1302,60 +1362,6 @@ MathTrader::_runMaximizeUsers() {
 	}
 
 
-	/********************************************//**
-	 *	EXPORT PRODUCED TRADE GRAPH TO DOT
-	 ***********************************************/
-
-#if 1
-	TradeGraph::NodeMap< std::string > label( trade_graph );
-
-	/**
-	 * All nodes except parent nodes
-	 */
-	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
-
-		auto const & out_node = split_bind_graph.outNode(n);
-		auto const &  in_node = split_bind_graph.inNode(n);
-		auto const & trade_out = node_split2trade[ out_node ];
-		auto const & trade_in  = node_split2trade[  in_node ];
-
-		label[trade_out] = _name[_node_out2in[n]] + "+";
-		label[trade_in]  = _name[_node_out2in[n]] + "-";
-	}
-
-	/**
-	 * Parent nodes
-	 */
-	for ( auto const & pair : parent_map ) {
-
-		auto const & notrade_in  = pair.second.notrade_in;
-		auto const & notrade_out = pair.second.notrade_out;
-		auto const & username = pair.first;
-
-		label[notrade_in]  = "no-in";
-		label[notrade_out] = "no-out";
-	}
-
-	/**
-	 * Make arc label map
-	 */
-	TradeGraph::ArcMap< std::string > arc_label( trade_graph, "" );
-	for ( TradeGraph::ArcIt a(trade_graph); a != lemon::INVALID; ++a ) {
-
-		int64_t flows = flow_map[a];
-		const bool chosen = (flows > 0);
-		if ( chosen ) {
-			const std::string color = (capacity_map[a] == flows) ? "green" : "orange";
-			arc_label[a] = "[color=" + color + ", label=\"f="
-				+ std::to_string(flows) +"\"]";
-		}
-	}
-
-	/**
-	 * Export the graph to file
-	 */
-	_exportToDot( "trade.dot", trade_graph, "Trade_Graph", label, arc_label );
-#endif
 }
 
 
