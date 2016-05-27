@@ -51,6 +51,9 @@ MathTrader::MathTrader() :
 
 	/* options */
 	_mcfa( NETWORK_SIMPLEX ),		/**< Option: algorithm 	*/
+	_COST_NONTRADE( 1 << 29 ),
+	_COST_MORETRADES( 1 << 20 ),
+
 	_hide_loops( false ),
 	_hide_non_trades( false ),
 	_hide_stats( false ),
@@ -751,7 +754,7 @@ MathTrader::_runMaximizeTrades() {
 	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
 
 		auto const & self_arc = split_graph.arc(n);
-		cost_map[ self_arc ] = ( _dummy[_node_out2in[n]] ) ? 0 : 1e9;
+		cost_map[ self_arc ] = ( _dummy[_node_out2in[n]] ) ? 0 : _COST_NONTRADE;
 		reverse_map[ self_arc ] = false;
 	}
 
