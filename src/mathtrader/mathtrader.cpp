@@ -982,15 +982,37 @@ MathTrader::_runMaximizeUsers() {
 	 ***********************************************/
 
 	/**
-	 * Create cost & capacity maps
+	 * Create supply, capacity & cost maps
+	 * Default supply: zero
+	 * Default capacity: unit
+	 * Default cost: zero
 	 */
 	TradeGraph::NodeMap< int64_t > supply_map( trade_graph, 0 );
 	TradeGraph::ArcMap < int64_t >
 		capacity_map( trade_graph, 1 ),
 		cost_map( trade_graph, 0 );
 
+	/**
+	 * Structure per USERNAME;
+	 * keeps the parent (source) node
+	 * and the non-trade (pseudo-sink) node.
+	 */
+	typedef struct Parent_s {
+		TradeGraph::Node parent, notrade;
+		Parent_s ( TradeGraph::Node _p, TradeGraph::Node _no ) :
+			parent( _p ), notrade( _no ) {}
+	} Parent_t;
 
 	/**
+	 * Unordered map: usernames are mapped to parent nodes
+	 */
+	std::unordered_map< std::string, Parent_t >
+		parent_map;
+
+	/**
+	 * Iterate all nodes of start_graph:
+	 * - Dummy item: make nodes sources/sinks, add zero-cost bind-arc.
+	 * - Non-dummy item: link item_in to parent_node, item_out to notrade_node.
 	 */
 	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
 
@@ -1006,6 +1028,9 @@ MathTrader::_runMaximizeUsers() {
 		auto const & trade_in  = node_start2trade[  in_node ];
 		auto const & trade_out = node_start2trade[ out_node ];
 
+		/**
+		 * Is it a dummy item?
+		 */
 		if ( _dummy[_node_out2in[n]] ) {
 
 			/**
@@ -1018,7 +1043,7 @@ MathTrader::_runMaximizeUsers() {
 			 * Add a zero-cost bind-arc between the in-out nodes.
 			 * Make in-out nodes sources & sinks.
 			 */
-			auto bind_arc = trade_graph.addArc( trade_in, trade_out );
+			auto const & bind_arc = trade_graph.addArc( trade_in, trade_out );
 			capacity_map[ bind_arc ] = 1;
 			cost_map[ bind_arc ] = 0;
 
@@ -1027,6 +1052,65 @@ MathTrader::_runMaximizeUsers() {
 
 		} else {
 
+			/**
+			 * Non-dummy item;
+			 * look up its parent-node based on the username.
+			 */
+			const std::string & username = _username[_node_out2in[n]];
+			auto it = parent_map.find( username );
+
+			if ( it == parent_map.end() ) {
+
+				/**
+				 * Parent node NOT found.
+				 * This should be the first item from this username.
+				 * Create new parent node;
+				 * we will set the supply maps later.
+				 */
+				auto const &  parent_node = trade_graph.addNode();
+				auto const & notrade_node = trade_graph.addNode();
+
+				/**
+				 * Insert parent node to parent_map
+				 */
+				auto pair = parent_map.emplace(username,
+						Parent_t(parent_node, notrade_node));
+
+				/**
+				 * Sanity check
+				 */
+				if ( !pair.second ) {
+					throw std::logic_error("Could not emplace"
+							" parent node");
+				}
+
+				/**
+				 * Point iterator to new item
+				 */
+				it = pair.first;
+			}
+
+			/**
+			 * Retrieve parent node.
+			 */
+			auto const &  parent_node = it->second.parent;
+			auto const & notrade_node = it->second.notrade;
+
+			/**
+			 * Add arc from parent  node to item_in.
+			 * Add arc from notrade node to item_out.
+			 */
+			auto const & trade_arc = trade_graph.addArc(parent_node, trade_in),
+			     & notrade_arc = trade_graph.addArc(notrade_node, trade_out);
+
+			/**
+			 * Cost: always zero.
+			 * Capacity: always unit.
+			 */
+			capacity_map[   trade_arc ] = 1;
+			capacity_map[ notrade_arc ] = 1;
+			cost_map[   trade_arc ] = 0;
+			cost_map[ notrade_arc ] = 0;
 		}
 	}
 
