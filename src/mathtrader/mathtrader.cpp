@@ -934,7 +934,7 @@ MathTrader::_runMaximizeUsers() {
 
 
 	/********************************************//**
-	 *	SETUP SOURCE-CAPACITY-COST MAPS
+	 *	INITIALIZE SOURCE-CAPACITY-COST MAPS
 	 ***********************************************/
 
 	/**
@@ -947,6 +947,29 @@ MathTrader::_runMaximizeUsers() {
 	TradeGraph::ArcMap < int64_t >
 		capacity_map( trade_graph, 1 ),
 		cost_map( trade_graph, 0 );
+
+
+	/********************************************//**
+	 *	SETUP COSTS FROM PRIORITIES
+	 ***********************************************/
+
+	for ( StartGraph::ArcIt a(start_graph); a != lemon::INVALID; ++ a ) {
+
+		/**
+		 * Get match_arc at split graph.
+		 * Use the reference map to get the corresponding trade arc.
+		 */
+		auto const & match_arc = split_bind_graph.arc(a);
+		auto const & trade_arc = arc_split2trade[ match_arc ];
+		const int rank = _out_rank[a];
+
+		cost_map[ trade_arc ] = _getCost(rank, _dummy[_node_out2in[start_graph.source(a)]]);
+	}
+
+
+	/********************************************//**
+	 *	EXPAND GRAPH WITH PARENT NODES
+	 ***********************************************/
 
 	/**
 	 * Structure per USERNAME;
