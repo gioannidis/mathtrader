@@ -1139,16 +1139,20 @@ MathTrader::_runMaximizeUsers() {
 		 * - Capacity: unit
 		 * - Cost: higher
 		 */
-		auto const & orange_arc = trade_graph.addArc( parent_node, notrade_node );
-		auto const &    red_arc = trade_graph.addArc( parent_node, notrade_node );
+		auto const & red_arc = trade_graph.addArc( parent_node, notrade_node );
+		capacity_map[ red_arc ] = 1;
+		cost_map[ red_arc ] = _COST_NONTRADE;
 
-		capacity_map[ orange_arc ] = (n_items - 1);
-		capacity_map[    red_arc ] = 1;
-
-		cost_map[ orange_arc ] = _COST_NONTRADE; //_COST_MORETRADES
-		cost_map[    red_arc ] = _COST_NONTRADE;
+		/**
+		 * Add orange arc only if necessary,
+		 * i.e., user is trading more than one item.
+		 */
+		if ( n_items > 1 ) {
+			auto const & orange_arc = trade_graph.addArc( parent_node, notrade_node );
+			capacity_map[ orange_arc ] = (n_items - 1);
+			cost_map[ orange_arc ] = _COST_NONTRADE; //_COST_MORETRADES
+		}
 	}
-
 
 
 	/********************************************//**
@@ -1229,6 +1233,44 @@ MathTrader::_runMaximizeUsers() {
 			_send[ sender ] = receiver;
 		}
 	}
+
+
+	/********************************************//**
+	 *	EXPORT PRODUCED TRADE GRAPH TO DOT
+	 ***********************************************/
+
+#if 1
+	TradeGraph::NodeMap< std::string > label( trade_graph );
+
+	/**
+	 * All nodes except parent nodes
+	 */
+	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
+
+		auto const & out_node = split_bind_graph.outNode(n);
+		auto const &  in_node = split_bind_graph.inNode(n);
+		auto const & trade_out = node_split2trade[ out_node ];
+		auto const & trade_in  = node_split2trade[  in_node ];
+
+		label[trade_out] = _name[_node_out2in[n]] + "+";
+		label[trade_in]  = _name[_node_out2in[n]] + "-";
+	}
+
+	/**
+	 * Parent nodes
+	 */
+	for ( auto const & pair : parent_map ) {
+
+		auto const &  parent_node = pair.second.parent;
+		auto const & notrade_node = pair.second.notrade;
+		auto const & username = pair.first;
+
+		label[parent_node] = username;
+		label[notrade_node] = "no";
+	}
+
+	_exportToDot( "trade.dot", trade_graph, "Trade_Graph", label );
+#endif
 }
 
 
