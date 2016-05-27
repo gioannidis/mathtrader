@@ -1171,6 +1171,64 @@ MathTrader::_runMaximizeUsers() {
 	 *	MAP THE FLOW RESULTS TO START-GRAPH
 	 ***********************************************/
 
+	/**
+	 * TODO we are using much of the same code as in runMaximizeItems.
+	 * Put it in a private method.
+	 */
+	for ( StartGraph::ArcIt a(start_graph); a != lemon::INVALID; ++a ) {
+
+		/**
+		 * Match start arc -> split_graph arc -> trade_graph arc
+		 */
+		auto const & want_split_arc = split_bind_graph.arc(a);
+		auto const & want_arc = arc_split2trade[ want_split_arc ];
+		const bool chosen = flow_map[ want_arc ];
+
+		if ( chosen ) {
+
+			/**
+			 * Receiver & Sender nodes: source/target
+			 * of original chosen arc.
+			 */
+			const OutputGraph::Node
+				&receiver = start_graph.source(a),
+				&sender = start_graph.target(a);
+
+			/**
+			 * Mark original arc as chosen.
+			 * This should be the first and only time
+			 * when the chosen arc is marked as "trading".
+			 */
+			if ( this->_chosen_arc[a] ) {
+				throw std::runtime_error("Arc from "
+						+ _name[ _node_out2in[receiver] ]
+						+ " to "
+						+ _name[ _node_out2in[sender] ]
+						+ " has been already chosen");
+			}
+			this->_chosen_arc[a] = chosen;
+
+			/**
+			 * By convention, mark only the receiver as trading.
+			 * The sender will be marked
+			 * by its own chosen "want" arc.
+			 * This should be the first and only time
+			 * when the receiver node is marked as "trading".
+			 */
+			if ( this->_trade[receiver] ) {
+				throw std::runtime_error("Multiple trades for item "
+						+ _name[ _node_out2in[receiver] ]);
+			}
+			_trade[receiver] = true;
+
+			/**
+			 * Set the receiver & sender
+			 * reciprocal maps.
+			 */
+			_receive[ receiver ] = sender;
+			_send[ sender ] = receiver;
+		}
+	}
 }
 
 
