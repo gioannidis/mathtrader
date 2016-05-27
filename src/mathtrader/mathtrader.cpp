@@ -916,13 +916,6 @@ MathTrader::_runMaximizeUsers() {
 	typedef OutputGraph StartGraph;
 	const StartGraph & start_graph = this->_output_graph;
 
-	/* references */
-	StartGraph::NodeMap< TradeGraph::Node > node_start2trade( start_graph );
-	StartGraph::ArcMap < TradeGraph::Arc  >  arc_start2trade( start_graph );
-	/* cross-references */
-	TradeGraph::NodeMap< StartGraph::Node > node_trade2start( trade_graph );
-	TradeGraph::ArcMap < StartGraph::Arc  >  arc_trade2start( trade_graph );
-
 
 	/********************************************//**
 	 *	CREATE TRADE GRAPH
@@ -943,10 +936,11 @@ MathTrader::_runMaximizeUsers() {
 	 */
 
 	/**
-	 * Split split graph.
+	 * Split the start graph.
+	 * This will have bind arcs.
 	 */
-	typedef lemon::SplitNodes< StartGraph > SplitGraph;
-	SplitGraph split_graph( start_graph );
+	typedef lemon::SplitNodes< StartGraph > SplitBindGraph;
+	SplitBindGraph split_bind_graph( start_graph );
 
 	/**
 	 * Create filter to filter out
@@ -954,29 +948,44 @@ MathTrader::_runMaximizeUsers() {
 	 * Iterate all nodes of start graph,
 	 * get the bind-arcs and filter them.
 	 */
-	SplitGraph::ArcMap< bool > nonbind_map( split_graph, true );
+	SplitBindGraph::ArcMap< bool > nonbind_map( split_bind_graph, true );
 
 	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
 
-		auto const & bind_arc = split_graph.arc(n);
+		auto const & bind_arc = split_bind_graph.arc(n);
 		nonbind_map[ bind_arc ] = false;
 	}
 
 	/**
 	 * Apply the filter
+	 * split_graph has no bind arcs.
 	 */
-	auto split_nonbinds  = filterArcs( split_graph, nonbind_map );
+	auto split_graph  = filterArcs( split_bind_graph, nonbind_map );
+	typedef decltype(split_graph) SplitGraph;
 
 	/**
 	 * Copy to trade_graph
 	 */
-	digraphCopy( split_nonbinds, trade_graph ).
-		nodeRef( node_start2trade ).
-		arcRef(   arc_start2trade ).
-		nodeCrossRef( node_trade2start ).
-		arcCrossRef( arc_trade2start ).
+
+	/* references */
+	SplitGraph::NodeMap< TradeGraph::Node > node_split2trade( split_graph );
+	SplitGraph::ArcMap < TradeGraph::Arc  >  arc_split2trade( split_graph );
+	/* cross-references */
+	TradeGraph::NodeMap< SplitGraph::Node > node_trade2split( trade_graph );
+	TradeGraph::ArcMap < SplitGraph::Arc  >  arc_trade2split( trade_graph );
+
+	digraphCopy( split_graph, trade_graph ).
+		nodeRef( node_split2trade ).
+		arcRef(   arc_split2trade ).
+		nodeCrossRef( node_trade2split ).
+		arcCrossRef(   arc_trade2split ).
 		run();
 
+#if 0
+	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
+		std::cout << "start_id: " << start_graph.id(n) << " trade_id: " << trade_graph.id(node_start2trade[n]) << std::endl;
+	}
+#endif
 
 	/********************************************//**
 	 *	SETUP SOURCE-CAPACITY-COST MAPS
@@ -1021,19 +1030,23 @@ MathTrader::_runMaximizeUsers() {
 		/**
 		 * In and out nodes of split_graph
 		 */
-		auto const & out_node = split_graph.outNode(n);
-		auto const &  in_node = split_graph.inNode(n);
+		auto const & out_node = split_bind_graph.outNode(n);
+		auto const &  in_node = split_bind_graph.inNode(n);
+		//std::cout << "out_id " << split_bind_graph.id(out_node) << " in_id " << split_graph.id(in_node) << std::endl;
 
 		/**
 		 * In and out nodes of trade_graph
 		 */
-		auto const & trade_out = node_start2trade[ out_node ];
-		auto const & trade_in  = node_start2trade[  in_node ];
+		auto const & trade_out = node_split2trade[ out_node ];
+		auto const & trade_in  = node_split2trade[  in_node ];
+		//std::cout << "out_id " << trade_graph.id(trade_out) << " in_id " << trade_graph.id(trade_in) << std::endl;
 
 		/**
 		 * In-nodes should be always sinks.
 		 */
+		//std::cout << "BEFORE: supply_out " << supply_map[trade_out] << " supply_in " << supply_map[trade_in] << std::endl;
 		supply_map[ trade_in ] = -1;
+		//std::cout << "AFTER:  supply_out " << supply_map[trade_out] << " supply_in " << supply_map[trade_in] << std::endl;
 
 		/**
 		 * Is it a dummy item?
@@ -1182,6 +1195,7 @@ MathTrader::_runMaximizeUsers() {
 		cost_map[    red_arc ] = _COST_NONTRADE;
 	}
 
+#if 0
 	std::cout << "total items: " << total_items << std::endl;
 	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
 		auto const &  in_node = split_graph.inNode(n);
@@ -1196,8 +1210,14 @@ MathTrader::_runMaximizeUsers() {
 				<< supply_map[ trade_in ]
 				<< std::endl;
 		} else {
+			std::cout << "Non-dummy supply out: "
+				<< supply_map[ trade_out ]
+				<< " in: "
+				<< supply_map[ trade_in ]
+				<< std::endl;
 		}
 	}
+#endif
 	int64_t total_supply = 0;
 	for ( TradeGraph::NodeIt n(trade_graph); n != lemon::INVALID; ++ n ) {
 		//std::cout << "Supply: " << supply_map[n] << std::endl;
