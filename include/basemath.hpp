@@ -160,7 +160,14 @@ protected:
 	static void _exportToDot( std::ostream & os,
 			const DGR & g,
 			const std::string & title,
-			const typename DGR::template NodeMap< std::string > & name );
+			const typename DGR::template NodeMap< std::string > & node_label );
+
+	template < typename DGR >
+	static void _exportToDot( std::ostream & os,
+			const DGR & g,
+			const std::string & title,
+			const typename DGR::template NodeMap< std::string > & node_label,
+			const typename DGR::template  ArcMap< std::string > &  arc_text );
 
 	/**
 	 * @brief Export to .dot format.
@@ -172,7 +179,14 @@ protected:
 	static void _exportToDot( const std::string & fn,
 			const DGR & g,
 			const std::string & title,
-			const typename DGR::template NodeMap< std::string > & name );
+			const typename DGR::template NodeMap< std::string > & node_label,
+			const typename DGR::template  ArcMap< std::string > &  arc_text );
+
+	template < typename DGR >
+	static void _exportToDot( const std::string & fn,
+			const DGR & g,
+			const std::string & title,
+			const typename DGR::template NodeMap< std::string > & node_label );
 
 private:
 	/**
@@ -202,7 +216,8 @@ void
 BaseMath::_exportToDot( std::ostream & os,
 		const DGR & g,
 		const std::string & title,
-		const typename DGR::template NodeMap< std::string > & name ) {
+		const typename DGR::template NodeMap< std::string > & node_label,
+		const typename DGR::template ArcMap< std::string >  &  arc_text ) {
 
 	os << "digraph "
 		<< title
@@ -212,13 +227,14 @@ BaseMath::_exportToDot( std::ostream & os,
 	for ( typename DGR::NodeIt n(g); n != lemon::INVALID; ++n ) {
 		os << "\t"
 			<< "n" << g.id(n)
-			<< " [label=\"" << name[n] << "\"];"
+			<< " [label=\"" << node_label[n] << "\"];"
 			<< std::endl;
 	}
 	for ( typename DGR::ArcIt a(g); a != lemon::INVALID; ++a ) {
 		os << "\t"
 			<< "n" << g.id( g.source(a) )
 			<< " -> " << "n" << g.id(g.target(a))
+			<< " " << arc_text[a] << ";"
 			<< std::endl;
 	}
 	os << "}" << std::endl;
@@ -226,15 +242,27 @@ BaseMath::_exportToDot( std::ostream & os,
 
 template < typename DGR >
 void
+BaseMath::_exportToDot( std::ostream & os,
+		const DGR & g,
+		const std::string & title,
+		const typename DGR::template NodeMap< std::string > & node_label ) {
+
+	const typename DGR::template ArcMap< std::string > nolabel( g, "" );
+	_exportToDot( os, g, title, node_label, nolabel );
+}
+
+template < typename DGR >
+void
 BaseMath::_exportToDot( const std::string & fn,
 		const DGR & g,
 		const std::string & title,
-		const typename DGR::template NodeMap< std::string > & name ) {
+		const typename DGR::template NodeMap< std::string > & node_label,
+		const typename DGR::template ArcMap< std::string >  & arc_text ) {
 
 	std::filebuf fb;
 	fb.open(fn, std::ios::out);
 	std::ostream os(&fb);
-	_exportToDot( os, g, title, name );
+	_exportToDot( os, g, title, node_label, arc_text );
 	fb.close();
 }
 #endif /* _BASEMATH_HPP_ */

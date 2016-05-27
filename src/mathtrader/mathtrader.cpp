@@ -33,6 +33,7 @@
 /* Lemon base libraries */
 #include <lemon/adaptors.h>
 #include <lemon/connectivity.h>
+#include <lemon/maps.h>
 
 /* Lemon Algorithms */
 #include <lemon/capacity_scaling.h>
@@ -1269,7 +1270,24 @@ MathTrader::_runMaximizeUsers() {
 		label[notrade_node] = "no";
 	}
 
-	_exportToDot( "trade.dot", trade_graph, "Trade_Graph", label );
+	/**
+	 * Make arc label map
+	 */
+	TradeGraph::ArcMap< std::string > arc_label( trade_graph, "" );
+	for ( TradeGraph::ArcIt a(trade_graph); a != lemon::INVALID; ++a ) {
+
+		auto flows = flow_map[a];
+		const bool chosen = (flows > 0);
+		if ( chosen ) {
+			arc_label[a] = "[color=green, label=\"f="
+				+ std::to_string(flows) +"\"]";
+		}
+	}
+
+	/**
+	 * Export the graph to file
+	 */
+	_exportToDot( "trade.dot", trade_graph, "Trade_Graph", label, arc_label );
 #endif
 }
 
