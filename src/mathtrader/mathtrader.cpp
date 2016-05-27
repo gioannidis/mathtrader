@@ -741,8 +741,8 @@ MathTrader::_runMaximizeTrades() {
 	typedef lemon::Orienter< const SplitUndirect, ReverseMap > SplitOrient;
 	SplitOrient split_orient( split_undirect, reverse_map );
 
-	SplitOrient::NodeMap< int64_t > supply_map( split_orient );
-	SplitOrient::ArcMap< int64_t > capacity_map( split_orient, 1 ),
+	SplitOrient::NodeMap< int64_t >   supply_map( split_orient, 0 );
+	SplitOrient::ArcMap < int64_t > capacity_map( split_orient, 1 ),
 		cost_map( split_orient, 0 );
 
 	/**
@@ -935,9 +935,44 @@ MathTrader::_runMaximizeUsers() {
 	/**
 	 * Create cost & capacity maps
 	 */
-	TradeGraph::ArcMap< int64_t >
+	TradeGraph::NodeMap< int64_t > supply_map( trade_graph, 0 );
+	TradeGraph::ArcMap < int64_t >
 		capacity_map( trade_graph, 1 ),
 		cost_map( trade_graph, 0 );
+
+
+	/**
+	 */
+	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
+
+		/**
+		 * In and out nodes of split_graph
+		 */
+		auto const &  in_node = split_graph.inNode(n);
+		auto const & out_node = split_graph.outNode(n);
+
+		/**
+		 * In and out nodes of trade_graph
+		 */
+		auto const & trade_in  = node_start2trade[  in_node ];
+		auto const & trade_out = node_start2trade[ out_node ];
+
+		if ( _dummy[_node_out2in[n]] ) {
+
+			/**
+			 * Dummy node;
+			 * add a zero-cost bind-arc between the in-out nodes
+			 * as it's not counted as a real item.
+			 * It doesn't matter if we don't trade a dummy item.
+			 */
+			auto bind_arc = trade_graph.addArc( trade_in, trade_out );
+			capacity_map[ bind_arc ] = 1;
+			cost_map[ bind_arc ] = 0;
+
+		} else {
+
+		}
+	}
 
 }
 
