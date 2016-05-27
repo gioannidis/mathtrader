@@ -932,11 +932,6 @@ MathTrader::_runMaximizeUsers() {
 		arcCrossRef(   arc_trade2split ).
 		run();
 
-#if 0
-	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
-		std::cout << "start_id: " << start_graph.id(n) << " trade_id: " << trade_graph.id(node_start2trade[n]) << std::endl;
-	}
-#endif
 
 	/********************************************//**
 	 *	SETUP SOURCE-CAPACITY-COST MAPS
@@ -975,7 +970,6 @@ MathTrader::_runMaximizeUsers() {
 	 * - Dummy item: make nodes sources/sinks, add zero-cost bind-arc.
 	 * - Non-dummy item: link item_in to parent_node, item_out to notrade_node.
 	 */
-	int64_t total_dummy = 0, total_nondummy = 0;
 	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
 
 		/**
@@ -983,21 +977,17 @@ MathTrader::_runMaximizeUsers() {
 		 */
 		auto const & out_node = split_bind_graph.outNode(n);
 		auto const &  in_node = split_bind_graph.inNode(n);
-		//std::cout << "out_id " << split_bind_graph.id(out_node) << " in_id " << split_graph.id(in_node) << std::endl;
 
 		/**
 		 * In and out nodes of trade_graph
 		 */
 		auto const & trade_out = node_split2trade[ out_node ];
 		auto const & trade_in  = node_split2trade[  in_node ];
-		//std::cout << "out_id " << trade_graph.id(trade_out) << " in_id " << trade_graph.id(trade_in) << std::endl;
 
 		/**
 		 * In-nodes should be always sinks.
 		 */
-		//std::cout << "BEFORE: supply_out " << supply_map[trade_out] << " supply_in " << supply_map[trade_in] << std::endl;
 		supply_map[ trade_in ] = -1;
-		//std::cout << "AFTER:  supply_out " << supply_map[trade_out] << " supply_in " << supply_map[trade_in] << std::endl;
 
 		/**
 		 * Is it a dummy item?
@@ -1020,9 +1010,7 @@ MathTrader::_runMaximizeUsers() {
 
 			supply_map[ trade_out ] = +1;
 
-			total_dummy ++ ;
 		} else {
-			total_nondummy ++ ;
 
 			/**
 			 * Non-dummy item;
@@ -1090,12 +1078,9 @@ MathTrader::_runMaximizeUsers() {
 		}
 	}
 
-	std::cout << "Total dummy: " << total_dummy
-		<< " Total non-dummy: " << total_nondummy << std::endl;
 	/**
 	 * Iterate all parent nodes
 	 */
-	int64_t total_items = 0;
 	for ( auto const & pair : parent_map ) {
 
 		auto const &  parent_node = pair.second.parent;
@@ -1121,11 +1106,6 @@ MathTrader::_runMaximizeUsers() {
 		 */
 		const int n_items = parent_out;
 		supply_map[ parent_node ] = n_items;
-#if 0
-		std::cout << pair.first << " is trading "
-			<< n_items << " non-dummy items" << std::endl;
-		total_items += n_items;
-#endif
 
 		/**
 		 * Add arcs from parent to notrade.
@@ -1146,38 +1126,6 @@ MathTrader::_runMaximizeUsers() {
 		cost_map[    red_arc ] = _COST_NONTRADE;
 	}
 
-#if 0
-	std::cout << "total items: " << total_items << std::endl;
-	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
-		auto const &  in_node = split_graph.inNode(n);
-		auto const & out_node = split_graph.outNode(n);
-		auto const & trade_in  = node_start2trade[  in_node ];
-		auto const & trade_out = node_start2trade[ out_node ];
-
-		if ( _dummy[_node_out2in[n]] ) {
-			std::cout << "Dummy supply out: "
-				<< supply_map[ trade_out ]
-				<< " in: "
-				<< supply_map[ trade_in ]
-				<< std::endl;
-		} else {
-			std::cout << "Non-dummy supply out: "
-				<< supply_map[ trade_out ]
-				<< " in: "
-				<< supply_map[ trade_in ]
-				<< std::endl;
-		}
-	}
-#endif
-	int64_t total_supply = 0;
-	for ( TradeGraph::NodeIt n(trade_graph); n != lemon::INVALID; ++ n ) {
-		//std::cout << "Supply: " << supply_map[n] << std::endl;
-		total_supply += supply_map[n];
-	}
-	if ( total_supply != 0 ) {
-		throw std::logic_error("Total supply it not zero ("
-				+ std::to_string(total_supply) + ")");
-	}
 
 
 	/********************************************//**
