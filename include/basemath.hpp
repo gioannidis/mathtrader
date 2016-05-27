@@ -23,6 +23,7 @@
 #define _BASEMATH_HPP_
 
 #include <lemon/smart_graph.h>
+#include <fstream>
 
 class BaseMath {
 
@@ -151,14 +152,27 @@ protected:
 
 	/**
 	 * @brief Export to .dot format.
-	 * Exports a graph to a file compatible with
-	 * graphviz, to visualize the graph.
+	 * Exports a graph as a file compatible with
+	 * graphviz, to visualize the graph,
+	 * to a given output stream.
 	 */
 	template < typename DGR >
 	static void _exportToDot( std::ostream & os,
 			const DGR & g,
 			const std::string & title,
 			const typename DGR::template NodeMap< std::string > & node_label );
+
+	/**
+	 * @brief Export to .dot format.
+	 * Exports a graph as a file compatible with
+	 * graphviz, to visualize the graph,
+	 * to a given output file.
+	 */
+	template < typename DGR >
+	static void _exportToDot( const std::string & fn,
+			const DGR & g,
+			const std::string & title,
+			const typename DGR::template NodeMap< std::string > & name );
 
 private:
 	/**
@@ -210,4 +224,17 @@ BaseMath::_exportToDot( std::ostream & os,
 	os << "}" << std::endl;
 }
 
+template < typename DGR >
+void
+BaseMath::_exportToDot( const std::string & fn,
+		const DGR & g,
+		const std::string & title,
+		const typename DGR::template NodeMap< std::string > & name ) {
+
+	std::filebuf fb;
+	fb.open(fn, std::ios::out);
+	std::ostream os(&fb);
+	_exportToDot( os, g, title, name );
+	fb.close();
+}
 #endif /* _BASEMATH_HPP_ */
