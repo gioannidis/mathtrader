@@ -158,6 +158,14 @@ private:
 	MCFA _mcfa;
 
 	/**
+	 * @brief Non-trading costs
+	 * Costs to assign to non-trading arcs.
+	 */
+	const int64_t
+		_COST_NONTRADE,		/**< Non-trading arcs */
+		_COST_MORETRADES;	/**< Second-third-etc trades of a user */
+
+	/**
 	 * @brief Output Options
 	 * Options that will determine what should be printed
 	 * or not by writeResults().
