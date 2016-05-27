@@ -1009,14 +1009,21 @@ MathTrader::_runMaximizeUsers() {
 		if ( _dummy[_node_out2in[n]] ) {
 
 			/**
-			 * Dummy node;
-			 * add a zero-cost bind-arc between the in-out nodes
-			 * as it's not counted as a real item.
-			 * It doesn't matter if we don't trade a dummy item.
+			 * Dummy item;
+			 *
+			 * We will not bother grouping a dummy item
+			 * under a user, as we do not want to count them
+			 * as "trading items". It's fine not to trade a dummy item.
+			 *
+			 * Add a zero-cost bind-arc between the in-out nodes.
+			 * Make in-out nodes sources & sinks.
 			 */
 			auto bind_arc = trade_graph.addArc( trade_in, trade_out );
 			capacity_map[ bind_arc ] = 1;
 			cost_map[ bind_arc ] = 0;
+
+			supply_map[ trade_in  ] = +1;
+			supply_map[ trade_out ] = -1;
 
 		} else {
 
