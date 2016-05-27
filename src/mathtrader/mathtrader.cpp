@@ -804,7 +804,7 @@ MathTrader::_runMaximizeTrades() {
 	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
 
 		auto const & self_arc = split_graph.arc(n);
-		cost_map[ self_arc ] = ( _dummy[_node_out2in[n]] ) ? 0 : _COST_NONTRADE;
+		cost_map[ self_arc ] = ( _dummy[_node_out2in[n]] ) ? 0 : 1e9;
 		reverse_map[ self_arc ] = false;
 	}
 
@@ -901,6 +901,79 @@ MathTrader::_runMaximizeTrades() {
 
 void
 MathTrader::_runMaximizeUsers() {
+
+	/**
+	 * TradeGraph will be eventually constructed
+	 * from StartGraph.
+	 */
+	typedef lemon::SmartDigraph TradeGraph;
+	TradeGraph trade_graph;
+
+	/**
+	 * Node references and cross references.
+	 */
+	typedef OutputGraph StartGraph;
+	const StartGraph & start_graph = this->_output_graph;
+
+	/* references */
+	StartGraph::NodeMap< TradeGraph::Node > node_start2trade( start_graph );
+	/* cross-references */
+	TradeGraph::NodeMap< StartGraph::Node > node_trade2start( trade_graph );
+	TradeGraph::ArcMap < StartGraph::Arc  >  arc_trade2start( trade_graph );
+
+	/**
+	 * Dependent scope to construct
+	 * the trade graph.
+	 */
+	{
+		/**
+		 * Graph -> Split	[split the nodes]
+		 * 	 -> NoBind	[filter out bind-arcs]
+		 *
+		 * SplitNodes splits each node v to v-out and v-in.
+		 * Each arc v -> u becomes v-out -> u-in.
+		 *
+		 * It also adds bind arcs: v-in -> v-out.
+		 * These will be filtered out.
+		 *
+		 *
+		 * All node & arc maps are inter-compatible.
+		 */
+
+		/**
+		 * Split split graph.
+		 */
+		typedef lemon::SplitNodes< StartGraph > SplitGraph;
+		SplitGraph split_graph( start_graph );
+
+		/**
+		 * Create filter to filter out
+		 * bind-arcs.
+		 * Iterate all nodes of start graph,
+		 * get the bind-arcs and filter them.
+		 */
+		SplitGraph::ArcMap< bool > nonbind_map( split_graph, true );
+
+		for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
+
+			auto const & bind_arc = split_graph.arc(n);
+			nonbind_map[ bind_arc ] = false;
+		}
+
+		/**
+		 * Apply the filter
+		 */
+		auto split_nonbinds  = filterArcs( split_graph, nonbind_map );
+
+		/**
+		 * Copy to trade_graph
+		 */
+		digraphCopy( split_nonbinds, trade_graph ).
+			nodeRef( node_start2trade ).
+			nodeCrossRef( node_trade2start ).
+			arcCrossRef( arc_trade2start ).
+			run();
+	}
 }
 
 
