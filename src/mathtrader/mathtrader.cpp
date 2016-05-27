@@ -981,6 +981,27 @@ MathTrader::_runMaximizeUsers() {
 		}
 	}
 
+
+	/********************************************//**
+	 *	RUN FLOW ALGORITHM
+	 ***********************************************/
+
+	/**
+	 * Flow map; the solver will populate it.
+	 */
+	TradeGraph::ArcMap< int64_t > flow_map( trade_graph );
+
+	/**
+	 * Run the solver.
+	 */
+	this->_runFlowAlgorithm( trade_graph,
+			supply_map, capacity_map, cost_map, flow_map );
+
+
+	/********************************************//**
+	 *	MAP THE FLOW RESULTS TO START-GRAPH
+	 ***********************************************/
+
 }
 
 
