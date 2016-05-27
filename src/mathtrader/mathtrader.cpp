@@ -941,12 +941,12 @@ MathTrader::_runMaximizeUsers() {
 	/**
 	 * Create supply, capacity & cost maps
 	 * Default supply: zero
-	 * Default capacity: unit
+	 * Default capacity: double; flows will be split if not traded.
 	 * Default cost: zero
 	 */
 	TradeGraph::NodeMap< int64_t > supply_map( trade_graph, 0 );
 	TradeGraph::ArcMap < int64_t >
-		capacity_map( trade_graph, 1 ),
+		capacity_map( trade_graph, 2 ),
 		cost_map( trade_graph, 0 );
 
 
@@ -1025,9 +1025,18 @@ MathTrader::_runMaximizeUsers() {
 		/**
 		 * Trade-out nodes are sources.
 		 * Trade-in  nodes are sinks.
+		 * Use double supply/demand,
+		 * as the non-trading flows will be split.
 		 */
-		supply_map[ trade_out ] = +1;
-		supply_map[ trade_in  ] = -1;
+		supply_map[ trade_out ] = +2;
+		supply_map[ trade_in  ] = -2;
+
+		/**
+		 * Add a bind-arc in every case.
+		 * The capacity will be diffent,
+		 * depending on whether it's a dummy item or not.
+		 */
+		auto const & bind_arc = trade_graph.addArc( trade_out, trade_in );
 
 		/**
 		 * Is it a dummy item?
@@ -1041,18 +1050,24 @@ MathTrader::_runMaximizeUsers() {
 			 * under a user, as we do not want to count them
 			 * as "trading items". It's fine not to trade a dummy item.
 			 *
-			 * Add a zero-cost bind-arc between the in-out nodes.
-			 * Make out nodes sources.
+			 * The cost of the bind arc will be zero.
+			 * The capacity of the bind arc is the default capacity.
 			 */
-			auto const & bind_arc = trade_graph.addArc( trade_out, trade_in );
-			capacity_map[ bind_arc ] = 1;
 			cost_map[ bind_arc ] = 0;
-
+			capacity_map[ bind_arc ] = 2;
 
 		} else {
 
 			/**
-			 * Non-dummy item;
+			 * Non-dummy item.
+			 * The cost of the bind arc will be NONTRADE.
+			 * The capacity of the bind arc is half the default:
+			 * 	1/2 * 2 = 1 (unit).
+			 */
+			cost_map[ bind_arc ] = _COST_NONTRADE;
+			capacity_map[ bind_arc ] = 1;
+
+			/**
 			 * look up its parent-node based on the username.
 			 */
 			const std::string & username = _username[_node_out2in[n]];
@@ -1110,7 +1125,8 @@ MathTrader::_runMaximizeUsers() {
 
 			/**
 			 * Cost: always zero.
-			 * Capacity: always unit.
+			 * Capacity: half the default.
+			 * - Default is 2, so 1/2 * 2 = 1 (unit)
 			 */
 			capacity_map[ notrade_arc_out ] = 1;
 			capacity_map[ notrade_arc_in  ] = 1;
@@ -1277,10 +1293,11 @@ MathTrader::_runMaximizeUsers() {
 	TradeGraph::ArcMap< std::string > arc_label( trade_graph, "" );
 	for ( TradeGraph::ArcIt a(trade_graph); a != lemon::INVALID; ++a ) {
 
-		auto flows = flow_map[a];
+		int64_t flows = flow_map[a];
 		const bool chosen = (flows > 0);
 		if ( chosen ) {
-			arc_label[a] = "[color=green, label=\"f="
+			const std::string color = (capacity_map[a] == flows) ? "green" : "orange";
+			arc_label[a] = "[color=" + color + ", label=\"f="
 				+ std::to_string(flows) +"\"]";
 		}
 	}
