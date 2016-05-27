@@ -1065,6 +1065,54 @@ MathTrader::_runMaximizeUsers() {
 		}
 	}
 
+	/**
+	 * Iterate all parent nodes
+	 */
+	for ( auto const & pair : parent_map ) {
+
+		auto const &  parent_node = pair.second.parent;
+		auto const & notrade_node = pair.second.notrade;
+
+		/**
+		 * Count out arcs of parent_node.
+		 * Count  in arcs of notrade_node.
+		 */
+		const int parent_out = countOutArcs( trade_graph,  parent_node );
+		const int notrade_in = countOutArcs( trade_graph, notrade_node );
+
+		if ( parent_out != notrade_in ) {
+			throw std::logic_error("Outgoing arcs from parent node"
+					" (" + std::to_string(parent_out) + ")"
+					" not equal to incoming arcs at notrade node"
+					" (" + std::to_string(notrade_in) + ")");
+		}
+
+		/**
+		 * Number of trading items: outgoing arcs from parent.
+		 * That's the supply of the parent node.
+		 */
+		const int n_items = parent_out;
+		supply_map[ parent_node ] = n_items;
+
+		/**
+		 * Add arcs from parent to notrade.
+		 * Orange arc:
+		 * - Capacity: n_items - 1
+		 * - Cost: lower
+		 * Red arc:
+		 * - Capacity: unit
+		 * - Cost: higher
+		 */
+		auto const & orange_arc = trade_graph.addArc( parent_node, notrade_node );
+		auto const &    red_arc = trade_graph.addArc( parent_node, notrade_node );
+
+		capacity_map[ orange_arc ] = (n_items - 1);
+		capacity_map[    red_arc ] = 1;
+
+		cost_map[ orange_arc ] = _COST_NONTRADE; //_COST_MORETRADES
+		cost_map[    red_arc ] = _COST_NONTRADE;
+	}
+
 
 	/********************************************//**
 	 *	RUN FLOW ALGORITHM
