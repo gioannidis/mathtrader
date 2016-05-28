@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 			"; "
 			+ info_override);
 	ap.boolOption("-no-priorities",
-			"clears any priorites; "
+			"no priorities will be used; "
 			+ info_override);
 
 	ap.onlyOneGroup("priority_scheme").
@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
 			" (default: NETWORK-SIMPLEX)");
 
 	ap.boolOption("-benchmark", "run a benchmark"
-			" of all available algorithms");
+			" on all implemented minimum cost flow algorithms");
 
 	ap.onlyOneGroup("algorithm").
 		optionGroup("algorithm", "-algorithm").
