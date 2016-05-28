@@ -158,7 +158,7 @@ protected:
 	static void _exportToDot( std::ostream & os,
 			const DGR & g,
 			const std::string & title,
-			const typename DGR::template NodeMap< std::string > & name );
+			const typename DGR::template NodeMap< std::string > & node_label );
 
 private:
 	/**
@@ -188,7 +188,7 @@ void
 BaseMath::_exportToDot( std::ostream & os,
 		const DGR & g,
 		const std::string & title,
-		const typename DGR::template NodeMap< std::string > & name ) {
+		const typename DGR::template NodeMap< std::string > & node_label ) {
 
 	os << "digraph "
 		<< title
@@ -198,7 +198,7 @@ BaseMath::_exportToDot( std::ostream & os,
 	for ( typename DGR::NodeIt n(g); n != lemon::INVALID; ++n ) {
 		os << "\t"
 			<< "n" << g.id(n)
-			<< " [label=\"" << name[n] << "\"];"
+			<< " [label=\"" << node_label[n] << "\"];"
 			<< std::endl;
 	}
 	for ( typename DGR::ArcIt a(g); a != lemon::INVALID; ++a ) {
