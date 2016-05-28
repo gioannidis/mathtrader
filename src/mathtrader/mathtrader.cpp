@@ -350,7 +350,7 @@ MathTrader::mergeDummyItems() {
 	 * Add new arcs
 	 */
 	for ( auto const & new_arc : arcs_to_add ) {
-		auto arc = g.addArc( *(new_arc.s), *(new_arc.t) );
+		auto const & arc = g.addArc( *(new_arc.s), *(new_arc.t) );
 		this->_out_rank[arc] = new_arc.rank;
 		this->_chosen_arc[arc] = true;
 	}
@@ -738,13 +738,14 @@ MathTrader::_runMaximizeTrades() {
 	typedef lemon::Orienter< const SplitUndirect, ReverseMap > SplitOrient;
 	SplitOrient split_orient( split_undirect, reverse_map );
 
-	SplitOrient::NodeMap< int64_t > supply_map( split_orient );
-	SplitOrient::ArcMap< int64_t > capacity_map( split_orient, 1 ), cost_map( split_orient );
+	SplitOrient::NodeMap< int64_t >   supply_map( split_orient, 0 );
+	SplitOrient::ArcMap < int64_t > capacity_map( split_orient, 1 ),
+		cost_map( split_orient, 0 );
 
 	/**
 	 * Iterate nodes of original graph.
 	 * Get corresponding bind-arcs.
-	 * Cost: c >> 1, but lower if it's a dummy node, by 1-2 orders of magnitude,
+	 * Cost: c >> 1, but zero if it's a dummy node.
 	 * so as to inherently prefer a dummy self-arc over a real item's self-arc.
 	 * Mark self-arc to reverse its direction.
 	 */
@@ -775,7 +776,7 @@ MathTrader::_runMaximizeTrades() {
 	 * In-nodes have a supply of +1
 	 * Out-nodes have a supply of -1
 	 */
-	for ( SplitDirect::NodeIt n( split_graph ); n != lemon::INVALID; ++ n ) {
+	for ( SplitOrient::NodeIt n( split_orient ); n != lemon::INVALID; ++ n ) {
 
 		supply_map[n] = (split_graph.outNode(n)) ? +1 : -1;
 	}
