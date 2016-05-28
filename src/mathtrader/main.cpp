@@ -33,7 +33,7 @@
 #define MT_YEAR "2016"
 
 /* Tabular width for timer output */
-#define TABWIDTH (30)
+#define TABWIDTH (32)
 
 
 /**********************************************//*
@@ -158,6 +158,13 @@ int main(int argc, char **argv) {
 			" CAPACITY-SCALING"
 			" CYCLE-CANCELING"
 			" (default: NETWORK-SIMPLEX)");
+
+	ap.boolOption("-benchmark", "run a benchmark"
+			" of all available algorithms");
+
+	ap.onlyOneGroup("algorithm").
+		optionGroup("algorithm", "-algorithm").
+		optionGroup("algorithm", "-benchmark");
 
 
 	/********************************************//*
@@ -589,18 +596,52 @@ Interface::run() {
 	 * Run the math trading algorithm.
 	 */
 	try {
-		/**
-		 * Start the timer
-		 */
-		std::stringstream time_ss;
-		time_ss << std::left << std::setw(TABWIDTH)
-			<< "Execution:";
-		lemon::TimeReport t(time_ss.str());
+		if ( !ap.given("-benchmark") ) {
 
-		/**
-		 * Start the execution
-		 */
-		math_trader.run();
+			/**
+			 * Start the timer
+			 */
+			std::stringstream time_ss;
+			time_ss << std::left << std::setw(TABWIDTH)
+				<< "Execution:";
+			lemon::TimeReport t(time_ss.str());
+
+			/**
+			 * Start the execution
+			 */
+			math_trader.run();
+
+		} else {
+
+			/**
+			 * Benchmarking
+			 * Run the application with all algorithms.
+			 */
+			const std::list< std::string > algorithms = {
+				"NETWORK-SIMPLEX",
+				"COST-SCALING",
+				"CAPACITY-SCALING",
+				"CYCLE-CANCELING"
+			};
+
+			for ( auto const & algo : algorithms ) {
+
+				math_trader.setAlgorithm( algo );
+
+				/**
+				 * Start the timer
+				 */
+				std::stringstream time_ss;
+				time_ss << std::left << std::setw(TABWIDTH)
+					<< "Execution of " + algo + ":";
+				lemon::TimeReport t(time_ss.str());
+
+				/**
+				 * Execute
+				 */
+				math_trader.run();
+			}
+		}
 
 	} catch ( const std::exception & error ) {
 		std::cerr << "Error during execution: "
