@@ -169,6 +169,13 @@ private:
 	 * when applicable.
 	 */
 	std::ifstream _fs;
+
+	/**
+	 * @brief Get line from buffer
+	 * Buffer to read at one large data chunks.
+	 * Get the next line.
+	 */
+	int _getLine( std::istream &is, std::string & line );
 };
 
 #endif /* _BASEPARSER_HPP_ */

@@ -84,7 +84,7 @@ BaseParser::parse() {
 	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
 
 	uint64_t line_n = 0;
-	while (std::getline( is, buffer )) {
+	while (_getLine( is, buffer )) {
 
 		++ line_n;
 		/**
@@ -212,8 +212,54 @@ BaseParser::_postParse() {
  * 	PRIVATE METHODS - UTILS
  **************************************/
 
+int
+BaseParser::_getLine( std::istream &is, std::string & line ) {
+
+	line.clear();
+
+	static const int64_t BUFSIZE = ( 1 << 20 );
+	static char buffer[ BUFSIZE ];
+	static int64_t start = BUFSIZE;
+	static bool end = false;
+
+	if ( end ) {
+		return 0;
+	}
+
+	int64_t i = start;
+
+	while ( 1 ) {
+
+		if ( i >= BUFSIZE || i >= is.gcount() ) {
+			/**
+			 * A previous read() operation
+			 * has set the EOF bit?
+			 */
+			if ( !is.eof() ) {
+				i = 0;
+				is.read( buffer, BUFSIZE );
+			} else {
+				return 0;
+			}
+		}
+
+		const char c = buffer[i];
+		switch ( c ) {
+			case '\n':
+				start = i + 1;
+				return 1;
+			default:
+				line.push_back(c);
+				break;
+		}
+		++ i;
+	}
+	return -1;
+}
+
+
 /************************************//*
- * 	PRIVATE STATIC METHODS
+ * 	PROTECTED STATIC METHODS
  **************************************/
 
 void
