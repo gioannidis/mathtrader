@@ -405,6 +405,8 @@ MathTrader::writeResults( std::ostream & os ) const {
 	FinalGraph::NodeMap< int > component_id( final_graph );
 	const int n_cycles = stronglyConnectedComponents( final_graph, component_id );
 	const int total_trades = countArcs( final_graph );
+	std::vector< int > cycle_size;
+	cycle_size.reserve( n_cycles );
 
 
 	/***********************************//*
@@ -449,10 +451,22 @@ MathTrader::writeResults( std::ostream & os ) const {
 			auto const & g = final_graph;
 			const auto start_node  = g.nodeFromId( cycle_start );
 
+			int cur_size = 0;
+
 			if ( this->_trade[start_node] ) {
 
 				auto cur_node = start_node;
 				do {
+					/**
+					 * Statitisc:
+					 * increase current cycle size.
+					 */
+					++ cur_size;
+
+					/**
+					 * Statistics:
+					 * track trading user.
+					 */
 					auto it = users_trading.emplace( _username[_node_out2in[cur_node]], 0 );
 					int & count = it.first->second;
 					++ count;
@@ -471,9 +485,17 @@ MathTrader::writeResults( std::ostream & os ) const {
 
 				} while ( cur_node != start_node );
 				os << std::endl;
-			}
-		}
-	}
+
+				/**
+				 * Statistics: track total cycle size
+				 */
+				cycle_size.push_back( cur_size );
+
+			} /* trading item */
+
+		} /* iterate cycles */
+
+	} /* show trade loops */
 
 
 	/***********************************//*
@@ -631,7 +653,14 @@ MathTrader::writeResults( std::ostream & os ) const {
 			<< "Total cost = " << total_cost
 			<< std::endl
 			<< "Num groups = " << n_groups
-			<< std::endl;
+			<< std::endl
+			<< "Group sizes =";
+
+		for ( auto const & group_size : cycle_size ) {
+			os << " " << group_size;
+		}
+
+		os << std::endl;
 		//os << "Users trading: " << users_trading.size() << std::endl;
 	}
 
