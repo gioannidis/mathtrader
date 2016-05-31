@@ -133,18 +133,10 @@ WantParser::print( std::ostream &os ) const {
 const WantParser &
 WantParser::printOptions( std::ostream & os ) const {
 
-	/**
-	 * TODO: add int options if not default?
-	 * Add stack with given options?
-	 */
-
 	os << "Options: ";
-	for ( auto const it : _bool_option_map ) {
-		if ( _bool_options[ it.second ] ) {
-			os << it.first << " ";
-		}
+	for ( auto const option : _given_options ) {
+		os << option << " ";
 	}
-	os << _priority_scheme;
 	os << std::endl;
 
 	return *this;
@@ -360,9 +352,9 @@ WantParser &
 WantParser::_parseOption( const std::string & option_line ) {
 
 	/**
-	 * Tokenize option: ignore spaces or '='
+	 * Tokenize line: ignore whitespaces
 	 */
-	static const std::regex e("\\b([^\\s=]+)");
+	static const std::regex e(R"(\S+)");
 	auto elems = BaseParser::_split( option_line, e );
 
 	/**
@@ -373,59 +365,90 @@ WantParser::_parseOption( const std::string & option_line ) {
 		return *this;
 	}
 
-
 	/**
-	 * Handle option according to type:
-	 * - String
+	 * Handle option according to type in order:
 	 * - Integer
 	 * - Priorities
+	 * - String
 	 */
-	const std::string & option = elems[0];
-	static const std::regex regex_prio("\\b([^-])*-PRIORITIES");
-
-	if ( _bool_option_map.find(option) != _bool_option_map.end() ) {
+	for ( auto const & option : elems ) {
 
 		/**
-		 * String option; set to true.
+		 * Always add to given options list
 		 */
-		auto const it = _bool_option_map.find(option);
-		const BoolOption bool_option = it->second;
-		_bool_options[ bool_option ] = true;
-
-	} else if ( _int_option_map.find(option) != _int_option_map.end() ) {
+		this->_given_options.push_back( option );
 
 		/**
-		 * Int option; retrieve value.
-		 * Accepted formats:
-		 * 	#! VARIABLE = 42
-		 * 	#! VARIABLE=42
-		 * 	#! VARIABLE 42
+		 * Regex to match:
+		 * - Integer options
+		 * - Priorities
 		 */
-		if ( elems.size() < 2 ) {
-			throw std::runtime_error("Value for option"
-					+ option + " not found");
+		static const std::regex
+			regex_int(R"(\b\S+=[0-9]+)"),
+			regex_prio(R"(\b([^-])+-PRIORITIES)");
+
+		if ( std::regex_match(option, regex_int) ) {
+
+			const std::string digits(R"(([0-9]+)|(\b([^=])+))");
+			auto const int_elems = _split( option, digits );
+
+			/**
+			 * Int option; tokenize to retrieve name value.
+			 * Accepted format:
+			 * 	#! VARIABLE=42
+			 */
+			if ( int_elems.empty() ) {
+				throw std::logic_error("Integer option not matched");
+			}
+
+			/**
+			 * Get name of int option.
+			 */
+			const std::string int_option_name = int_elems[0];
+			if ( int_elems.size() < 2 ) {
+				throw std::runtime_error("Value for integer option "
+						+ int_option_name + " not found");
+			}
+
+			/**
+			 * Get value of int option.
+			 */
+			const std::string &value = int_elems[1];
+
+			/**
+			 * Get int option from map and set it.
+			 */
+			auto const it = _int_option_map.find( int_option_name );
+			if ( it == _int_option_map.end() ) {
+				throw std::runtime_error("Unknown integer option "
+						+ int_option_name);
+			}
+
+			const IntOption int_option = it->second;
+			_int_options[ int_option ] = std::stoi(value);
+
+		} else if ( std::regex_match(option, regex_prio) ) {
+
+			/**
+			 * Priority scheme. Must have the form of ("XXXX-PRIORITY").
+			 * Do not check its validity,
+			 * that's the responsibility of MathTrader.
+			 */
+			_priority_scheme = option;
+
+		} else if ( _bool_option_map.find(option) != _bool_option_map.end() ) {
+
+			/**
+			 * String option; set to true.
+			 */
+			auto const it = _bool_option_map.find(option);
+			const BoolOption bool_option = it->second;
+			_bool_options[ bool_option ] = true;
+
+
+		} else {
+			throw std::runtime_error("Unknown option " + option);
 		}
-		const std::string &value = elems[1];
-
-		/**
-		 * Get int option and set it
-		 */
-		auto const it = _int_option_map.find(option);
-		const IntOption int_option = it->second;
-
-		_int_options[ int_option ] = std::stoi(value);
-
-	} else if ( std::regex_match(option, regex_prio) ) {
-
-		/**
-		 * Priority scheme. Must have the form of ("XXXX-PRIORITY").
-		 * Do not check its validity,
-		 * that's the responsibility of MathTrader.
-		 */
-		_priority_scheme = option;
-
-	} else {
-		throw std::runtime_error("Unknown option " + option);
 	}
 
 	return *this;

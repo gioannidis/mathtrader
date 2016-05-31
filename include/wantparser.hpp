@@ -205,6 +205,12 @@ private:
 	std::string _priority_scheme;
 
 	/**
+	 * Given options in want file.
+	 * Used in @printOptions()
+	 */
+	std::list< std::string > _given_options;
+
+	/**
 	 * Enum of current status
 	 */
 	enum Status {
