@@ -412,67 +412,75 @@ MathTrader::writeResults( std::ostream & os ) const {
 	/***********************************//*
 	 * 	TRADE LOOPS
 	 ************************************/
-	if ( !_hide_loops ) {
 
-		int counted_cycles = 0;
-		/**
-		 * For each trade cycle: find a starting node.
-		 */
-		std::vector< int > cycle_start_vec( n_cycles, -1 );
+	int counted_cycles = 0;
+	/**
+	 * For each trade cycle: find a starting node.
+	 */
+	std::vector< int > cycle_start_vec( n_cycles, -1 );
 
-		for ( FinalGraph::NodeIt n(final_graph); (n != lemon::INVALID) && (counted_cycles < n_cycles); ++ n ) {
+	for ( FinalGraph::NodeIt n(final_graph); (n != lemon::INVALID) && (counted_cycles < n_cycles); ++ n ) {
 
-			const int cycle_id = component_id[n];
-			int & cycle_start = cycle_start_vec[ cycle_id ];
+		const int cycle_id = component_id[n];
+		int & cycle_start = cycle_start_vec[ cycle_id ];
 
-			if ( cycle_start < 0 ) {
-				cycle_start = result_graph.id(n);
-				++ counted_cycles;
-			}
+		if ( cycle_start < 0 ) {
+			cycle_start = result_graph.id(n);
+			++ counted_cycles;
 		}
+	}
 
+	/**
+	 * Show in output?
+	 */
+	if ( !_hide_loops ) {
 		os << "TRADE LOOPS (" << total_trades << " total trades):" << std::endl;
+	}
 
-		/**
-		 * Users trading
-		 */
-		std::unordered_map< std::string, int > users_trading;
+	/**
+	 * Users trading
+	 */
+	std::unordered_map< std::string, int > users_trading;
 
-		/**
-		 * For each trade cycle: print it
-		 * Start from @cycle_start and continue
-		 * until the next node is the cycle start.
-		 * This will also print no-trades (unconnected nodes)
-		 * unless the moderator has chosen not to show no-trades.
-		 * TODO: replace with DFS.
-		 */
-		for ( int cycle_start : cycle_start_vec ) {
+	/**
+	 * For each trade cycle: print it
+	 * Start from @cycle_start and continue
+	 * until the next node is the cycle start.
+	 * This will also print no-trades (unconnected nodes)
+	 * unless the moderator has chosen not to show no-trades.
+	 * TODO: replace with DFS.
+	 */
+	for ( int cycle_start : cycle_start_vec ) {
 
-			auto const & g = final_graph;
-			const auto start_node  = g.nodeFromId( cycle_start );
+		auto const & g = final_graph;
+		const auto start_node  = g.nodeFromId( cycle_start );
 
-			int cur_size = 0;
+		int cur_size = 0;
 
-			if ( this->_trade[start_node] ) {
+		if ( this->_trade[start_node] ) {
 
-				auto cur_node = start_node;
-				do {
-					/**
-					 * Statitisc:
-					 * increase current cycle size.
-					 */
-					++ cur_size;
+			auto cur_node = start_node;
+			do {
+				/**
+				 * Statitisc:
+				 * increase current cycle size.
+				 */
+				++ cur_size;
 
-					/**
-					 * Statistics:
-					 * track trading user.
-					 */
-					auto it = users_trading.emplace( _username[_node_out2in[cur_node]], 0 );
-					int & count = it.first->second;
-					++ count;
+				/**
+				 * Statistics:
+				 * track trading user.
+				 */
+				auto it = users_trading.emplace( _username[_node_out2in[cur_node]], 0 );
+				int & count = it.first->second;
+				++ count;
 
-					auto const next_node = _receive[cur_node];
+				auto const next_node = _receive[cur_node];
 
+				/**
+				 * Show in output?
+				 */
+				if ( !_hide_loops ) {
 					os << std::left
 						<< std::setw(TABWIDTH)
 						<< "(" + _username[_node_out2in[cur_node]] + ") "
@@ -480,22 +488,27 @@ MathTrader::writeResults( std::ostream & os ) const {
 						<< "receives (" + _username[_node_out2in[next_node]] + ") "
 						+ _name[_node_out2in[next_node]]
 						<< std::endl;
+				}
 
-					cur_node = next_node;
+				cur_node = next_node;
 
-				} while ( cur_node != start_node );
+			} while ( cur_node != start_node );
+
+			/**
+			 * Show in output?
+			 */
+			if ( !_hide_loops ) {
 				os << std::endl;
+			}
 
-				/**
-				 * Statistics: track total cycle size
-				 */
-				cycle_size.push_back( cur_size );
+			/**
+			 * Statistics: track total cycle size
+			 */
+			cycle_size.push_back( cur_size );
 
-			} /* trading item */
+		} /* trading item */
 
-		} /* iterate cycles */
-
-	} /* show trade loops */
+	} /* iterate cycles */
 
 
 	/***********************************//*
@@ -660,8 +673,9 @@ MathTrader::writeResults( std::ostream & os ) const {
 			os << " " << group_size;
 		}
 
-		os << std::endl;
-		//os << "Users trading: " << users_trading.size() << std::endl;
+		os << std::endl
+			<< "Users trading = " << users_trading.size()
+			<< std::endl;
 	}
 
 	return *this;
