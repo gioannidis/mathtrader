@@ -642,7 +642,7 @@ MathTrader::writeResults( std::ostream & os ) const {
 		os << "TRADE STATISTICS"
 			<< std::endl
 			<< std::endl	/**< Twice */
-			<< "Num trades = "
+			<< "Num trades  = "
 			<< n_trades << " of " << n_items << " items"
 			<< " ("
 			<< std::setprecision(3)
@@ -650,9 +650,9 @@ MathTrader::writeResults( std::ostream & os ) const {
 			<< std::fixed
 			<< "%)"
 			<< std::endl
-			<< "Total cost = " << total_cost
+			<< "Total cost  = " << total_cost
 			<< std::endl
-			<< "Num groups = " << n_groups
+			<< "Num groups  = " << n_groups
 			<< std::endl
 			<< "Group sizes =";
 
