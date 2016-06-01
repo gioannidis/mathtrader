@@ -407,6 +407,7 @@ MathTrader::writeResults( std::ostream & os ) const {
 	const int total_trades = countArcs( final_graph );
 	std::vector< int > cycle_size;
 	cycle_size.reserve( n_cycles );
+	int n_groups = 0;	/**< Trading cycles */
 
 
 	/***********************************//*
@@ -458,6 +459,12 @@ MathTrader::writeResults( std::ostream & os ) const {
 		int cur_size = 0;
 
 		if ( this->_trade[start_node] ) {
+
+			/**
+			 * Found a trading group/cycle.
+			 * Count it.
+			 */
+			++ n_groups;
 
 			auto cur_node = start_node;
 			do {
@@ -650,7 +657,6 @@ MathTrader::writeResults( std::ostream & os ) const {
 		 */
 		const int n_trades = countArcs( cycle_forest );
 		const int n_items = countNodes( result_graph );
-		const int n_groups = n_cycles;
 
 		os << "TRADE STATISTICS"
 			<< std::endl
