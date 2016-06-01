@@ -164,8 +164,56 @@ ResultParser::_parseLoop( const std::string & line ) {
 	 * is username.
 	 */
 
-	std::string source = match[1], target = match[4];
+	/**
+	 * Regexes to check if source and/or targets are dummies.
+	 * TradeMaximizer prints "%NAME for user (USER)" in this case
+	 */
+	static const std::regex
+		dummy_regex_src("^(.)*for user(.)*receives(.)*$"),
+		dummy_regex_dst("^(.)*receives(.)*for user(.)*$");
 
+	/**
+	 * See if source/target match.
+	 */
+	const bool dummy_src = std::regex_match( line, dummy_regex_src ),
+	      dummy_dst = std::regex_match( line, dummy_regex_dst );
+
+	/**
+	 * The source and target items.
+	 * If dummy, the username will be appended.
+	 */
+	std::string source, target;
+
+	/**
+	 * The target offset, in case the source is dummy.
+	 */
+	int dst_offset = 0;
+
+	/**
+	 * Check if source is dummy
+	 */
+	if ( !dummy_src ) {
+		source = match[1];
+	} else {
+		dst_offset = 2;
+		source = match[0] + "-" + match[3];
+	}
+
+	/**
+	 * Check if target is dummy
+	 */
+	if ( !dummy_dst ) {
+		target = match[4 + dst_offset];
+	} else {
+		target = match[3 + dst_offset]
+			+ "-"
+			+ match[6 + dst_offset];
+	}
+
+	/**
+	 * New loop has started?
+	 * Print the source item.
+	 */
 	if ( _new_loop ) {
 
 		/* New cycle */
