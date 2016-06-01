@@ -105,8 +105,7 @@ int main(int argc, char **argv) {
 	ap.synonym("-results-official", "-output-file");
 
 	ap.stringOption("-input-lgf-file",
-			"parse directly a lemon graph format (LGF) file"
-			" (default: stdin);"
+			"parse directly a lemon graph format (LGF) file;"
 			" no wants file will be read");
 
 	ap.onlyOneGroup("input_file").
@@ -441,11 +440,7 @@ Interface::run() {
 			 * from either std::cin or file.
 			 */
 			const std::string & fn = ap["-input-lgf-file"];
-			if ( fn.length() > 0 ) {
-				math_trader.graphReader(fn);
-			} else {
-				math_trader.graphReader();
-			}
+			math_trader.graphReader(fn);
 
 		} catch ( const std::exception & error ) {
 			std::cerr << "Error during reading"
