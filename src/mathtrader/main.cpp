@@ -363,17 +363,38 @@ Interface::run() {
 	 */
 	std::ostream & os = (write_to_file) ? fs : std::cout;
 
+
+	/**************************************//*
+	 * HEADER OF OUTPUT FILE
+	 ****************************************/
+
 	/**
-	 * Header of output: always the version.
-	 * Followed by command line arguments.
+	 * 1. Always the version on top.
+	 * 2. Command line arguments.
+	 * 3. Source of input.
 	 */
 	showVersion(os);
+
+	/* Command line arguments */
 	os << "Command:";
 	for ( auto x : _argv ) {
 		os << " " << x;
 	}
-	os << std::endl
-		<< std::endl;
+	os << std::endl;
+
+	/* Input source */
+	os << "Input from ";
+	if ( ap.given("-input-lgf-file") ) {
+		const std::string & fn = ap["-input-lgf-file"];
+		os << "local LGF file: " << fn;
+	} else if ( ap.given("f") ) {
+		const std::string & fn = ap["f"];
+		os << "local official-wants file: " << fn;
+	} else {
+		os << "stdin";
+	}
+	os << std::endl;
+	os << std::endl; /**< double endl */
 
 
 	/**************************************//*
