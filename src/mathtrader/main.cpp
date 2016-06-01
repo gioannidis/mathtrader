@@ -96,13 +96,13 @@ int main(int argc, char **argv) {
 	/**
 	 * Input/Output
 	 */
-	ap.stringOption("f", "input official wants file (default: stdin)");
-	ap.synonym("-input-file", "f");
-	ap.synonym("-official-wants", "f");
+	ap.stringOption("-input-file", "input official wants file (default: stdin)");
+	ap.synonym("f", "-input-file");
+	ap.synonym("-official-wants", "-input-file");
 
-	ap.stringOption("o", "output official results file (default: stdout)");
-	ap.synonym("-output-file", "o");
-	ap.synonym("-results-official", "o");
+	ap.stringOption("-output-file", "output official results file (default: stdout)");
+	ap.synonym("o", "-output-file");
+	ap.synonym("-results-official", "-output-file");
 
 	ap.stringOption("-input-lgf-file",
 			"parse directly a lemon graph format (LGF) file"
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
 			" no wants file will be read");
 
 	ap.onlyOneGroup("input_file").
-		optionGroup("input_file", "f").
+		optionGroup("input_file", "-input-file").
 		optionGroup("input_file", "-input-lgf-file");
 
 
@@ -335,11 +335,11 @@ Interface::run() {
 	 * Open the output file, if needed.
 	 */
 	std::ofstream & fs = this->_ofs;
-	bool write_to_file = ap.given("o");
+	bool write_to_file = ap.given("-output-file");
 
 	if ( write_to_file ) {
 
-		const std::string & fn = ap["o"];
+		const std::string & fn = ap["-output-file"];
 		fs.open(fn, std::ios_base::out);
 
 		/**
@@ -387,8 +387,8 @@ Interface::run() {
 	if ( ap.given("-input-lgf-file") ) {
 		const std::string & fn = ap["-input-lgf-file"];
 		os << "local LGF file: " << fn;
-	} else if ( ap.given("f") ) {
-		const std::string & fn = ap["f"];
+	} else if ( ap.given("-input-file") ) {
+		const std::string & fn = ap["-input-file"];
 		os << "local official-wants file: " << fn;
 	} else {
 		os << "stdin";
@@ -472,8 +472,8 @@ Interface::run() {
 			/**
 			 * Configure input file
 			 */
-			if ( ap.given("f") ) {
-				const std::string & fn = ap["f"];
+			if ( ap.given("-input-file") ) {
+				const std::string & fn = ap["-input-file"];
 				if ( fn.length() > 0 ) {
 					want_parser.inputFile(fn);
 				}
