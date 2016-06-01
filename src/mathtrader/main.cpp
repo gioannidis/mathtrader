@@ -43,7 +43,8 @@
 class Interface {
 
 public:
-	Interface( const lemon::ArgParser & ap );
+	Interface( const lemon::ArgParser & ap,
+			const std::list< std::string > & argv);
 	~Interface();
 	int run();
 
@@ -54,6 +55,12 @@ private:
 	 * Argument parser
 	 */
 	const lemon::ArgParser & _ap;
+
+	/**
+	 * Command line arguments.
+	 * Just echoed to output.
+	 */
+	const std::list< std::string > _argv;
 
 	/**
 	 * Output file stream,
@@ -231,6 +238,19 @@ int main(int argc, char **argv) {
 
 
 	/********************************************//*
+	 * 	Tokenize arguments
+	 **********************************************/
+
+	/**
+	 * Useful to report to output.
+	 */
+	std::list< std::string > arg_list;
+	for ( int i = 0; i < argc; ++ i ) {
+		arg_list.push_back( argv[i] );
+	}
+
+
+	/********************************************//*
 	 * 	Running MathTrader++
 	 **********************************************/
 
@@ -239,7 +259,7 @@ int main(int argc, char **argv) {
 	 * Note that it cannot change the ArgParser
 	 * in any way.
 	 */
-	Interface runner(ap);
+	Interface runner(ap, arg_list);
 
 	/**
 	 * Run the application.
@@ -270,8 +290,10 @@ int main(int argc, char **argv) {
  * 		INTERFACE Methods
  ************************************************/
 
-Interface::Interface( const lemon::ArgParser & ap ) :
-	_ap( ap )
+Interface::Interface( const lemon::ArgParser & ap,
+		const std::list< std::string > & argv ) :
+	_ap( ap ),
+	_argv( argv )
 {
 }
 
@@ -343,8 +365,15 @@ Interface::run() {
 
 	/**
 	 * Header of output: always the version.
+	 * Followed by command line arguments.
 	 */
 	showVersion(os);
+	os << "Command:";
+	for ( auto x : _argv ) {
+		os << " " << x;
+	}
+	os << std::endl
+		<< std::endl;
 
 
 	/**************************************//*
