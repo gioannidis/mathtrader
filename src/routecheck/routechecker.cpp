@@ -198,8 +198,8 @@ RouteChecker::run() {
 const RouteChecker &
 RouteChecker::writeResults( std::ostream & os ) const {
 
-	os << "Total cost: " << _total_cost << std::endl;
-	os << "Visited: " << _visited << std::endl;
+	os << "Total cost = " << _total_cost << std::endl;
+	os << "Visited non-dummy items = " << _visited << std::endl;
 	return *this;
 }
 
