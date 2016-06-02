@@ -104,12 +104,16 @@ int main(int argc, char **argv) {
 	ap.synonym("o", "-output-file");
 	ap.synonym("-results-official", "-output-file");
 
+	ap.stringOption("-input-url",
+			"input official wants file from url");
+
 	ap.stringOption("-input-lgf-file",
 			"parse directly a lemon graph format (LGF) file;"
 			" no wants file will be read");
 
 	ap.onlyOneGroup("input_file").
 		optionGroup("input_file", "-input-file").
+		optionGroup("input_file", "-input-url").
 		optionGroup("input_file", "-input-lgf-file");
 
 
