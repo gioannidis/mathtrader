@@ -22,10 +22,13 @@
 #include "wantparser.hpp"
 #include "mathtrader.hpp"
 
+#include "PracticalSocket.h"
+
 #include <exception>
 #include <iomanip>
 #include <lemon/arg_parser.h>
 #include <lemon/time_measure.h>
+#include <new>
 #include <sstream>
 
 /* Version */
@@ -453,6 +456,49 @@ Interface::run() {
 				<< std::endl;
 			return -1;
 		}
+
+	} else if ( ap.given("-input-url") ) {
+
+		std::stringstream want_ss;
+		const std::string & url = ap["-input-url"];
+
+		if ( url.compare(0,7,"http://") != 0 ) {
+			return -1;
+		}
+
+		size_t i = url.find("/",7);
+		if ( i == std::string::npos ) {
+			return -1;
+		}
+
+		const std::string
+			server  = url.substr(7,i-7),	/**< strip 'http://' */
+			request = url.substr(i,std::string::npos);
+
+		os << "server: " << server
+			<< " request: " << request << std::endl;
+
+		try {
+			TCPSocket sock(server, 80);
+			sock.send(request.c_str(), request.length());
+
+			const int BUFSIZE = (10 * (1 << 20));
+			std::unique_ptr< char > buffer( new char [BUFSIZE] );
+			int recvMsgSize;
+			recvMsgSize = sock.recv(buffer.get(), BUFSIZE);
+			os << "BAZ = " << recvMsgSize << std::endl;
+			want_ss << buffer.get();
+			os << want_ss.str() << std::endl;
+
+		} catch ( const SocketException & error ) {
+			os << error.what() << std::endl;
+		} catch ( const std::exception & error ) {
+			os << error.what() << std::endl;
+		} catch ( ... ) {
+			os << "Exception" << std::endl;
+		}
+
+		return 0;
 
 	} else {
 
