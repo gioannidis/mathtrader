@@ -138,12 +138,11 @@ int main(int argc, char **argv) {
 	try {
 		lemon::TimeReport t("Want-list reading:    ");
 		const std::string & fn = ap["f"];
-		want_parser.inputFile(fn);
 
 		/**
 		 * Run the parser
 		 */
-		want_parser.parse();
+		want_parser.parse(fn);
 
 	} catch ( const std::exception & error ) {
 		std::cerr << "WantParser error: " << error.what()
@@ -158,12 +157,11 @@ int main(int argc, char **argv) {
 	try {
 		lemon::TimeReport t("Result reading:       ");
 		const std::string & fn = ap["r"];
-		result_parser.inputFile(fn);
 
 		/**
 		 * Run the parser
 		 */
-		result_parser.parse();
+		result_parser.parse(fn);
 
 	} catch ( const std::exception & error ) {
 		std::cerr << "ResultParser error: " << error.what()
