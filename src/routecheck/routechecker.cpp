@@ -157,7 +157,8 @@ RouteChecker::run() {
 				throw std::runtime_error("No path between items "
 					+ _name[s]
 					+ " and "
-					+ _name[t]);
+					+ _name[t]
+					+ "; hint: are you using --show-dummy-items?");
 			}
 
 			_total_cost += cost;
