@@ -72,6 +72,13 @@ private:
 	std::ofstream _ofs;
 
 	/**
+	 * Retrieve want file from remote url via HTTP.
+	 */
+	static int _getUrl( const std::string & url,
+			std::string & data );
+
+
+	/**
 	 * Make uppercase
 	 */
 	static void _toUpper( std::string & );
@@ -459,53 +466,34 @@ Interface::run() {
 
 	} else if ( ap.given("-input-url") ) {
 
+		/**
+		 * Start the timer
+		 */
+		std::stringstream time_ss;
+		time_ss << std::left << std::setw(TABWIDTH)
+			<< "Retrieving remote want lists:";
+		lemon::TimeReport t(time_ss.str());
+
 		std::stringstream want_ss;
 		const std::string & url = ap["-input-url"];
 
-		if ( url.compare(0,7,"http://") != 0 ) {
-			return -1;
-		}
-
-		size_t i = url.find("/",7);
-		if ( i == std::string::npos ) {
-			return -1;
-		}
-
-		const std::string
-			server  = url.substr(7,i-7),	/**< strip 'http://' */
-			request = "GET "
-				+ url.substr(i,std::string::npos)
-				+ " HTTP/1.1\r\n"
-				+ "Host: " + server + "\r\n"
-				+ "\r\n";
-
-#if 0
-		os << "server: " << server
-			<< " request: " << request << std::endl;
-#endif
-
+		std::string data;
 		try {
-			TCPSocket sock(server, 80);
-			sock.send(request.c_str(), request.length());
-
-			const int BUFSIZE = (10 * (1 << 20));
-			std::unique_ptr< char > buffer( new char [BUFSIZE] );
-
-			int message_size = 0;
-			while ((message_size = sock.recv(buffer.get(), BUFSIZE)) > 0 ) {
-				os << "Received " << message_size << "; buffer = " << BUFSIZE << std::endl;
-				want_ss << std::string(buffer.get(), message_size);
-			}
-			os << want_ss.str();
-			os << std::endl;
+			_getUrl( url, data );
 
 		} catch ( const SocketException & error ) {
-			os << error.what() << std::endl;
+			os << "Socket Exception: "
+				<< error.what()
+				<< std::endl;
+			return -1;
+
 		} catch ( const std::exception & error ) {
-			os << error.what() << std::endl;
-		} catch ( ... ) {
-			os << "Exception" << std::endl;
+			os << "Error during retrieving data: "
+				<< error.what()
+				<< std::endl;
+			return -2;
 		}
+		os << data << std::endl;
 
 		return 0;
 
@@ -891,6 +879,75 @@ Interface::run() {
 		math_trader.exportOutputToDot(fn);
 	}
 
+	return 0;
+}
+
+int
+Interface::_getUrl( const std::string & url,
+		std::string & data ) {
+
+	/**
+	 * Clear the @data
+	 */
+	data.clear();
+
+	/**
+	 * Sanity check: url
+	 */
+	if ( url.compare(0,7,"http://") != 0 ) {
+		throw std::runtime_error("Provided url "
+				"is not HTTP; "
+				"expected url beginning "
+				"with 'http://'");
+	}
+
+	size_t i = url.find("/",7);
+	if ( i == std::string::npos ) {
+		return -1;
+	}
+
+	/**
+	 * Server and request
+	 */
+	const std::string
+		server  = url.substr(7,i-7),	/**< strip 'http://' */
+		request = "GET "
+			+ url.substr(i,std::string::npos)
+			+ " HTTP/1.1\r\n"
+			+ "Host: " + server + "\r\n"
+			+ "\r\n";
+
+	/**
+	 * Open the socket;
+	 * socket destructor will close it.
+	 * Throws exception on failure.
+	 */
+	TCPSocket sock(server, 80);
+
+	/**
+	 * Send the HTTP request.
+	 */
+	sock.send(request.c_str(), request.length());
+
+
+
+	/**
+	 * Receive buffer
+	 */
+	const int BUFSIZE = (10 * (1 << 20));
+	std::unique_ptr< char > buffer( new char [BUFSIZE] );
+
+	/**
+	 * Receive response until
+	 * no further bytes are received.
+	 */
+	int message_size = 0;
+	int received_total = 0;
+	while ((message_size = sock.recv(buffer.get(), BUFSIZE)) > 0 ) {
+		data.append(buffer.get(), message_size);
+		received_total += message_size;
+	}
+	std::cout << "Received " << received_total << std::endl;
 	return 0;
 }
 
