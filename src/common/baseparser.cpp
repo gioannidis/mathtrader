@@ -67,7 +67,7 @@ BaseParser::inputFile( const std::string & fn ) {
  **************************************/
 
 void
-BaseParser::parse() {
+BaseParser::parse( std::istream & is ) {
 
 	/**
 	 * Read buffer
@@ -75,13 +75,6 @@ BaseParser::parse() {
 	const size_t BUFSIZE = (1<<10);
 	std::string buffer;
 	buffer.reserve(BUFSIZE);
-
-	/**
-	 * Input stream:
-	 * Given file, if applicable.
-	 * Else, std::cin.
-	 */
-	std::istream & is = (_fs.is_open()) ? _fs : std::cin;
 
 	uint64_t line_n = 0;
 	while (std::getline( is, buffer )) {

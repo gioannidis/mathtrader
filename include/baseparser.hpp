@@ -59,7 +59,7 @@ public:
 	 * a previously given input file
 	 * or from std::cin.
 	 */
-	void parse();
+	void parse( std::istream & is = std::cin );
 
 	/**
 	 * @brief Print implementation-dependent output.
