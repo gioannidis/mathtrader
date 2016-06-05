@@ -73,10 +73,13 @@ private:
 
 	/**
 	 * Retrieve want file from remote url via HTTP.
+	 * The HTTP header is stripped.
+	 * TODO add support for "https://"
+	 * @param url the remote url; should begin with "http://"
+	 * @param data the received payload
 	 */
 	static int _getUrl( const std::string & url,
 			std::string & data );
-
 
 	/**
 	 * Make uppercase
@@ -403,6 +406,9 @@ Interface::run() {
 	} else if ( ap.given("-input-file") ) {
 		const std::string & fn = ap["-input-file"];
 		os << "local official-wants file: " << fn;
+	} else if ( ap.given("-input-url") ) {
+		const std::string & url = ap["-input-url"];
+		os << "remote official wants file: " << url;
 	} else {
 		os << "stdin";
 	}
@@ -943,12 +949,17 @@ Interface::_getUrl( const std::string & url,
 		throw std::runtime_error("No data received");
 	}
 
-	int received = 0;
+
+	/**
+	 * Total payload size
+	 * and received-so-far
+	 */
 	int payload  = 0;
+	int received = 0;
 
 	/**
 	 * Dependent scope to calculate
-	 * content length
+	 * content length and remove header.
 	 */
 	{
 		std::string header(buffer.get(), message_size);
@@ -962,7 +973,7 @@ Interface::_getUrl( const std::string & url,
 					"header; could not find "
 					" 'Content-Length'");
 		}
-		size_t content_start = i;
+		size_t content_start = i + 16;
 
 		i = header.find_first_of("\n\r ", content_start);
 		if ( i == std::string::npos ) {
@@ -971,15 +982,36 @@ Interface::_getUrl( const std::string & url,
 		}
 		size_t content_end = i;
 
+		/**
+		 * Get the payload substring
+		 */
 		const std::string & content =
 			header.substr(content_start, content_end);
 
 		/**
 		 * Convert to integer
 		 */
-		payload = stoi(content);
-	}
+		payload = std::stoi(content);
 
+		/**
+		 * HTTP headers end with an empty line,
+		 * as the protocol specifies.
+		 */
+		i = header.find("\r\n\r\n");
+		if ( i == std::string::npos ) {
+			throw std::runtime_error("Malformed HTTP "
+					"header; could not determine "
+					" header end");
+		}
+
+		size_t payload_pos = i + 4;
+
+		const std::string & payload =
+			header.substr(payload_pos, std::string::npos);
+
+		data.append(payload);
+		received += payload.length();
+	}
 
 	/**
 	 * Receive response until
@@ -987,9 +1019,25 @@ Interface::_getUrl( const std::string & url,
 	 */
 	while ((message_size = sock.recv(buffer.get(), BUFSIZE)) > 0 ) {
 		data.append(buffer.get(), message_size);
-		//received_total += message_size;
+		received += message_size;
+
+		if ( received >= payload ) {
+			break;
+		}
 	}
-	//std::cout << "Received " << received_total << std::endl;
+
+	/**
+	 * Sanity check if we've received the expected
+	 * number of bytes.
+	 */
+	if ( received != payload ) {
+		throw std::logic_error("Expected payload of "
+				+ std::to_string(payload)
+				+ " bytes; received "
+				+ std::to_string(received)
+				+ " bytes");
+	}
+
 	return 0;
 }
 
