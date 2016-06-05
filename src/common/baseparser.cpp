@@ -143,6 +143,16 @@ BaseParser::parse( std::istream & is ) {
 	_postParse();
 }
 
+void
+BaseParser::parse( const std::string & fn ) {
+
+	std::filebuf fb;
+	fb.open(fn, std::ios::in);
+	std::istream is(&fb);
+	parse(is);
+	fb.close();
+}
+
 
 /************************************//*
  * 	PUBLIC METHODS - OUTPUT

@@ -55,11 +55,16 @@ public:
 
 	/**
 	 * @brief Parse the input.
-	 * Parses the input from either
-	 * a previously given input file
-	 * or from std::cin.
+	 * Parses the input from a given istream
+	 * (default: std::cin)
 	 */
 	void parse( std::istream & is = std::cin );
+
+	/**
+	 * @brief Parse the input.
+	 * Parses the input from a given file.
+	 */
+	void parse( const std::string & fn );
 
 	/**
 	 * @brief Print implementation-dependent output.
