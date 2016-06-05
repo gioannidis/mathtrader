@@ -901,8 +901,8 @@ Interface::_getUrl( const std::string & url,
 				"with 'http://'");
 	}
 
-	size_t i = url.find("/",7);
-	if ( i == std::string::npos ) {
+	size_t prot_pos = url.find("/",7);
+	if ( prot_pos == std::string::npos ) {
 		return -1;
 	}
 
@@ -910,9 +910,9 @@ Interface::_getUrl( const std::string & url,
 	 * Server and request
 	 */
 	const std::string
-		server  = url.substr(7,i-7),	/**< strip 'http://' */
+		server  = url.substr(7,prot_pos-7), /**< strip 'http://' */
 		request = "GET "
-			+ url.substr(i,std::string::npos)
+			+ url.substr(prot_pos,std::string::npos)
 			+ " HTTP/1.1\r\n"
 			+ "Host: " + server + "\r\n"
 			+ "\r\n";
@@ -929,8 +929,6 @@ Interface::_getUrl( const std::string & url,
 	 */
 	sock.send(request.c_str(), request.length());
 
-
-
 	/**
 	 * Receive buffer
 	 */
@@ -938,16 +936,60 @@ Interface::_getUrl( const std::string & url,
 	std::unique_ptr< char > buffer( new char [BUFSIZE] );
 
 	/**
+	 * Fetch the HTTP header.
+	 */
+	int message_size = sock.recv(buffer.get(), BUFSIZE);
+	if ( message_size <= 0 ) {
+		throw std::runtime_error("No data received");
+	}
+
+	int received = 0;
+	int payload  = 0;
+
+	/**
+	 * Dependent scope to calculate
+	 * content length
+	 */
+	{
+		std::string header(buffer.get(), message_size);
+
+		/**
+		 * Get the content length
+		 */
+		size_t i = header.find("Content-Length: ");
+		if ( i == std::string::npos ) {
+			throw std::runtime_error("Malformed HTTP "
+					"header; could not find "
+					" 'Content-Length'");
+		}
+		size_t content_start = i;
+
+		i = header.find_first_of("\n\r ", content_start);
+		if ( i == std::string::npos ) {
+			throw std::logic_error("Receive buffer "
+					"is too short");
+		}
+		size_t content_end = i;
+
+		const std::string & content =
+			header.substr(content_start, content_end);
+
+		/**
+		 * Convert to integer
+		 */
+		payload = stoi(content);
+	}
+
+
+	/**
 	 * Receive response until
 	 * no further bytes are received.
 	 */
-	int message_size = 0;
-	int received_total = 0;
 	while ((message_size = sock.recv(buffer.get(), BUFSIZE)) > 0 ) {
 		data.append(buffer.get(), message_size);
-		received_total += message_size;
+		//received_total += message_size;
 	}
-	std::cout << "Received " << received_total << std::endl;
+	//std::cout << "Received " << received_total << std::endl;
 	return 0;
 }
 
