@@ -494,9 +494,9 @@ Interface::run() {
 			int message_size = 0;
 			while ((message_size = sock.recv(buffer.get(), BUFSIZE)) > 0 ) {
 				os << "Received " << message_size << "; buffer = " << BUFSIZE << std::endl;
-				want_ss << buffer.get();
+				want_ss << std::string(buffer.get(), message_size);
 			}
-			//os << want_ss.str();
+			os << want_ss.str();
 			os << std::endl;
 
 		} catch ( const SocketException & error ) {
