@@ -89,28 +89,33 @@ at the [Online Want List Generator (OLWLG)](http://bgg.activityclub.org/olwlg/).
 The official wantslists of previous Math Trades are linked
 under the respective `[WANT]` tag.
 
-On a terminal, you may download it using `wget`, e.g.:
+Note, that you may see the full option list of `mathtrader++` by running `./mathtrader++ -h`.
+
+### Using a remote want-list file
+
+To run `mathtrader++` directly on a want-list file from OLWLG, run:
+
+    ./mathtrader++ --input-url http://bgg.activityclub.org/olwlg/207635-officialwants.txt
+
+### Using a local want-list file
+
+Alternatively, you may download a want-list file using `wget` or `curl`, e.g.:
 
     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt
 
-You may see the options of `mathtrader++` by running `./mathtrader++ -h`.
 The testcase file may be provided either from the standard input
 or as a file:
 
     ./mathtrader++ < 207635-officialwants.txt
     ./mathtrader++ -f 207635-officialwants.txt
 
-The results will be printed to the standard output.
-You may redirect the output to a file:
+### Saving results to local file.
 
-    ./mathtrader++ < 207635-officialwants.txt > 207635-results-official.txt
-    ./mathtrader++ --input-file 207635-officialwants.txt --output-file 207635-results-official.txt
+The results will be printed by default to the standard output.
+You may redirect the output to a file or use the `--output-file` option:
 
-In the following example the input wantlist is downloaded from OLWLG,
-subsequently piped to `mathtrader++`
-and finally the result is written to a local file.
-
-     wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt -O - | ./mathtrader++ > 207635-results-official.txt
+    ./mathtrader++ --input-url http://bgg.activityclub.org/olwlg/207635-officialwants.txt > 207635-results-official.txt
+    ./mathtrader++ --input-url http://bgg.activityclub.org/olwlg/207635-officialwants.txt --output-file 207635-results-official.txt
 
 ## Future Tasks
 
