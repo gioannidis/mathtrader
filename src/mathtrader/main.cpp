@@ -470,43 +470,102 @@ Interface::run() {
 			return -1;
 		}
 
-	} else if ( ap.given("-input-url") ) {
-
-		/**
-		 * Start the timer
-		 */
-		std::stringstream time_ss;
-		time_ss << std::left << std::setw(TABWIDTH)
-			<< "Retrieving remote want lists:";
-		lemon::TimeReport t(time_ss.str());
-
-		std::stringstream want_ss;
-		const std::string & url = ap["-input-url"];
-
-		std::string data;
-		try {
-			_getUrl( url, data );
-
-		} catch ( const SocketException & error ) {
-			os << "Socket Exception: "
-				<< error.what()
-				<< std::endl;
-			return -1;
-
-		} catch ( const std::exception & error ) {
-			os << "Error during retrieving data: "
-				<< error.what()
-				<< std::endl;
-			return -2;
-		}
-		os << data << std::endl;
-
-		return 0;
-
 	} else {
 
 		/**
-		 * Read file from wantlist
+		 * Choose the input stream.
+		 * Create buffer to store local/remote contents.
+		 */
+		std::istream *is = NULL;
+		std::stringstream input_buffer;
+
+		if ( ap.given("-input-url") ) {
+
+			/**
+			 * Start the timer
+			 */
+			std::stringstream time_ss;
+			time_ss << std::left << std::setw(TABWIDTH)
+				<< "Retrieving remote wants file: ";
+			lemon::TimeReport t(time_ss.str());
+
+			/**
+			 * Remote file;
+			 * retrieve data.
+			 */
+			const std::string & url = ap["-input-url"];
+
+			/**
+			 * Payload data.
+			 */
+			std::string data;
+
+			/**
+			 * Retrieve the remote file.
+			 */
+			try {
+				_getUrl( url, data );
+
+			} catch ( const SocketException & error ) {
+				os << "Socket Exception: "
+					<< error.what()
+					<< std::endl;
+				return -1;
+
+			} catch ( const std::exception & error ) {
+				os << "Error during retrieving data: "
+					<< error.what()
+					<< std::endl;
+				return -2;
+			}
+
+			input_buffer << data;
+			is = &input_buffer;
+
+		} else if ( ap.given("-input-file") ) {
+
+			/**
+			 * Start the timer
+			 */
+			std::stringstream time_ss;
+			time_ss << std::left << std::setw(TABWIDTH)
+				<< "Reading local wants file: ";
+			lemon::TimeReport t(time_ss.str());
+
+			/**
+			 * Open input file
+			 */
+			const std::string & fn = ap["-input-file"];
+			std::ifstream file(fn);
+
+			if ( !file ) {
+				os << "Error; could not open file "
+					<< fn
+					<< std::endl;
+				return -1;
+			}
+
+			/**
+			 * Copy to buffer.
+			 * and close file
+			 */
+			input_buffer << file.rdbuf();
+			file.close();
+
+			/**
+			 * Set the input stream for the want parser.
+			 */
+			is = &input_buffer;
+
+		} else {
+			/**
+			 * Just read from stdin
+			 */
+			is = &std::cin;
+		}
+
+		/**
+		 * Run the parser
 		 */
 		try {
 			/**
@@ -514,23 +573,11 @@ Interface::run() {
 			 */
 			std::stringstream time_ss;
 			time_ss << std::left << std::setw(TABWIDTH)
-				<< "Reading the want lists:";
+				<< "Parsing want-lists: ";
 			lemon::TimeReport t(time_ss.str());
 
-			/**
-			 * Configure input file
-			 */
-			if ( ap.given("-input-file") ) {
-				const std::string & fn = ap["-input-file"];
-				if ( fn.length() > 0 ) {
-					want_parser.inputFile(fn);
-				}
-			}
-
-			/**
-			 * Run the parser
-			 */
-			want_parser.parse();
+			/** Parse **/
+			want_parser.parse(*is);
 
 		} catch ( const std::exception & error ) {
 			std::cerr << "WantParser error: " << error.what()
