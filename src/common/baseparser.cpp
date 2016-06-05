@@ -33,32 +33,6 @@ BaseParser::BaseParser() {
 }
 
 BaseParser::~BaseParser() {
-
-	/**
-	 * Close file stream, if applicable.
-	 */
-	if ( _fs.is_open() ) {
-		_fs.close();
-	}
-}
-
-
-/************************************//*
- * 	PUBLIC METHODS - INPUT
- **************************************/
-	
-BaseParser &
-BaseParser::inputFile( const std::string & fn ) {
-
-	/**
-	 * Open file for reading
-	 */
-	_fs.open(fn, std::ios_base::in);
-	if ( _fs.fail() ) {
-		throw std::runtime_error("Could not open file "
-				+ fn + " for reading");
-	}
-	return *this;
 }
 
 

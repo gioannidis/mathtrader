@@ -44,16 +44,6 @@ public:
 	virtual ~BaseParser();
 
 	/**
-	 * @brief Set wantlist input file.
-	 * Sets the input file where the wantlist
-	 * will be read from.
-	 * If not called, std::cin will be used, instead.
-	 * @param fn file name
-	 * @return *this
-	 */
-	BaseParser & inputFile( const std::string & fn );
-
-	/**
 	 * @brief Parse the input.
 	 * Parses the input from a given istream
 	 * (default: std::cin)
@@ -162,18 +152,6 @@ private:
 	 * Errors list.
 	 */
 	std::list< std::string > _errors;
-
-
-	/***************************//*
-	 * INTERNAL DATA STRUCTURES
-	 *****************************/
-
-	/**
-	 * @brief File Stream
-	 * File stream to read the want list from,
-	 * when applicable.
-	 */
-	std::ifstream _fs;
 };
 
 #endif /* _BASEPARSER_HPP_ */
