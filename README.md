@@ -107,7 +107,7 @@ The testcase file may be provided either from the standard input
 or as a file:
 
     ./mathtrader++ < 207635-officialwants.txt
-    ./mathtrader++ -f 207635-officialwants.txt
+    ./mathtrader++ --input-file 207635-officialwants.txt
 
 ### Saving results to local file.
 
