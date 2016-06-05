@@ -473,10 +473,16 @@ Interface::run() {
 
 		const std::string
 			server  = url.substr(7,i-7),	/**< strip 'http://' */
-			request = url.substr(i,std::string::npos);
+			request = "GET "
+				+ url.substr(i,std::string::npos)
+				+ " HTTP/1.1\r\n"
+				+ "Host: " + server + "\r\n"
+				+ "\r\n";
 
+#if 0
 		os << "server: " << server
 			<< " request: " << request << std::endl;
+#endif
 
 		try {
 			TCPSocket sock(server, 80);
@@ -484,11 +490,14 @@ Interface::run() {
 
 			const int BUFSIZE = (10 * (1 << 20));
 			std::unique_ptr< char > buffer( new char [BUFSIZE] );
-			int recvMsgSize;
-			recvMsgSize = sock.recv(buffer.get(), BUFSIZE);
-			os << "BAZ = " << recvMsgSize << std::endl;
-			want_ss << buffer.get();
-			os << want_ss.str() << std::endl;
+
+			int message_size = 0;
+			while ((message_size = sock.recv(buffer.get(), BUFSIZE)) > 0 ) {
+				os << "Received " << message_size << "; buffer = " << BUFSIZE << std::endl;
+				want_ss << buffer.get();
+			}
+			//os << want_ss.str();
+			os << std::endl;
 
 		} catch ( const SocketException & error ) {
 			os << error.what() << std::endl;
