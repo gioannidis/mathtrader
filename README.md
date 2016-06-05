@@ -129,4 +129,4 @@ You may redirect the output to a file or use the `--output-file` option:
 - [x] Resolve cost of items protected by duplicate protection.
 - [ ] Add I/O checksums.
 - [x] Echo overridden options to results.
-- [ ] Integrate ``libcurl`` to download remote want files.
+- [x] Downloading remote files.
