@@ -1055,7 +1055,7 @@ Interface::_getUrl( const std::string & url,
 		 * Get the payload substring
 		 */
 		const std::string & content =
-			header.substr(content_start, content_end);
+			header.substr(content_start, content_end-content_start);
 
 		/**
 		 * Convert to integer
