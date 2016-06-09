@@ -932,7 +932,6 @@ MathTrader::_runMaximizeUsers() {
 	 * It also adds bind arcs: v-in -> v-out.
 	 * These will be filtered out.
 	 *
-	 *
 	 * All node & arc maps are inter-compatible.
 	 */
 
@@ -990,17 +989,17 @@ MathTrader::_runMaximizeUsers() {
 	/**
 	 * Create supply, capacity & cost maps
 	 * Default supply: zero
-	 * Default capacity: double; flows will be split if not traded.
+	 * Default capacity: unit
 	 * Default cost: zero
 	 */
 	TradeGraph::NodeMap< int64_t > supply_map( trade_graph, 0 );
 	TradeGraph::ArcMap < int64_t >
-		capacity_map( trade_graph, 2 ),
+		capacity_map( trade_graph, 1 ),
 		cost_map( trade_graph, 0 );
 
 
 	/********************************************//**
-	 *	SETUP COSTS FROM PRIORITIES
+	 *	INITIALIZE COSTS FROM PRIORITIES
 	 ***********************************************/
 
 	for ( StartGraph::ArcIt a(start_graph); a != lemon::INVALID; ++ a ) {
@@ -1023,26 +1022,39 @@ MathTrader::_runMaximizeUsers() {
 
 	/**
 	 * Structure per USERNAME;
-	 * keep notrade_in, notrade_out and trading items.
 	 *
-	 * Items not trading will match:
+	 * 	parent -> single_trade
+	 * 	parent -> nontrades
 	 *
-	 * A+ -> no_in -> no_out -> A-
-	 * B+ -> no_in -> no_out -> B-
+	 * 	single_trade -> Item1+
+	 * 	single_trade -> Item2+
+	 * 	...
+	 * 	single_trade -> ItemN+
+	 *
+	 * 	nontrades -> Item1-
+	 * 	nontrades -> Item2-
+	 * 	...
+	 * 	nontrades -> ItemN-
+	 *
+	 * A maximum of one item will trade.
+	 * All others will go through the 'nontrades' node.
 	 */
 	typedef struct Parent_s {
 
 		TradeGraph::Node
-			notrade_in,
-			notrade_out;
+			parent,
+			single_trade,
+			nontrades;
 
 		int count;	/**< Number of items the user is trading */
 
-		Parent_s (TradeGraph::Node _no_in,
-				TradeGraph::Node _no_out) :
+		Parent_s ( TradeGraph::Node _parent,
+				TradeGraph::Node _single,
+				TradeGraph::Node _no) :
 
-			notrade_in( _no_in ),
-			notrade_out( _no_out ),
+			parent( _parent ),
+			single_trade( _single ),
+			nontrades( _no ),
 			count(0) {}
 	} Parent_t;
 
@@ -1055,7 +1067,9 @@ MathTrader::_runMaximizeUsers() {
 	/**
 	 * Iterate all nodes of start_graph:
 	 * - Dummy item: make nodes sources/sinks, add zero-cost bind-arc.
-	 * - Non-dummy item: link item_in to parent_node, item_out to notrade_node.
+	 * - Non-dummy item:
+	 *   -- link item_out to single_trade
+	 *   -- link item_in  to nontrades
 	 */
 	for ( StartGraph::NodeIt n(start_graph); n != lemon::INVALID; ++ n ) {
 
@@ -1070,27 +1084,27 @@ MathTrader::_runMaximizeUsers() {
 		 */
 		auto const & trade_out = node_split2trade[ out_node ];
 		auto const & trade_in  = node_split2trade[  in_node ];
+		/**
+		 * Trade-in  nodes are always sinks.
+		 */
+		supply_map[ trade_in  ] = -1;
 
 		/**
-		 * Trade-out nodes are sources.
-		 * Trade-in  nodes are sinks.
-		 * Use double supply/demand,
-		 * as the non-trading flows will be split.
+		 * NOTE:
+		 * Bind arcs will be added:
+		 * - Dummy items: trade_out -> trade_in
+		 * - Non-dummy items: nontrades -> trade_in
 		 */
-		supply_map[ trade_out ] = +2;
-		supply_map[ trade_in  ] = -2;
-
-		/**
-		 * Add a bind-arc in every case.
-		 * The capacity will be diffent,
-		 * depending on whether it's a dummy item or not.
-		 */
-		auto const & bind_arc = trade_graph.addArc( trade_out, trade_in );
 
 		/**
 		 * Is it a dummy item?
 		 */
 		if ( _dummy[_node_out2in[n]] ) {
+
+			/**
+			 * Add a bind-arc here: trade_out -> trade_in
+			 */
+			auto const & bind_arc = trade_graph.addArc( trade_out, trade_in );
 
 			/**
 			 * Dummy item;
@@ -1101,23 +1115,16 @@ MathTrader::_runMaximizeUsers() {
 			 *
 			 * The cost of the bind arc will be zero.
 			 * The capacity of the bind arc is the default capacity.
+			 * Trade-out dummy nodes are sources.
 			 */
+			supply_map[ trade_out ] = +1;
 			cost_map[ bind_arc ] = 0;
-			capacity_map[ bind_arc ] = 2;
+			capacity_map[ bind_arc ] = 1;
 
 		} else {
 
 			/**
 			 * Non-dummy item.
-			 * The cost of the bind arc will be NONTRADE.
-			 * The capacity of the bind arc is half the default:
-			 * 	1/2 * 2 = 1 (unit).
-			 */
-			auto _COST_BIND = _COST_MORETRADES;
-			cost_map[ bind_arc ] = _COST_BIND;
-			capacity_map[ bind_arc ] = 1;
-
-			/**
 			 * look up its parent-node based on the username.
 			 */
 			const std::string & username = _username[_node_out2in[n]];
@@ -1128,23 +1135,28 @@ MathTrader::_runMaximizeUsers() {
 				/**
 				 * Parent node NOT found.
 				 * This should be the first item from this username.
-				 * Create new parent node.
+				 * Create new:
+				 * 	Parent node.
+				 * 	Single-trade node.
+				 * 	Nontrades node.
+				 *
 				 * Initial supplies are zero.
 				 * We will set the parent supply maps later.
-				 * We will add the bind-arcs between notrade_in
-				 * and notrade_out later.
 				 */
-				auto const &   notrade_in  = trade_graph.addNode();
-				auto const &   notrade_out = trade_graph.addNode();
+				auto const &       parent = trade_graph.addNode();
+				auto const & single_trade = trade_graph.addNode();
+				auto const &    nontrades = trade_graph.addNode();
 
-				supply_map[ notrade_in  ] = 0;
-				supply_map[ notrade_out ] = 0;
+				supply_map[       parent ] = 0;
+				supply_map[ single_trade ] = 0;
+				supply_map[    nontrades ] = 0;
 
 
 				/**
 				 * Insert parent node to parent_map
 				 */
-				auto pair = parent_map.emplace(username, Parent_t(notrade_in, notrade_out));
+				auto pair = parent_map.emplace(username,
+						Parent_t(parent, single_trade, nontrades));
 
 				/**
 				 * Sanity check
@@ -1161,23 +1173,37 @@ MathTrader::_runMaximizeUsers() {
 			}
 
 			/**
-			 * Retrieve non-trading nodes.
+			 * Increase number of trading items
+			 * for this user.
 			 */
-			auto const & notrade_in  = it->second.notrade_in;
 			++ (it->second.count);
 
 			/**
-			 * Add the non-trading arc.
+			 * Retrieve single-trading node.
+			 * Add the trading arc to this item/
 			 */
-			auto const & notrade_arc_out = trade_graph.addArc( trade_out, notrade_in );
+			auto const & single_trade = it->second.single_trade;
+			auto const & trading_arc = trade_graph.addArc( single_trade, trade_out );
 
 			/**
-			 * Cost: always zero.
-			 * Capacity: half the default.
-			 * - Default is 2, so 1/2 * 2 = 1 (unit)
+			 * Retrieve non-trading node.
+			 * Add the non-trading bind arcs.
 			 */
-			capacity_map[ notrade_arc_out ] = 1;
-			cost_map[ notrade_arc_out ] = 0;
+			auto const & nontrades  = it->second.nontrades;
+			auto const & bind_arc = trade_graph.addArc( nontrades, trade_in );
+
+			/**
+			 * Capacities: always unit.
+			 * Cost:
+			 * - Trading arc: always zero.
+			 * - Non-trading arc: always NON_TRADE
+			 */
+			capacity_map[ trading_arc ] = 1;
+			capacity_map[    bind_arc ] = 1;
+
+			auto const COST_BIND = _COST_NONTRADE;
+			cost_map[ trading_arc ] = 0;
+			cost_map[    bind_arc ] = COST_BIND;
 		}
 	}
 
@@ -1187,43 +1213,39 @@ MathTrader::_runMaximizeUsers() {
 	 */
 	for ( auto const & pair : parent_map ) {
 
-		auto const & notrade_in = pair.second.notrade_in;
-		auto const & sink = pair.second.notrade_out;
+		auto const & parent       = pair.second.parent;
+		auto const & single_trade = pair.second.single_trade;
+		auto const & nontrades    = pair.second.nontrades;
 
 		/**
-		 * Number of trading items: of user.
+		 * Number of user's trading items.
 		 */
 		const int n_items = pair.second.count;
 
 		/**
-		 * Add arcs from notrade_in to notrade_out.
-		 * Orange arc:
-		 * - Capacity: n_items - 1
-		 * - Cost: lower
-		 * Red arc:
+		 * Parent's supply: number of items.
+		 */
+		supply_map[ parent ] = n_items;
+
+		/**
+		 * Add arcs:
+		 * - parent -> single_trade
+		 * - parent -> nontrades
+		 * Non-trade arc:
+		 * - Capacity: n_items
+		 * - Cost: zero (bind-arcs have cost)
+		 * Trade arc:
 		 * - Capacity: unit
-		 * - Cost: higher
+		 * - Cost: zero
 		 */
-		auto const & red_arc = trade_graph.addArc( notrade_in, sink );
-		capacity_map[ red_arc ] = 1;
-		cost_map[ red_arc ] = _COST_NONTRADE;
+		auto const &    trade_arc = trade_graph.addArc( parent, single_trade );
+		auto const & nontrade_arc = trade_graph.addArc( parent, nontrades );
 
-		/**
-		 * Add orange arc only if necessary,
-		 * i.e., user is trading more than one item.
-		 */
-		if ( n_items > 1 ) {
-			auto const & orange_arc = trade_graph.addArc( notrade_in, sink );
-			capacity_map[ orange_arc ] = (n_items - 1);
-			cost_map[ orange_arc ] = _COST_NONTRADE; //_COST_MORETRADES
-		}
+		capacity_map[    trade_arc ] = 1;
+		capacity_map[ nontrade_arc ] = n_items;
 
-		/**
-		 * Finally, make the notrade_out node a sink.
-		 * It should have a capacity of n_items
-		 * (as all flows here have unit capacity).
-		 */
-		supply_map[ sink ] = (-1) * n_items;
+		cost_map[    trade_arc ] = 0;
+		cost_map[ nontrade_arc ] = 0;
 	}
 
 
@@ -1247,7 +1269,7 @@ MathTrader::_runMaximizeUsers() {
 	 *	EXPORT PRODUCED TRADE GRAPH TO DOT
 	 ***********************************************/
 
-#if 1
+#if 0
 	TradeGraph::NodeMap< std::string > label( trade_graph );
 
 	/**
