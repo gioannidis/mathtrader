@@ -1269,7 +1269,7 @@ MathTrader::_runMaximizeUsers() {
 	 *	EXPORT PRODUCED TRADE GRAPH TO DOT
 	 ***********************************************/
 
-#if 0
+#if 1
 	TradeGraph::NodeMap< std::string > label( trade_graph );
 
 	/**
@@ -1291,12 +1291,14 @@ MathTrader::_runMaximizeUsers() {
 	 */
 	for ( auto const & pair : parent_map ) {
 
-		auto const & notrade_in  = pair.second.notrade_in;
-		auto const & notrade_out = pair.second.notrade_out;
+		auto const & parent = pair.second.parent;
+		auto const & notrades  = pair.second.nontrades;
+		auto const & single_trade = pair.second.single_trade;
 		auto const & username = pair.first;
 
-		label[notrade_in]  = "no-in";
-		label[notrade_out] = "no-out";
+		label[parent] = "parent";
+		label[single_trade]  = "trade";
+		label[notrades] = "no";
 	}
 
 	/**
@@ -1308,7 +1310,7 @@ MathTrader::_runMaximizeUsers() {
 		int64_t flows = flow_map[a];
 		const bool chosen = (flows > 0);
 		if ( chosen ) {
-			const std::string color = (capacity_map[a] == flows) ? "green" : "orange";
+			const std::string color = "green";
 			arc_label[a] = "[color=" + color + ", label=\"f="
 				+ std::to_string(flows) +"\"]";
 		}
