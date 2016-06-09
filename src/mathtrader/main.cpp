@@ -1012,9 +1012,31 @@ Interface::_getUrl( const std::string & url,
 		std::string header(buffer.get(), message_size);
 
 		/**
+		 * Get the response code
+		 */
+		size_t i = header.find("HTTP/1.1 ");
+		if ( i == std::string::npos ) {
+			throw std::runtime_error("Malformed HTTP "
+					"header; could not find "
+					" 'HTTP/1.1'");
+		}
+		size_t code_start = i + 9;
+
+		i = header.find_first_of("\n\r", code_start);
+		size_t code_end = i;
+
+		const std::string & response_code =
+			header.substr(code_start, code_end-code_start);
+
+		if ( response_code.compare("200 OK") != 0 ) {
+			throw std::runtime_error("Unexpected response code; "
+					"received " + response_code);
+		}
+
+		/**
 		 * Get the content length
 		 */
-		size_t i = header.find("Content-Length: ");
+		i = header.find("Content-Length: ");
 		if ( i == std::string::npos ) {
 			throw std::runtime_error("Malformed HTTP "
 					"header; could not find "
