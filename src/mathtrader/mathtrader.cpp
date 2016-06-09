@@ -1084,10 +1084,11 @@ MathTrader::_runMaximizeUsers() {
 		 */
 		auto const & trade_out = node_split2trade[ out_node ];
 		auto const & trade_in  = node_split2trade[  in_node ];
+
 		/**
 		 * Trade-in  nodes are always sinks.
 		 */
-		supply_map[ trade_in  ] = -1;
+		supply_map[ trade_in ] = -1;
 
 		/**
 		 * NOTE:
@@ -1102,22 +1103,20 @@ MathTrader::_runMaximizeUsers() {
 		if ( _dummy[_node_out2in[n]] ) {
 
 			/**
-			 * Add a bind-arc here: trade_out -> trade_in
-			 */
-			auto const & bind_arc = trade_graph.addArc( trade_out, trade_in );
-
-			/**
 			 * Dummy item;
 			 *
 			 * We will not bother grouping a dummy item
 			 * under a user, as we do not want to count them
 			 * as "trading items". It's fine not to trade a dummy item.
 			 *
+			 * Add a bind-arc here: trade_out -> trade_in
 			 * The cost of the bind arc will be zero.
 			 * The capacity of the bind arc is the default capacity.
 			 * Trade-out dummy nodes are sources.
 			 */
 			supply_map[ trade_out ] = +1;
+
+			auto const & bind_arc = trade_graph.addArc( trade_out, trade_in );
 			cost_map[ bind_arc ] = 0;
 			capacity_map[ bind_arc ] = 1;
 
@@ -1296,7 +1295,7 @@ MathTrader::_runMaximizeUsers() {
 		auto const & single_trade = pair.second.single_trade;
 		auto const & username = pair.first;
 
-		label[parent] = "parent";
+		label[parent] = pair.first;
 		label[single_trade]  = "trade";
 		label[notrades] = "no";
 	}
@@ -1384,8 +1383,6 @@ MathTrader::_runMaximizeUsers() {
 			_send[ sender ] = receiver;
 		}
 	}
-
-
 }
 
 
