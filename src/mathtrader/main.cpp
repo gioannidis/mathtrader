@@ -217,6 +217,12 @@ int main(int argc, char **argv) {
 			"export the result graph to .dot formatted file");
 
 	/**
+	 * Analyze strongly connected components.
+	 */
+	ap.boolOption("-show-strongly-connected",
+			"analyze strongly connected components of input graph");
+
+	/**
 	 * Show version
 	 */
 	ap.boolOption("-version", "show version information and exit");
@@ -877,6 +883,13 @@ Interface::run() {
 		return -1;
 	}
 
+	/**
+	 * Analyze strongly connected components,
+	 * if requested.
+	 */
+	if ( ap.given("-show-strongly-connected") ) {
+		math_trader.writeStrongComponents(os);
+	}
 
 	/**
 	 * End of STANDARD mathtrader++ operations.
