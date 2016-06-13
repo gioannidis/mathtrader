@@ -21,6 +21,7 @@
  */
 #include "basemath.hpp"
 
+#include <lemon/connectivity.h>
 #include <lemon/lgf_reader.h>
 #include <stdexcept>
 #include <unordered_map>
@@ -120,6 +121,45 @@ BaseMath::clearPriorities() {
 /************************************//*
  * 	PUBLIC METHODS - OUTPUT
  **************************************/
+
+const BaseMath &
+BaseMath::writeStrongComponents( std::ostream & os ) const {
+
+	typedef InputGraph Graph;
+	auto const & g = this->_input_graph;
+
+	Graph::NodeMap< int > component_id(g);
+	const int n_components = stronglyConnectedComponents( g, component_id );
+
+	std::vector< int > component_size( n_components, 0 );
+	std::vector< int > component_non_dummy_size( n_components, 0 );
+
+	/**
+	 * Iterate all nodes, get the component id,
+	 * update the size.
+	 */
+	for ( Graph::NodeIt n(g); n != lemon::INVALID; ++ n ) {
+		++ component_size[ component_id[n] ];
+		if ( !_dummy[n] ) {
+			++ component_non_dummy_size[ component_id[n] ];
+		}
+	}
+
+	os << "Strongly connected components of input graph = " << n_components << std::endl;
+	os << "Component sizes =";
+	for ( auto n : component_size ) {
+		os << " " << n;
+	}
+	os << std::endl;
+
+	os << "Component sizes (non-dummy) =";
+	for ( auto n : component_non_dummy_size ) {
+		os << " " << n;
+	}
+	os << std::endl;
+
+	return *this;
+}
 
 
 /************************************//*

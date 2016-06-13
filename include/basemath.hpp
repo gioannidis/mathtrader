@@ -96,6 +96,14 @@ public:
 	virtual const BaseMath & writeResults( std::ostream & os = std::cout ) const = 0;
 
 	/**
+	 * @brief Analyze the graph into strongly connected components.
+	 * Decompose the input graph into strongly connected components
+	 * and print their respective sizes twice:
+	 * once including dummy items, once without.
+	 */
+	const BaseMath & writeStrongComponents( std::ostream & os = std::cout ) const ;
+
+	/**
 	 * @brief Export input graph to dot format.
 	 * Writes the input graph
 	 * to the given output stream as .dot format.
