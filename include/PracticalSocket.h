@@ -88,13 +88,13 @@ public:
 
   /**
    *   Set the local port to the specified port and the local address
-   *   to the specified address.  If you omit the port, a random port 
+   *   to the specified address.  If you omit the port, a random port
    *   will be selected.
    *   @param localAddress local address
    *   @param localPort local port
    *   @exception SocketException thrown if setting local port or address fails
    */
-  void setLocalAddressAndPort(const std::string &localAddress, 
+  void setLocalAddressAndPort(const std::string &localAddress,
     unsigned short localPort = 0) throw(SocketException);
 
   /**
@@ -103,7 +103,7 @@ public:
    *   completeness.  If you are running on Windows and you are concerned
    *   about DLL resource consumption, call this after you are done with all
    *   Socket instances.  If you execute this on Windows while some instance of
-   *   Socket exists, you are toast.  For portability of client code, this is 
+   *   Socket exists, you are toast.  For portability of client code, this is
    *   an empty function on non-Windows platforms so you can always include it.
    *   @param buffer buffer to receive the data
    *   @param bufferLen maximum number of bytes to read into buffer
@@ -203,7 +203,7 @@ public:
    *   @param foreignPort foreign port
    *   @exception SocketException thrown if unable to create TCP socket
    */
-  TCPSocket(const std::string &foreignAddress, unsigned short foreignPort) 
+  TCPSocket(const std::string &foreignAddress, unsigned short foreignPort)
       throw(SocketException);
 
 private:
@@ -222,11 +222,11 @@ public:
    *   on the specified port on any interface
    *   @param localPort local port of server socket, a value of zero will
    *                   give a system-assigned unused port
-   *   @param queueLen maximum queue length for outstanding 
+   *   @param queueLen maximum queue length for outstanding
    *                   connection requests (default 5)
    *   @exception SocketException thrown if unable to create TCP server socket
    */
-  TCPServerSocket(unsigned short localPort, int queueLen = 5) 
+  TCPServerSocket(unsigned short localPort, int queueLen = 5)
       throw(SocketException);
 
   /**
@@ -234,7 +234,7 @@ public:
    *   on the specified port on the interface specified by the given address
    *   @param localAddress local interface (address) of server socket
    *   @param localPort local port of server socket
-   *   @param queueLen maximum queue length for outstanding 
+   *   @param queueLen maximum queue length for outstanding
    *                   connection requests (default 5)
    *   @exception SocketException thrown if unable to create TCP server socket
    */
@@ -276,7 +276,7 @@ public:
    *   @param localPort local port
    *   @exception SocketException thrown if unable to create UDP socket
    */
-  UDPSocket(const std::string &localAddress, unsigned short localPort) 
+  UDPSocket(const std::string &localAddress, unsigned short localPort)
       throw(SocketException);
 
   /**
@@ -309,7 +309,7 @@ public:
    *   @return number of bytes received and -1 for error
    *   @exception SocketException thrown if unable to receive datagram
    */
-  int recvFrom(void *buffer, int bufferLen, std::string &sourceAddress, 
+  int recvFrom(void *buffer, int bufferLen, std::string &sourceAddress,
                unsigned short &sourcePort) throw(SocketException);
 
   /**
