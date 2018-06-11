@@ -4,7 +4,7 @@
  * of covered vertices as a first priority
  * and minimizes the total cost as a second priority.
  *
- * Copyright (C) 2016 George Ioannidis
+ * Copyright (C) 2018 George Ioannidis
  *
  * MathTrader++ is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
