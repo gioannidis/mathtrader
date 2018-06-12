@@ -74,7 +74,13 @@ install the LEMON library, please refer to the respective
 
 ## Compiling
 
-* On Linux systems, running `make` on the top directory will compile the project.
+* On Linux systems, execute from the top directory:
+
+	mkdir build
+	cd build
+	cmake ..
+	make
+
 * Optionally, you may also run `make html` to create the html documentation.
 This requires the `doxygen` package.
 * On Windows systems, you will have to pass the compiling options
