@@ -81,7 +81,7 @@ install the LEMON library, please refer to the respective
 	cmake ..
 	make
 
-* Optionally, you may also run `make html` to create the html documentation.
+* Optionally, you may also run `make doc` to create the html documentation.
 This requires the `doxygen` package.
 * On Windows systems, you will have to pass the compiling options
 found in the `Makefile` to your IDE's compiler.
