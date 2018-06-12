@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "basemath.hpp"
+#include <solver/basemath.hpp>
 
 #include <lemon/connectivity.h>
 #include <lemon/lgf_reader.h>

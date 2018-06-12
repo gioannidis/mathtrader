@@ -22,7 +22,7 @@
 #ifndef _MATHTRADER_HPP_
 #define _MATHTRADER_HPP_
 
-#include "basemath.hpp"
+#include <solver/basemath.hpp>
 #include <lemon/list_graph.h>
 
 class MathTrader : public BaseMath {

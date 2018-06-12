@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "baseparser.hpp"
+#include <iograph/baseparser.hpp>
 
 #include <regex>
 #include <stdexcept>

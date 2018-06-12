@@ -19,8 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "mathtrader.hpp"
-#include "algowrapper.hpp"
+#include <solver/mathtrader.hpp>
 
 /* STL libraries */
 #include <fstream>
@@ -39,6 +38,8 @@
 #include <lemon/cost_scaling.h>
 #include <lemon/cycle_canceling.h>
 #include <lemon/network_simplex.h>
+
+#include "algowrapper.hpp"
 
 
 /************************************//*
