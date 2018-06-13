@@ -136,3 +136,5 @@ You may redirect the output to a file or use the `--output-file` option:
 - [ ] Add I/O checksums.
 - [x] Echo overridden options to results.
 - [x] Downloading remote files.
+- [ ] Write own method in WantParser::parseLine to handle directives.
+- [ ] If an OPTION fails to parse, do not skip the entire line, if multiple options are given in a single line.

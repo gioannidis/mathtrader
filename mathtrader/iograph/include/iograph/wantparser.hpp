@@ -117,8 +117,26 @@ class WantParser {
 public:
 	WantParser();
 	~WantParser() = default;
-	void parseStream( std::istream & is );
+
+	/*! @brief Convert want-lists input file to graph.
+	 *
+	 *  Reads a want-list from the given input stream
+	 *  and converts it to a graph.
+	 *  Opens the input file and calls @ref parseStream().
+	 *
+	 *  @param[in]	fn	the input file to read the want-lists from
+	 *  @throws	std::runtime_error if file ``fn`` cannot be opened
+	 */
 	void parseFile( const std::string & fn );
+
+	/*! @brief Convert want-lists input stream to graph.
+	 *
+	 *  Reads a want-list from the given input stream
+	 *  and converts it to a graph.
+	 *
+	 *  @param[in]	is	the input stream to read the want-lists from
+	 */
+	void parseStream( std::istream & is );
 
 	/*! @name Output methods
 	 *
@@ -472,6 +490,9 @@ private:
 	 *  (TODO write own method)
 	 *  3. Otherwise, calls the respective method:
 	 *  @ref parseOption_(), @ref _parseOfficialName(), or @ref _parseWantList().
+	 *
+	 *  @param[in]	line	the entire line to parse
+	 *  @throws	std::runtime_error if the line fails to parse
 	 */
 	void parseLine_( const std::string & line );
 
@@ -480,13 +501,16 @@ private:
 	 *  Parses a want-file option. Multiple options may be present
 	 *  in the same line. Accepted formats:
 	 *
-	 *  * ``OPTION-ONE``
-	 *  * ``OPTION-TWO=42``
-	 *  * ``OPTION-THREE=VALUE-ABC-123``
+	 *  * ``OPTION``
+	 *  * ``OPTION-FOO``
+	 *  * ``OPTION-FOO=0``
+	 *  * ``OPTION=42``
+	 *  * ``OPTION=-32``
+	 *  * ``OPTION=+64``
+	 *  * ``OPTION=VALUE-ABC-123``
 	 *
 	 *  @param[in]	option	option to parse, without the leading ``#!``
 	 *  @throws	std::runtime_error if an unsupported ``option`` is given
-	 *  @throws	std::logic_error if an internal regex fails to match
 	 */
 	void parseOption_( const std::string & option );
 

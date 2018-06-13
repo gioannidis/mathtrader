@@ -373,35 +373,43 @@ WantParser::parseLine_( const std::string & buffer ) {
 
 	} else if ( buffer.compare(0, 1, "!") == 0 ) {
 
-		/**
-		 * Directives.
-		 */
+		/* Directive. Change the WantParser status
+		 * based on the given directive. */
 		if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
 
+			/* Directive indicating that official names are following. */
 			switch ( _status ) {
-				case INITIALIZATION:
+				case INITIALIZATION: {
+					/* Initialization: official names will
+					 * be parsed now. */
 					_status = PARSE_NAMES;
 					break;
+				}
 
-				case PARSE_NAMES:
+				case PARSE_NAMES: {
 					throw std::runtime_error("Official names"
 							" are already being given");
 					break;
+				}
 
-				case PARSE_WANTS_WITHNAMES:
+				case PARSE_WANTS_WITHNAMES: {
 					throw std::runtime_error("Official names"
 							" have already been given");
 					break;
+				}
 
-				default:
+				default: {
 					throw std::runtime_error("Official names"
 							" can only be declared"
 							" before the want lists");
 					break;
+				}
 			}
 
 		} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
 
+			/* Directive indicating that official names have ended. */
+			//TODO check if it's given multiple times
 			_status = PARSE_WANTS_WITHNAMES;
 
 		} else {
@@ -409,18 +417,22 @@ WantParser::parseLine_( const std::string & buffer ) {
 					+ buffer);
 		}
 	} else {
-		/* This line contains an item to be parsed.
+		/* This line contains something else to be parsed.
 		 * This is the default option and should be handled last.
-		 * Use appropriate handler for current status. */
-		switch ( _status ) {
-			case INITIALIZATION:
-				/**
-				 * Always first.
-				 * Do not break.
-				 * Set status and continue.
-				 */
-				_status = PARSE_WANTS_NONAMES;
+		 * Use appropriate handler for current status.
+		 * Expecting to parse:
+		 * 	- Official name
+		 * 	- Item want list
+		 */
 
+		/* If we are already in the initialization,
+		 * mark that no official names will be given. */
+		if ( this->_status == INITIALIZATION ) {
+			this->_status = PARSE_WANTS_NONAMES;
+		}
+
+		/* Parsing items or names? */
+		switch ( _status ) {
 			case PARSE_WANTS_NONAMES:
 			case PARSE_WANTS_WITHNAMES:
 				_parseWantList( buffer );
@@ -429,6 +441,7 @@ WantParser::parseLine_( const std::string & buffer ) {
 			case PARSE_NAMES:
 				_parseOfficialName( buffer );
 				break;
+
 			default:
 				throw std::logic_error("Unknown handler for"
 						" internal status "
@@ -531,29 +544,30 @@ WantParser::parseOption_( const std::string & option_line ) {
 	}
 }
 
+/**
+ * Regular expression to separate fields.
+ *
+ * Example of an official name line:
+ *
+ * 	0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
+ *
+ *	$1	0042-PUERTO
+ * 	$2	==>
+ * 	$3	"Puerto Rico"
+ * 	$4	(from username)
+ * 	$5	[copy 1 of 2]
+ *
+ * We may also parse single-nested quotation marks, e.g.:
+ * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
+ *
+ * NOTE: regexes are eager, meaning that the longest/more specialized
+ * matching should be put first.
+ * A g++-4.9 bug might produce the correct results if group W
+ * is in the wrong position. g++-5.3 fixes this.
+ */
 WantParser &
 WantParser::_parseOfficialName( const std::string & line ) {
 
-	/**
-	 * Regular expression to separate fields.
-	 *
-	 * Example of an official name line:
-	 * 0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
-	 *
-	 * $1	0042-PUERTO
-	 * $2	==>
-	 * $3	"Puerto Rico"
-	 * $4	(from username)
-	 * $5	[copy 1 of 2]
-	 *
-	 * We may also parse single-nested quotation marks, e.g.:
-	 * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
-	 *
-	 * NOTE: regexes are eager, meaning that the longest/more specialized
-	 * matching should be put first.
-	 * A g++-4.9 bug might produce the correct results if group W
-	 * is in the wrong position. g++-5.3 fixes this.
-	 */
 	static const std::regex FPAT_names(
 		R"(\"([\"]|[^\"])+\")"	// Group 1: quotation mark pairs
 					// with possible quotation marks included.
