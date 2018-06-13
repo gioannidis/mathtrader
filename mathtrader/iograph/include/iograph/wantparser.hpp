@@ -36,6 +36,7 @@ public:
 	 * Details.
 	 */
 	WantParser();
+	~WantParser() = default;
 
 	/**
 	 * @brief Destructor.

@@ -45,9 +45,6 @@ WantParser::WantParser() :
 	_int_options[NONTRADE_COST] = 1e9;
 }
 
-WantParser::~WantParser() {
-}
-
 
 /************************************//*
  * 	PUBLIC METHODS - OUTPUT
