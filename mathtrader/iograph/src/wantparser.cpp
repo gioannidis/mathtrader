@@ -439,7 +439,7 @@ WantParser::parseLine_( const std::string & buffer ) {
 				break;
 
 			case PARSE_NAMES:
-				_parseOfficialName( buffer );
+				parseOfficialName_( buffer );
 				break;
 
 			default:
@@ -544,30 +544,28 @@ WantParser::parseOption_( const std::string & option_line ) {
 	}
 }
 
-/**
- * Regular expression to separate fields.
- *
- * Example of an official name line:
- *
- * 	0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
- *
- *	$1	0042-PUERTO
- * 	$2	==>
- * 	$3	"Puerto Rico"
- * 	$4	(from username)
- * 	$5	[copy 1 of 2]
- *
- * We may also parse single-nested quotation marks, e.g.:
- * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
- *
- * NOTE: regexes are eager, meaning that the longest/more specialized
- * matching should be put first.
- * A g++-4.9 bug might produce the correct results if group W
- * is in the wrong position. g++-5.3 fixes this.
- */
-WantParser &
-WantParser::_parseOfficialName( const std::string & line ) {
+void
+WantParser::parseOfficialName_( const std::string & line ) {
 
+	/* Regular expression to separate fields of official name.
+	 * Example of an official name line:
+	 *
+	 * 	0042-PUERTO ==> "Puerto Rico" (from username) [copy 1 of 2]
+	 *
+	 *	$1	0042-PUERTO
+	 * 	$2	==>
+	 * 	$3	"Puerto Rico"
+	 * 	$4	(from username)
+	 * 	$5	[copy 1 of 2]
+	 *
+	 * We may also parse single-nested quotation marks, e.g.:
+	 * 0042-IPOPTSE ==> ""In Pursuit of Par" TPC Sawgrass Edition" (from username)
+	 *
+	 * NOTE: regexes are eager, meaning that the longest/more specialized
+	 * matching should be put first.
+	 * A g++-4.9 bug might produce the correct results if group W
+	 * is in the wrong position. g++-5.3 fixes this.
+	 */
 	static const std::regex FPAT_names(
 		R"(\"([\"]|[^\"])+\")"	// Group 1: quotation mark pairs
 					// with possible quotation marks included.
@@ -582,37 +580,28 @@ WantParser::_parseOfficialName( const std::string & line ) {
 		R"(\S+)"		// Group 4: any non-whitespace
 	);
 
-	/**
-	 * Tokenize the line
-	 */
+	/* Tokenize the line. */
 	auto match = BaseParser::_split( line, FPAT_names );
 
-	/**
-	 * Sanity check for minimum number of matches
-	 * TODO the description (4th item) is optional.
-	 */
+	/* Sanity check for minimum number of matches
+	 * TODO the description (4th item) is optional. */
 	if ( match.size() < 4 ) {
 		throw std::runtime_error("Bad format of official name line");
 	}
 
-	/**
-	 * Item name: to be used as a hash key.
-	 */
+	/* Item name: to be used as a hash key. */
 	const std::string
 		&orig_item = match[0],
 		&orig_official_name = match[2],
 		&from_username = match[3];
 
-	/**
-	 * Parse item name (quotation marks, uppercase).
+	/* Parse item name (quotation marks, uppercase).
 	 * As we're not providing a username,
-	 * it will raise an error if it's dummy.
-	 */
+	 * it will raise an error if it's dummy. */
 	std::string item( orig_item );
 	_parseItemName( item );
 
-	/**
-	 * Replace nested quotation marks in official_name with "'".
+	/* Replace nested quotation marks in official_name with "'".
 	 * Replace backslashes with forward slashes;
 	 * we are not going to escape them.
 	 * Ignore the first and the last position of the string.
@@ -634,8 +623,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 		pos += 1;
 	}
 
-	/**
-	 * from_username is in format:
+	/* From_username is in format:
 	 * 	(from user name)
 	 * Change to:
 	 * 	"user name"
@@ -644,42 +632,28 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	 */
 	std::string username;
 	try {
-		username = from_username.substr(6, std::string::npos); /**< remove "(from " */
+		username = from_username.substr(6, std::string::npos); /* remove "(from " */
 	} catch ( const std::out_of_range & e ) {
-		std::cerr << "Out of range when parsing username: "
-			<< from_username
-			<< " in line "
-			<< line
-			<< "; received error: "
-			<< e.what()
-			<< std::endl;
-		std::cerr << "Tokens:" << std::endl;
-		for ( auto const & token : match ) {
-			std::cerr << "\t" << token << std::endl;
-		}
-		return *this;
-	} catch ( const std::exception & e ) {
-		throw;
+		throw std::runtime_error("Out of range when parsing username: "
+			+ from_username
+			+ ": "
+			+ e.what()
+			);
 	}
 
-	username.pop_back(); /**< remove last ')' */
-	BaseParser::_parseUsername( username ); /**< quotation marks, uppercase */
+	/* Remove last ')' from username, if not empty. */
+	if ( !username.empty() ) {
+		username.pop_back(); /* remove last ')' */
+	}
+	BaseParser::_parseUsername( username ); /* add quotation marks, make uppercase */
 
-	/**
-	 * Emplace the item. It should not exist in the node_map.
-	 */
-	auto rv = this->_node_map.emplace( item, _Node_s(item,official_name,username) );
-
-	/**
-	 * Throw if it's already in the map.
-	 * TODO necessary?
-	 */
+	/* Emplace the item. It should not exist in the node_map.
+	 * Throw if present. */
+	const auto rv = this->_node_map.emplace( item, _Node_s(item,official_name,username) );
 	if ( !rv.second ) {
 		throw std::runtime_error("Existing entry for item "
 				+ item);
 	}
-
-	return *this;
 }
 
 WantParser &

@@ -476,7 +476,7 @@ private:
 
 
 	/***********************************
-	 *  PARSING FUNCTIONS
+	 *  PARSING METHODS
 	 ***********************************/
 
 	/*! @brief Parse want-file line.
@@ -489,7 +489,7 @@ private:
 	 *  2. If a directive, changes the @ref state_ of the class.
 	 *  (TODO write own method)
 	 *  3. Otherwise, calls the respective method:
-	 *  @ref parseOption_(), @ref _parseOfficialName(), or @ref _parseWantList().
+	 *  @ref parseOption_(), @ref parseOfficialName_(), or @ref _parseWantList().
 	 *
 	 *  @param[in]	line	the entire line to parse
 	 *  @throws	std::runtime_error if the line fails to parse
@@ -498,7 +498,7 @@ private:
 
 	/*! @brief Parse want-file option.
 	 *
-	 *  Parses a want-file option. Multiple options may be present
+	 *  Parses line containing want-file options. Multiple options may be present
 	 *  in the same line. Accepted formats:
 	 *
 	 *  * ``OPTION``
@@ -509,18 +509,22 @@ private:
 	 *  * ``OPTION=+64``
 	 *  * ``OPTION=VALUE-ABC-123``
 	 *
-	 *  @param[in]	option	option to parse, without the leading ``#!``
+	 *  @param[in]	line to parse, without the leading ``#!``
 	 *  @throws	std::runtime_error if an unsupported ``option`` is given
 	 */
 	void parseOption_( const std::string & option );
 
-	/**
-	 * @brief Parse official name
-	 * Parses lines giving the official names of nodes.
-	 * @param line line to be parsed
-	 * @return *this
+	/*! @brief Parse official item name.
+	 *
+	 * Parses a line giving the official name of an item.
+	 * Extracts the item ID, the username and the official item name
+	 * and inserts them in @ref _node_map.
+	 *
+	 *  @param[in]	line to parse
+	 *  @throws	std::runtime_error if the line fails to parse, e.g., bad format
+	 *  @throws	std::runtime_error if the item ID has been already parsed
 	 */
-	WantParser & _parseOfficialName( const std::string & line );
+	void parseOfficialName_( const std::string & line );
 
 	/**
 	 * @brief Parse want list
