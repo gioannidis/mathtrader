@@ -354,7 +354,7 @@ WantParser::parseLine_( const std::string & buffer ) {
 			case INITIALIZATION: {
 				const std::string option =
 					buffer.substr(2, std::string::npos);
-				_parseOption( option );
+				parseOption_( option );
 				break;
 			}
 			default: {
@@ -438,110 +438,97 @@ WantParser::parseLine_( const std::string & buffer ) {
 	}
 }
 
-WantParser &
-WantParser::_parseOption( const std::string & option_line ) {
+void
+WantParser::parseOption_( const std::string & option_line ) {
 
-	/**
-	 * Tokenize line: ignore whitespaces
-	 */
+	/* Tokenize line via regex: ignore whitespaces.
+	 * Multiple options may be present in the same line. */
 	static const std::regex e(R"(\S+)");
-	auto elems = BaseParser::_split( option_line, e );
+	auto tokens = BaseParser::_split( option_line, e );
 
-	/**
-	 * Verify that we've found an option;
-	 * ignore if empty.
-	 */
-	if ( elems.empty() ) {
-		return *this;
-	}
-
-	/**
-	 * Handle option according to type in order:
+	/* Handle option according to type in order:
 	 * - Integer
 	 * - Priorities
 	 * - String
 	 */
-	for ( auto const & option : elems ) {
+	for ( auto const & option : tokens ) {
 
-		/**
-		 * Always add to given options list
-		 */
+		/* Add to given options list. */
 		this->_given_options.push_back( option );
 
-		/**
-		 * Regex to match:
+		/* Regexes to match:
 		 * - Integer options
-		 * - Priorities
+		 * - Booleans (no value)
+		 *   	- Priorities
+		 *   	- Everything else
 		 */
 		static const std::regex
-			regex_int(R"(\b\S+=[0-9]+)"),
-			regex_prio(R"(\b([^-])+-PRIORITIES)");
+			regex_int(R"(\b\S+=[-+]?\d+)"),		/* OPTION-ONE=42 or -42 or +42 */
+			regex_prio(R"(\b([^-])+-PRIORITIES)");	/* XXX-PRIORITIES */
 
 		if ( std::regex_match(option, regex_int) ) {
+			/* Option with an INTEGER value.
+			 * Accepted format:
+			 * 	OPTION-ONE=42
+			 */
 
-			const std::string digits(R"(([0-9]+)|(\b([^=])+))");
+			/* Tokenize around '='.
+			 * Isolate the variable name and any integer values. */
+			static const std::regex digits(R"(([-+]?\d+)|(\b([^=])+))");
 			auto const int_elems = BaseParser::_split( option, digits );
 
-			/**
-			 * Int option; tokenize to retrieve name value.
-			 * Accepted format:
-			 * 	#! VARIABLE=42
-			 */
+			/* Int option; tokenize to retrieve name value.
+			 * Check whether the option has been tokenized
+			 * and whether the integer value is present. */
 			if ( int_elems.empty() ) {
-				throw std::logic_error("Integer option not matched");
-			}
-
-			/**
-			 * Get name of int option.
-			 */
-			const std::string int_option_name = int_elems[0];
-			if ( int_elems.size() < 2 ) {
+				throw std::logic_error("Regex to tokenize integer-value option has failed.");
+			} else if ( int_elems.size() < 2 ) {
 				throw std::runtime_error("Value for integer option "
-						+ int_option_name + " not found");
+						+ int_elems.at(0) + " not found");
 			}
 
-			/**
-			 * Get value of int option.
-			 */
-			const std::string &value = int_elems[1];
+			/* First element: name of int option.
+			 * Second element: value of int option. */
+			const std::string int_option_name = int_elems.at(0);
+			const std::string &value = int_elems.at(1);
 
-			/**
-			 * Get int option from map and set it.
-			 */
+			/* Get int option from map, if supported. */
 			auto const it = _int_option_map.find( int_option_name );
 			if ( it == _int_option_map.end() ) {
 				throw std::runtime_error("Unknown integer option "
 						+ int_option_name);
 			}
 
+			/* Set the value of the int option. */
 			const IntOption int_option = it->second;
 			_int_options[ int_option ] = std::stoi(value);
 
 		} else if ( std::regex_match(option, regex_prio) ) {
-
-			/**
-			 * Priority scheme. Must have the form of ("XXXX-PRIORITY").
-			 * Do not check its validity,
-			 * that's the responsibility of MathTrader.
+			/* Boolean value indicating the priority scheme.
+			 * Must have the form of ("XXXX-PRIORITY").
+			 * Do not check if supported.
+			 * If given multiple times, the last value is considered.
+			 * TODO throw if already given
 			 */
 			_priority_scheme = option;
 
-		} else if ( _bool_option_map.find(option) != _bool_option_map.end() ) {
-
-			/**
-			 * String option; set to true.
-			 */
-			auto const it = _bool_option_map.find(option);
-			const BoolOption bool_option = it->second;
-			_bool_options[ bool_option ] = true;
-
-
 		} else {
-			throw std::runtime_error("Unknown option " + option);
+			/* Finally, any other option without a value
+			 * is considered to be a boolean option.
+			 * Look up the option in the map to see if it's supported. */
+			auto const it = _bool_option_map.find( option );
+			if ( it != _bool_option_map.end() ) {
+
+				/* Option is supported. */
+				const BoolOption bool_option = it->second;
+				_bool_options[ bool_option ] = true;
+
+			} else {
+				/* Option not supported. */
+				throw std::runtime_error("Unknown option " + option);
+			}
 		}
 	}
-
-	return *this;
 }
 
 WantParser &

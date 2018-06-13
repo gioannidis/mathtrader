@@ -457,29 +457,38 @@ private:
 	std::unordered_map< std::string, int > _unknown_item_map;
 
 
-	/********************************//*
-	 *  UTILITY NON_STATIC FUNCTIONS
+	/***********************************
+	 *  PARSING FUNCTIONS
 	 ***********************************/
 
-	/**
-	 * @brief Parse want file line.
-	 * Parses a want list file line:
-	 * options, official names and want lists.
+	/*! @brief Parse want-file line.
+	 *
+	 *  Receives a line from a want-file list
+	 *  and analyzes it as follows:
+	 *
+	 *  1. Deduces its type based on the leading characters
+	 *  (comment, directive, item, name).
+	 *  2. If a directive, changes the @ref state_ of the class.
+	 *  (TODO write own method)
+	 *  3. Otherwise, calls the respective method:
+	 *  @ref parseOption_(), @ref _parseOfficialName(), or @ref _parseWantList().
 	 */
 	void parseLine_( const std::string & line );
 
-	/**
-	 * @brief Post Parsing
-	 * Marks unknown items.
-	 * @return *this
+	/*! @brief Parse want-file option.
+	 *
+	 *  Parses a want-file option. Multiple options may be present
+	 *  in the same line. Accepted formats:
+	 *
+	 *  * ``OPTION-ONE``
+	 *  * ``OPTION-TWO=42``
+	 *  * ``OPTION-THREE=VALUE-ABC-123``
+	 *
+	 *  @param[in]	option	option to parse, without the leading ``#!``
+	 *  @throws	std::runtime_error if an unsupported ``option`` is given
+	 *  @throws	std::logic_error if an internal regex fails to match
 	 */
-	WantParser & _postParse();
-
-	/**
-	 * @brief Parse option
-	 * @return *this
-	 */
-	WantParser & _parseOption( const std::string & option );
+	void parseOption_( const std::string & option );
 
 	/**
 	 * @brief Parse official name
