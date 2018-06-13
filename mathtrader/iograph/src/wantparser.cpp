@@ -37,9 +37,6 @@ WantParser::WantParser() :
 	_priority_scheme( "" ),
 	_status( BEGIN )
 {
-	/**
-	 * Default integer options.
-	 */
 	_int_options[SMALL_STEP] = 1;
 	_int_options[BIG_STEP] = 9;
 	_int_options[NONTRADE_COST] = 1e9;
@@ -53,9 +50,7 @@ WantParser::WantParser() :
 const WantParser &
 WantParser::print( std::ostream &os ) const {
 
-	/**
-	 * Print Nodes
-	 */
+	// Print Nodes in LGF file
 	os << "@nodes"
 		<< std::endl
 		<< "label" << "\t"
@@ -67,9 +62,7 @@ WantParser::print( std::ostream &os ) const {
 
 	for ( auto const & node : _node_map ) {
 
-		/**
-		 * Skip if want list is missing
-		 **/
+		// Skip if want-list is missing
 		if ( node.second.has_wantlist ) {
 
 			const std::string
@@ -78,7 +71,7 @@ WantParser::print( std::ostream &os ) const {
 				&username = node.second.username;
 			bool dummy = node.second.dummy;
 
-			os << item << "\t"	/**< item also used as label */
+			os << item << "\t"	// item also used as label
 				<< item << "\t"
 				<< official_name << "\t"
 				<< username << "\t"
@@ -87,9 +80,7 @@ WantParser::print( std::ostream &os ) const {
 		}
 	}
 
-	/**
-	 * Print Arcs
-	 */
+	// Print Arcs in LGF file
 	os << "@arcs"
 		<< std:: endl
 		<< "\t" << "\t"
@@ -104,8 +95,7 @@ WantParser::print( std::ostream &os ) const {
 
 			auto const & target = arc.item_t;
 
-			/**
-			 * Valid if:
+			/* Valid if:
 			 * 1) Arc is not unknown.
 			 * 2) Target is present
 			 * 	(TODO same as (1)?)
@@ -710,7 +700,7 @@ WantParser::_parseWantList( const std::string & line ) {
 					 * No official names have been given;
 					 * there should be no entry.
 					 * Sanity check:
-					 * If an entry is found, then it should have a wantlist.
+					 * If an entry is found, then it should have a want-list.
 					 */
 					break;
 				}
@@ -752,7 +742,7 @@ WantParser::_parseWantList( const std::string & line ) {
 		/**
 		 * Now, iterator @it should point to the item's entry,
 		 * whether it's just been added or not.
-		 * Check if it has a wantlist
+		 * Check if it has a want-list
 		 */
 		has_wantlist = &(it->second.has_wantlist);
 
@@ -1009,19 +999,19 @@ WantParser::_dummy( const std::string & item ) {
  */
 const std::unordered_map< std::string, WantParser::BoolOption  >
 WantParser::_bool_option_map = {
-	{"ALLOW-DUMMIES",	ALLOW_DUMMIES},
-	{"CASE_SENSITIVE",	CASE_SENSITIVE},
-	{"HIDE-ERRORS",		HIDE_ERRORS},
-	{"HIDE-LOOPS",		HIDE_LOOPS},
-	{"HIDE-NONTRADES",	HIDE_NONTRADES},
-	{"HIDE-REPEATS",	HIDE_REPEATS},
-	{"HIDE-STATS",		HIDE_STATS},
-	{"HIDE-SUMMARY",	HIDE_SUMMARY},
-	{"REQUIRE-COLONS",	REQUIRE_COLONS},
-	{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},
-	{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},
-	{"SHOW-MISSING",	SHOW_MISSING},
-	{"SORT-BY-ITEM",	SORT_BY_ITEM},
+	{"ALLOW-DUMMIES",	ALLOW_DUMMIES},		/*!< allow dummy items */
+	{"CASE_SENSITIVE",	CASE_SENSITIVE},	/*!< want-lists are case-sensitive */
+	{"HIDE-ERRORS",		HIDE_ERRORS},		/*!< WantParser will suppress any errors */
+	{"HIDE-LOOPS",		HIDE_LOOPS},		/*!< MathTrader will not report the trade loops */
+	{"HIDE-NONTRADES",	HIDE_NONTRADES},	/*!< MathTrader will not report the non-traded items */
+	{"HIDE-REPEATS",	HIDE_REPEATS},		/*!< WantParser will not report repeated items */
+	{"HIDE-STATS",		HIDE_STATS},		/*!< MathTrader will not report item stats */
+	{"HIDE-SUMMARY",	HIDE_SUMMARY},		/*!< MathTrader will not print the final summary */
+	{"REQUIRE-COLONS",	REQUIRE_COLONS},	/*!< WantParser requires colons after usernames */
+	{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},	/*!< WantParser requires usernames to be given in want-lists */
+	{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},	/*!< Total elapsed time will be appended at the end */
+	{"SHOW-MISSING",	SHOW_MISSING},		/*!< WantParser will report missing items */
+	{"SORT-BY-ITEM",	SORT_BY_ITEM},		/*!< MathTrader will summarize the items by item name, instead of username */
 };
 
 
