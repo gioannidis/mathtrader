@@ -21,9 +21,12 @@
  */
 #include <iograph/wantparser.hpp>
 
+#include <memory>
 #include <regex>
 #include <sstream>
 #include <stdexcept>
+
+#include <iograph/baseparser.hpp>
 
 
 /************************************//*
@@ -31,11 +34,10 @@
  **************************************/
 
 WantParser::WantParser() :
-	BaseParser(),
 	_bool_options( MAX_BOOL_OPTIONS, false ),
 	_int_options( MAX_INT_OPTIONS ),
 	_priority_scheme( "" ),
-	_status( BEGIN )
+	_status( INITIALIZATION )
 {
 	_int_options[SMALL_STEP] = 1;
 	_int_options[BIG_STEP] = 9;
@@ -46,6 +48,35 @@ WantParser::WantParser() :
 /************************************//*
  * 	PUBLIC METHODS - OUTPUT
  **************************************/
+
+const WantParser &
+WantParser::print( const std::string & fn ) const {
+
+	/* Open the file. */
+	std::filebuf fb;
+	auto fb_ptr = fb.open(fn, std::ios::out);
+
+	/* Check if failed */
+	if ( fb_ptr == NULL ) {
+		throw std::runtime_error("Failed to open "
+				+ fn);
+	}
+
+	/* Print the want-file. */
+	std::ostream os(&fb);
+	try {
+		this->print(os);
+	} catch ( const std::exception & e ) {
+		/* If any exception is caught, close the file first.
+		 * Then re-throw. */
+		fb.close();
+		throw;
+	}
+
+	/* Close the file. */
+	fb.close();
+	return *this;
+}
 
 const WantParser &
 WantParser::print( std::ostream &os ) const {
@@ -161,6 +192,19 @@ WantParser::printMissing( std::ostream & os ) const {
 	return *this;
 }
 
+const WantParser &
+WantParser::printErrors( std::ostream & os ) const {
+
+	/* Print the preliminary line 'ERRORS'
+	 * only if there are any actual errors to report. */
+	if ( ! this->errors_.empty() ) {
+		os << "ERRORS" << std::endl;
+		for ( auto const & err : this->errors_ ) {
+			os << "**** " << err << std::endl;
+		}
+	}
+	return *this;
+}
 
 /************************************//*
  * PUBLIC METHODS - EXTERNAL OPTIONS OUTPUT
@@ -222,117 +266,176 @@ WantParser::sortByItem() const {
  **************************************/
 
 void
-WantParser::_parse( const std::string & buffer ) {
+WantParser::parseFile( const std::string & fn ) {
 
-	/**
-	 * Parse line by content:
+	/* Open the file. */
+	std::filebuf fb;
+	auto fb_ptr = fb.open(fn, std::ios::in);
+
+	/* Check if failed */
+	if ( fb_ptr == NULL ) {
+		throw std::runtime_error("Failed to open "
+				+ fn);
+	}
+
+	/* Parse the want-file. */
+	std::istream is(&fb);
+	try {
+		this->parseStream(is);
+	} catch ( const std::exception & e ) {
+		/* If any exception is caught, close the file first.
+		 * Then re-throw. */
+		fb.close();
+		throw;
+	}
+
+	/* Close the file. */
+	fb.close();
+}
+
+void
+WantParser::parseStream( std::istream & is ) {
+
+	/* We will read line-by-line.
+	 * Allocate a buffer to read. */
+	const size_t BUFSIZE = (1<<10);
+	std::string buffer;
+	buffer.reserve(BUFSIZE);
+
+	/* The line number. */
+	uint64_t line_n = 0;
+
+	/* Repeat for every line
+	 * until the end of the stream. */
+	while (std::getline( is, buffer )) {
+
+		/* Increase line number;
+		 * useful to document the line number if it throws an error. */
+		++ line_n;
+		try {
+			/* Parse the individual line. */
+			this->parseLine_( buffer );
+
+		} catch ( const std::runtime_error & e ) {
+
+			/* Add the exception text to the error list.
+			 * Continue with the next line. */
+			this->errors_.push_back( std::to_string(line_n)
+					+ ":"
+					+ e.what() );
+		}
+	}
+}
+
+void
+WantParser::parseLine_( const std::string & buffer ) {
+
+	/* Parse line by content:
+	 * - Empty lines
 	 * - Options: "#!"
 	 * - Other directives
 	 * - Comments
 	 * - Items
 	 */
-	try {
-		if ( buffer.compare(0, 2, "#!") == 0 ) {
+	if ( buffer.empty() ) {
 
-			/**
-			 * Option line;
-			 * May only be given at the beginning.
-			 * Isolate option (exlude "#!") and parse it.
-			 */
-			switch ( _status ) {
-				case BEGIN: {
-					const std::string option = buffer.substr(2, std::string::npos);
-					_parseOption( option );
-					break;
-				}
-				default:
-					throw std::runtime_error("Options can only"
-							" be given at the beginning"
-							" of the file");
-					break;
+		/* Empty line; do nothing */
+
+	} else if ( buffer.compare(0, 7, "#pragma") == 0 ) {
+
+		/* No current implementation for #pragma */
+
+	} else if ( buffer.compare(0, 2, "#!") == 0 ) {
+
+		/* Option line;
+		 * May only be given during initialization.
+		 * Isolate option (exlude "#!") and parse it. */
+		switch ( _status ) {
+			case INITIALIZATION: {
+				const std::string option =
+					buffer.substr(2, std::string::npos);
+				_parseOption( option );
+				break;
 			}
-
-		} else if ( buffer.compare(0, 1, "!") == 0 ) {
-
-			/**
-			 * Directives.
-			 */
-			if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
-
-				switch ( _status ) {
-					case BEGIN:
-						_status = PARSE_NAMES;
-						break;
-
-					case PARSE_NAMES:
-						throw std::runtime_error("Official names"
-								" are already being given");
-						break;
-
-					case PARSE_WANTS_WITHNAMES:
-						throw std::runtime_error("Official names"
-								" have already been given");
-						break;
-
-					default:
-						throw std::runtime_error("Official names"
-								" can only be declared"
-								" before the want lists");
-						break;
-				}
-
-			} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
-
-				_status = PARSE_WANTS_WITHNAMES;
-
-			} else {
-				throw std::runtime_error("Unrecognized directive: "
-						+ buffer);
-			}
-		} else {
-			/**
-			 * Item to be parsed. This is the default option
-			 * and should be handled last.
-			 * Use appropriate handler for current status.
-			 */
-			switch ( _status ) {
-				case BEGIN:
-					/**
-					 * Always first.
-					 * Do not break.
-					 * Set status and continue.
-					 */
-					_status = PARSE_WANTS_NONAMES;
-
-				case PARSE_WANTS_NONAMES:
-				case PARSE_WANTS_WITHNAMES:
-					_parseWantList( buffer );
-					break;
-
-				case PARSE_NAMES:
-					_parseOfficialName( buffer );
-					break;
-				default:
-					throw std::logic_error("Unknown handler for"
-							" internal status "
-							+ std::to_string(_status));
-					break;
+			default: {
+				throw std::runtime_error("Options can only"
+						" be given at the beginning"
+						" of the file");
+				break;
 			}
 		}
 
-	} catch ( const std::exception & e ) {
-		throw ;
+	} else if ( buffer.front() == '#' ) {
+
+		/* Comment line; do not parse.
+		 * Any directives beginning with '#' should be parsed
+		 * before this point. */
+
+	} else if ( buffer.compare(0, 1, "!") == 0 ) {
+
+		/**
+		 * Directives.
+		 */
+		if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
+
+			switch ( _status ) {
+				case INITIALIZATION:
+					_status = PARSE_NAMES;
+					break;
+
+				case PARSE_NAMES:
+					throw std::runtime_error("Official names"
+							" are already being given");
+					break;
+
+				case PARSE_WANTS_WITHNAMES:
+					throw std::runtime_error("Official names"
+							" have already been given");
+					break;
+
+				default:
+					throw std::runtime_error("Official names"
+							" can only be declared"
+							" before the want lists");
+					break;
+			}
+
+		} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
+
+			_status = PARSE_WANTS_WITHNAMES;
+
+		} else {
+			throw std::runtime_error("Unrecognized directive: "
+					+ buffer);
+		}
+	} else {
+		/* This line contains an item to be parsed.
+		 * This is the default option and should be handled last.
+		 * Use appropriate handler for current status. */
+		switch ( _status ) {
+			case INITIALIZATION:
+				/**
+				 * Always first.
+				 * Do not break.
+				 * Set status and continue.
+				 */
+				_status = PARSE_WANTS_NONAMES;
+
+			case PARSE_WANTS_NONAMES:
+			case PARSE_WANTS_WITHNAMES:
+				_parseWantList( buffer );
+				break;
+
+			case PARSE_NAMES:
+				_parseOfficialName( buffer );
+				break;
+			default:
+				throw std::logic_error("Unknown handler for"
+						" internal status "
+						+ std::to_string(_status));
+				break;
+		}
 	}
-}
-
-WantParser &
-WantParser::_postParse() {
-
-	/**
-	 * Mark unknown items
-	 */
-	_markUnknownItems();
-	return *this;
 }
 
 WantParser &
@@ -377,7 +480,7 @@ WantParser::_parseOption( const std::string & option_line ) {
 		if ( std::regex_match(option, regex_int) ) {
 
 			const std::string digits(R"(([0-9]+)|(\b([^=])+))");
-			auto const int_elems = _split( option, digits );
+			auto const int_elems = BaseParser::_split( option, digits );
 
 			/**
 			 * Int option; tokenize to retrieve name value.
@@ -481,7 +584,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	/**
 	 * Tokenize the line
 	 */
-	auto match = _split( line, FPAT_names );
+	auto match = BaseParser::_split( line, FPAT_names );
 
 	/**
 	 * Sanity check for minimum number of matches
@@ -559,7 +662,7 @@ WantParser::_parseOfficialName( const std::string & line ) {
 	}
 
 	username.pop_back(); /**< remove last ')' */
-	_parseUsername( username ); /**< quotation marks, uppercase */
+	BaseParser::_parseUsername( username ); /**< quotation marks, uppercase */
 
 	/**
 	 * Emplace the item. It should not exist in the node_map.
@@ -611,7 +714,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	/**
 	 * Tokenize the line
 	 */
-	auto const match = _split( line, FPAT_want );
+	auto const match = BaseParser::_split( line, FPAT_want );
 	if ( match.empty() ) {
 		throw std::runtime_error("Bad format of want list");
 	}
@@ -674,7 +777,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	 */
 	std::string username = username_p.substr(1, std::string::npos);
 	username.pop_back();
-	_parseUsername( username );
+	BaseParser::_parseUsername( username );
 
 	/**
 	 * Check if the item is present in node_map.
@@ -925,13 +1028,13 @@ WantParser::_parseItemName( std::string & item,
 	 * convert to uppercase.
 	 */
 	if ( !_bool_options[CASE_SENSITIVE] ) {
-		_toUpper( item );
+		BaseParser::_toUpper( item );
 	}
 
 	/**
 	 * Enclose in quotation marks
 	 */
-	_quotationMarks(item);
+	BaseParser::_quotationMarks(item);
 
 	return *this;
 }

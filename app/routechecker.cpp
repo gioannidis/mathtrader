@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 		/**
 		 * Run the parser
 		 */
-		want_parser.parse(fn);
+		want_parser.parseFile(fn);
 
 	} catch ( const std::exception & error ) {
 		std::cerr << "WantParser error: " << error.what()
@@ -339,7 +339,7 @@ int main(int argc, char **argv) {
 	try {
 		lemon::TimeReport t("Result report:        ");
 
-		want_parser.showErrors(os);
+		want_parser.printErrors(os);
 		route_checker.writeResults(os);
 
 	} catch ( const std::exception & error ) {

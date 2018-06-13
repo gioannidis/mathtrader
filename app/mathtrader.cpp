@@ -433,7 +433,7 @@ Interface::run() {
 
 	/*
 	 * Want List parser.
-	 * Will parse the wantlist and configure
+	 * Will parse the want-list and configure
 	 * the Math Trader.
 	 */
 	WantParser want_parser;
@@ -441,10 +441,10 @@ Interface::run() {
 	/**
 	 * Input File Operations
 	 * - If "--input-lgf-file" is given
-	 *   we will skip the wantlist parser
+	 *   we will skip the want-list parser
 	 *   and directly read the graph.
 	 *
-	 * - Otherwise, we will invoke the wantlist parser.
+	 * - Otherwise, we will invoke the want-list parser.
 	 */
 	const bool input_lgf_file = ap.given("-input-lgf-file");
 	if ( input_lgf_file ) {
@@ -583,7 +583,7 @@ Interface::run() {
 			lemon::TimeReport t(time_ss.str());
 
 			/** Parse **/
-			want_parser.parse(*is);
+			want_parser.parseStream(*is);
 
 		} catch ( const std::exception & error ) {
 			std::cerr << "WantParser error: " << error.what()
@@ -856,7 +856,7 @@ Interface::run() {
 		 */
 		want_parser.printOptions(os);
 		if ( !want_parser.hideErrors() ) {
-			want_parser.showErrors(os);
+			want_parser.printErrors(os);
 		}
 		if ( want_parser.showMissing() ) {
 			want_parser.printMissing(os);

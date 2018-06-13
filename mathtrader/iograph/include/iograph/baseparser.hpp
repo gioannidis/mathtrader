@@ -85,8 +85,6 @@ public:
 	 */
 	const BaseParser & showErrors( std::ostream & os = std::cout ) const ;
 
-protected:
-
 	/********************************//*
 	 *  UTILITY STATIC FUNCTIONS
 	 ***********************************/
