@@ -34,7 +34,7 @@
  **************************************/
 
 WantParser::WantParser() :
-	_bool_options( MAX_BOOL_OPTIONS, false ),
+	bool_options_( MAX_BOOL_OPTIONS, false ),
 	_int_options( MAX_INT_OPTIONS ),
 	_priority_scheme( "" ),
 	_status( INITIALIZATION )
@@ -217,42 +217,42 @@ WantParser::getPriorityScheme() const {
 
 bool
 WantParser::hideErrors() const {
-	return _bool_options[HIDE_ERRORS];
+	return this->bool_options_[HIDE_ERRORS];
 }
 
 bool
 WantParser::hideLoops() const {
-	return _bool_options[HIDE_LOOPS];
+	return this->bool_options_[HIDE_LOOPS];
 }
 
 bool
 WantParser::hideNonTrades() const {
-	return _bool_options[HIDE_NONTRADES];
+	return this->bool_options_[HIDE_NONTRADES];
 }
 
 bool
 WantParser::hideStats() const {
-	return _bool_options[HIDE_STATS];
+	return this->bool_options_[HIDE_STATS];
 }
 
 bool
 WantParser::hideSummary() const {
-	return _bool_options[HIDE_SUMMARY];
+	return this->bool_options_[HIDE_SUMMARY];
 }
 
 bool
 WantParser::showElapsedTime() const {
-	return _bool_options[SHOW_ELAPSED_TIME];
+	return this->bool_options_[SHOW_ELAPSED_TIME];
 }
 
 bool
 WantParser::showMissing() const {
-	return _bool_options[SHOW_MISSING];
+	return this->bool_options_[SHOW_MISSING];
 }
 
 bool
 WantParser::sortByItem() const {
-	return _bool_options[SORT_BY_ITEM];
+	return this->bool_options_[SORT_BY_ITEM];
 }
 
 
@@ -529,12 +529,12 @@ WantParser::parseOption_( const std::string & option_line ) {
 			/* Finally, any other option without a value
 			 * is considered to be a boolean option.
 			 * Look up the option in the map to see if it's supported. */
-			auto const it = _bool_option_map.find( option );
-			if ( it != _bool_option_map.end() ) {
+			auto const it = bool_option_map_.find( option );
+			if ( it != bool_option_map_.end() ) {
 
 				/* Option is supported. */
-				const BoolOption bool_option = it->second;
-				_bool_options[ bool_option ] = true;
+				const BoolOption_ bool_option = it->second;
+				this->bool_options_[ bool_option ] = true;
 
 			} else {
 				/* Option not supported. */
@@ -715,7 +715,7 @@ WantParser::_parseWantList( const std::string & line ) {
 	 */
 	if ( has_username ) {
 		++ n_pos ;
-	} else if (  _bool_options[ REQUIRE_USERNAMES ] ) {
+	} else if (  this->bool_options_[ REQUIRE_USERNAMES ] ) {
 		throw std::runtime_error("Missing username from want list");
 	}
 
@@ -854,7 +854,7 @@ WantParser::_parseWantList( const std::string & line ) {
 		 */
 		if ( has_colon ) {
 			++ n_pos;
-		} else if ( _bool_options[REQUIRE_COLONS] ) {
+		} else if ( this->bool_options_[REQUIRE_COLONS] ) {
 			throw std::runtime_error("Missing colon from want list");
 		}
 	}
@@ -976,7 +976,7 @@ WantParser::_parseItemName( std::string & item,
 		/**
 		 * Sanity check for dummy item
 		 */
-		if ( !_bool_options[ALLOW_DUMMIES] ) {
+		if ( !this->bool_options_[ALLOW_DUMMIES] ) {
 
 			throw std::runtime_error("Dummy item "
 					+ item
@@ -1002,7 +1002,7 @@ WantParser::_parseItemName( std::string & item,
 	 * Unless item names are case sensitive,
 	 * convert to uppercase.
 	 */
-	if ( !_bool_options[CASE_SENSITIVE] ) {
+	if ( !this->bool_options_[CASE_SENSITIVE] ) {
 		BaseParser::_toUpper( item );
 	}
 
@@ -1077,30 +1077,25 @@ WantParser::isDummy_( const std::string & item ) {
 }
 
 
-/************************************//*
- * 	PRIVATE STATIC MEMBERS
- **************************************/
+/****************************************
+ * 	PRIVATE STATIC MEMBERS		*
+ ****************************************/
 
-/**
- * Unordered_map to map string-options to enums.
- * Tip: list them alphabetically here
- * to ease error-detection.
- */
-const std::unordered_map< std::string, WantParser::BoolOption  >
-WantParser::_bool_option_map = {
-	{"ALLOW-DUMMIES",	ALLOW_DUMMIES},		/*!< allow dummy items */
-	{"CASE_SENSITIVE",	CASE_SENSITIVE},	/*!< want-lists are case-sensitive */
-	{"HIDE-ERRORS",		HIDE_ERRORS},		/*!< WantParser will suppress any errors */
-	{"HIDE-LOOPS",		HIDE_LOOPS},		/*!< MathTrader will not report the trade loops */
-	{"HIDE-NONTRADES",	HIDE_NONTRADES},	/*!< MathTrader will not report the non-traded items */
-	{"HIDE-REPEATS",	HIDE_REPEATS},		/*!< WantParser will not report repeated items */
-	{"HIDE-STATS",		HIDE_STATS},		/*!< MathTrader will not report item stats */
-	{"HIDE-SUMMARY",	HIDE_SUMMARY},		/*!< MathTrader will not print the final summary */
-	{"REQUIRE-COLONS",	REQUIRE_COLONS},	/*!< WantParser requires colons after usernames */
-	{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},	/*!< WantParser requires usernames to be given in want-lists */
-	{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},	/*!< Total elapsed time will be appended at the end */
-	{"SHOW-MISSING",	SHOW_MISSING},		/*!< WantParser will report missing items */
-	{"SORT-BY-ITEM",	SORT_BY_ITEM},		/*!< MathTrader will summarize the items by item name, instead of username */
+const std::unordered_map< std::string, WantParser::BoolOption_ >
+WantParser::bool_option_map_ = {
+	{"ALLOW-DUMMIES",	ALLOW_DUMMIES},
+	{"CASE_SENSITIVE",	CASE_SENSITIVE},
+	{"HIDE-ERRORS",		HIDE_ERRORS},
+	{"HIDE-LOOPS",		HIDE_LOOPS},
+	{"HIDE-NONTRADES",	HIDE_NONTRADES},
+	{"HIDE-REPEATS",	HIDE_REPEATS},
+	{"HIDE-STATS",		HIDE_STATS},
+	{"HIDE-SUMMARY",	HIDE_SUMMARY},
+	{"REQUIRE-COLONS",	REQUIRE_COLONS},
+	{"REQUIRE-USERNAMES",	REQUIRE_USERNAMES},
+	{"SHOW-ELAPSED-TIME",	SHOW_ELAPSED_TIME},
+	{"SHOW-MISSING",	SHOW_MISSING},
+	{"SORT-BY-ITEM",	SORT_BY_ITEM},
 };
 
 

@@ -324,37 +324,43 @@ public:
 	/*! @} */ // end of group
 
 private:
-	/***************************//*
-	 * 	OPTIONS
-	 *****************************/
+	/************************
+	 * 	OPTIONS		*
+	 ************************/
 
-	/**
+	/*
 	 * 1. Boolean options.
 	 * 2. Integer options.
 	 * 3. Priority option.
 	 */
 
-	/**
-	 * Boolean & integer options enum
+	/*! @brief Supported want-list boolean options.
+	 *
+	 *  All want-list boolean options supported by the WantParser.
+	 *  Boolean options are specified in the want-list file as,
+	 *  e.g., ``#! ALLOW-DUMMIES``.
+	 *
+	 *  @ref bool_option_map_ is used to map
+	 *  an option string to the actual @ref BoolOption_ value.
 	 */
-	enum BoolOption {
+	enum BoolOption_ {
 		/* Internal options */
-		ALLOW_DUMMIES,
-		CASE_SENSITIVE,
-		HIDE_REPEATS,
-		REQUIRE_COLONS,
-		REQUIRE_USERNAMES,
-		SHOW_ELAPSED_TIME,
+		ALLOW_DUMMIES = 0,	/*!< allow dummy items */
+		CASE_SENSITIVE,		/*!< want-lists are case-sensitive */
+		HIDE_REPEATS,		/*!< WantParser will not report repeated items */
+		REQUIRE_COLONS,		/*!< WantParser requires colons after usernames */
+		REQUIRE_USERNAMES,	/*!< WantParser requires usernames to be given in want-lists */
 		/* External options */
-		HIDE_ERRORS,
-		HIDE_LOOPS,
-		HIDE_NONTRADES,
-		HIDE_STATS,
-		HIDE_SUMMARY,
-		SHOW_MISSING,
-		SORT_BY_ITEM,
+		HIDE_ERRORS,		/*!< WantParser will suppress any errors */
+		HIDE_LOOPS,		/*!< MathTrader will not report the trade loops */
+		HIDE_NONTRADES,		/*!< MathTrader will not report the non-traded items */
+		HIDE_STATS,		/*!< MathTrader will not report item stats */
+		HIDE_SUMMARY,		/*!< MathTrader will not print the final summary */
+		SHOW_ELAPSED_TIME,	/*!< Total elapsed time will be appended at the end */
+		SHOW_MISSING,		/*!< WantParser will report missing items */
+		SORT_BY_ITEM,		/*!< MathTrader will summarize the items by item name, instead of username */
 		/* Not implemented */
-		MAX_BOOL_OPTIONS	/**< Not an option; always LAST */
+		MAX_BOOL_OPTIONS	/*!< not an option; always the __last__ option */
 	};
 	enum IntOption {	/**< Int options enum */
 		SMALL_STEP,
@@ -364,20 +370,33 @@ private:
 	};
 
 
+	/*! @brief String to @ref BoolOption_ map.
+	 *
+	 *  Maps boolean option strings detected in a want-list file
+	 *  to a @ref @BoolOption_ value.<br>
+	 *  Example: the ``"ALLOW-DUMMIES"`` option string is mapped to @ref ALLOW_DUMMIES.
+	 */
+	static const std::unordered_map< std::string, BoolOption_ >
+		bool_option_map_;
 	/**
 	 * Static members: unordered_maps
 	 * to map string options -> enums.
 	 */
-	static const std::unordered_map< std::string, BoolOption  >
-		_bool_option_map;
 	static const std::unordered_map< std::string, IntOption >
 		_int_option_map;
+
+	/*! @brief Boolean option vector.
+	 *
+	 *  Vector containing all supported boolean options.
+	 *  All options are initialized to ``false``.
+	 *  Each position corresponds to a boolean option from @ref BoolOption_.
+	 */
+	std::vector< bool > bool_options_;
 
 	/**
 	 * The actual vectors members
 	 * with all options.
 	 */
-	std::vector< bool > _bool_options;
 	std::vector< int > _int_options;
 
 	/**
@@ -558,9 +577,9 @@ private:
 	WantParser & _markUnknownItems();
 
 
-	/********************************//*
-	 *  UTILITY STATIC FUNCTIONS
-	 ***********************************/
+	/****************************************
+	 *  	UTILITY STATIC FUNCTIONS	*
+	 ****************************************/
 
 	/*! @brief Check if item name is dummy.
 	 *
