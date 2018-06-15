@@ -170,7 +170,7 @@ WantParser::printMissing( std::ostream & os ) const {
 
 		const std::string & item = node_pair.first;
 		auto const & node = node_pair.second;
-		if ( !_dummy(item) && !node.has_wantlist ) {
+		if ( !this->isDummy_(item) && !node.has_wantlist ) {
 			count ++ ;
 			ss << "**** Missing want list for item "
 				<< item
@@ -791,7 +791,7 @@ WantParser::_parseWantList( const std::string & line ) {
 					 * unless it's a dummy item.
 					 * This check usually catches spelling errors.
 					 */
-					if ( !_dummy(item) ) {
+					if ( !this->isDummy_(item) ) {
 
 						throw std::runtime_error("Non-dummy item "
 								+ item
@@ -813,7 +813,7 @@ WantParser::_parseWantList( const std::string & line ) {
 			 * Point the iterator to the new item.
 			 */
 			auto const & pair = this->_node_map.emplace(item,
-					_Node_s(item, item, username, _dummy(item)));
+					_Node_s(item, item, username, this->isDummy_(item)));
 			it = pair.first;
 		}
 
@@ -971,7 +971,7 @@ WantParser &
 WantParser::_parseItemName( std::string & item,
 		const std::string username ) {
 
-	if ( _dummy(item) ) {
+	if ( this->isDummy_(item) ) {
 
 		/**
 		 * Sanity check for dummy item
@@ -1050,18 +1050,29 @@ WantParser::_markUnknownItems() {
 }
 
 bool
-WantParser::_dummy( const std::string & item ) {
+WantParser::isDummy_( const std::string & item ) {
 
-	int offset = 0;
+	/* Empty string? */
+	if ( item.empty() ) {
+		return false;
+	}
 
-	/**
-	 * Is the first character a quotation mark?
-	 * Then offset by 1.
-	 */
+	unsigned offset = 0;
+
+	/* Is the first character a quotation mark?
+	 * Then offset by 1. */
 	if ( item.front() == '"' ) {
 		offset = 1;
 	}
 
+	/* String must be longer than the offset.
+	 * Otherwise, string might be '"'. */
+	if ( item.size() <= offset ) {
+		return false;
+	}
+
+	/* Valid string; dummy if first character,
+	 * excluding '"', is '%'. */
 	return ( item.compare(0 + offset, 1, "%") == 0 );
 }
 

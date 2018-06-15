@@ -562,13 +562,15 @@ private:
 	 *  UTILITY STATIC FUNCTIONS
 	 ***********************************/
 
-	/**
-	 * @brief Check if item is dummy.
-	 * Parses the given item and checks if it's dummy (begins with '%').
-	 * @param item The item to be checked.
-	 * @return true if it's dummy, false otherwise.
+	/*! @brief Check if item name is dummy.
+	 *
+	 *  Parses the given item name and checks whether it's dummy.
+	 *  Dummy items begin with ``%``, excluding any leading quotation mark (``"``).
+	 *
+	 *  @param[in]	item	the item name to be checked
+	 *  @returns	``true`` if the item name is dummy, ``false`` otherwise or if empty
 	 */
-	static bool _dummy( const std::string & item );
+	static bool isDummy_( const std::string & item );
 };
 
 #endif /* _WANTPARSER_HPP_ */
