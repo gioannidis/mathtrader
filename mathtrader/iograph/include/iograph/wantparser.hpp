@@ -18,6 +18,13 @@
 #ifndef _MATHTRADER_MATHTRADER_IOGRAPH_INCLUDE_IOGRAPH_WANTPARSER_HPP_
 #define _MATHTRADER_MATHTRADER_IOGRAPH_INCLUDE_IOGRAPH_WANTPARSER_HPP_
 
+/*! @file wantparser.hpp
+ *  @brief Want-list to graph conversions
+ *
+ *  Process a want-list file and convert it
+ *  to Lemon Graph Format.
+ */
+
 #include <iostream>
 #include <list>
 #include <map>
@@ -156,10 +163,9 @@ public:
 	 *  to an output stream.
 	 *
 	 *  @param[in]	fn	output file to write the LGF file to
-	 *  @return	reference to current object
 	 *  @throws	std::runtime_error if file ``fn`` cannot be opened
 	 */
-	const WantParser & print( const std::string & fn ) const ;
+	void print( const std::string & fn ) const ;
 
 	/*! @brief Print LGF output file to stream.
 	 *
@@ -168,9 +174,8 @@ public:
 	 *  to an output file.
 	 *
 	 *  @param	os	output stream to write the LGF file to
-	 *  @return	reference to current object
 	 */
-	const WantParser & print( std::ostream & os = std::cout ) const ;
+	void print( std::ostream & os = std::cout ) const ;
 
 	/*! @brief Print want-list file options.
 	 *
@@ -178,18 +183,16 @@ public:
 	 *  want-list file.
 	 *
 	 *  @param	os	output stream to write the options to
-	 *  @return	reference to current object
 	 */
-	const WantParser & printOptions( std::ostream & os = std::cout ) const ;
+	void printOptions( std::ostream & os = std::cout ) const ;
 
 	/*! @brief Print missing items.
 	 *
 	 *  Prints all non-dummy items without a given want-list.
 	 *
 	 *  @param	os	output stream to write the missing items to
-	 *  @return	reference to current object
 	 */
-	const WantParser & printMissing( std::ostream & os = std::cout ) const ;
+	void printMissing( std::ostream & os = std::cout ) const ;
 
 	/*! @brief Print errors to stream.
 	 *
@@ -197,9 +200,8 @@ public:
 	 *  to an output stream.
 	 *
 	 *  @param	os	output stream to write the missing items to
-	 *  @return	reference to current object
 	 */
-	const WantParser & printErrors( std::ostream & os = std::cout ) const ;
+	void printErrors( std::ostream & os = std::cout ) const ;
 
 	/*! @} */ // end of group
 
