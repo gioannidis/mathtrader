@@ -498,18 +498,22 @@ private:
 
 	/*! @brief Map of graph nodes.
 	 *
-	 *  Hash map of all graph nodes. The node ID (item name)
+	 *  Map of all graph nodes. The node ID (item name)
 	 *  is used as the map key.
+	 *  Using ``std::map`` instead of ``std::unordered_map``
+	 *  to print the nodes in alphabetical order.
 	 */
-	std::map< std::string , Node_t_ > _node_map;
+	std::map< std::string , Node_t_ > node_map_;
 
 	/*! @brief Map of graph arcs.
 	 *
-	 *  Hash map of all graph arcs. The source node ID (source item name)
+	 *  Map of all graph arcs. The source node ID (source item name)
 	 *  is used as the map key.
+	 *  Using ``std::map`` instead of ``std::unordered_map``
+	 *  to print the arcs in source-node alphabetical order.
 	 */
 	std::map< std::string ,
-		std::vector< Arc_t_ > >  _arc_map;
+		std::vector< Arc_t_ > >  arc_map_;
 
 
 	/***********************************

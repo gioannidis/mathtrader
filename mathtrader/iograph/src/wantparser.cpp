@@ -81,7 +81,7 @@ WantParser::print( std::ostream &os ) const {
 		<< "dummy"
 		<< std::endl;
 
-	for ( auto const & node : _node_map ) {
+	for ( auto const & node : node_map_ ) {
 
 		/* Get references to item details. */
 		const std::string
@@ -91,7 +91,7 @@ WantParser::print( std::ostream &os ) const {
 
 		/* Check if it has a want-list (present in the arc map). */
 		const bool has_wantlist =
-			(this->_arc_map.find(item) != this->_arc_map.end());
+			(this->arc_map_.find(item) != this->arc_map_.end());
 
 		/* Skip if it has no want-list. */
 		if ( has_wantlist ) {
@@ -118,7 +118,7 @@ WantParser::print( std::ostream &os ) const {
 		<< "rank" << "\t"
 		<< std::endl;
 
-	for ( auto const & it : _arc_map ) {
+	for ( auto const & it : arc_map_ ) {
 
 		auto const & arc_vector = it.second;
 
@@ -131,8 +131,8 @@ WantParser::print( std::ostream &os ) const {
 			 * 2) Target has a want-list.
 			 */
 			const bool valid =
-				(_node_map.find(target) != _node_map.end())	/* valid target node */
-				&& (_arc_map.find(target)  != _arc_map.end());	/* target node has a want-list too */
+				(node_map_.find(target) != node_map_.end())	/* valid target node */
+				&& (arc_map_.find(target)  != arc_map_.end());	/* target node has a want-list too */
 
 			if ( valid ) {
 				os << '"' << arc.item_s << '"'
@@ -166,13 +166,13 @@ WantParser::printMissing( std::ostream & os ) const {
 	unsigned count = 0;
 	std::stringstream ss;
 
-	for ( auto const & node_pair : _node_map ) {
+	for ( auto const & node_pair : node_map_ ) {
 
 		const std::string & item = node_pair.first;
 		auto const & node = node_pair.second;
 
 		const bool has_wantlist =
-			(this->_arc_map.find(item) != this->_arc_map.end());
+			(this->arc_map_.find(item) != this->arc_map_.end());
 
 		/* Report if want-list is empty and is NOT a dummy item. */
 		if ( !this->isDummy_(item) && !has_wantlist ) {
@@ -658,7 +658,7 @@ WantParser::parseOfficialName_( const std::string & line ) {
 		std::transform(username.begin(), username.end(), username.begin(), ::toupper);
 	}
 
-	/* Add the item to _node_map. */
+	/* Add the item to node_map_. */
 	this->addSourceItem_( item, official_name, username );
 }
 
@@ -794,9 +794,9 @@ WantParser::addSourceItem_( const std::string & source,
 		const std::string & username) {
 
 	/* Check if the source item is present in node_map. */
-	auto it = _node_map.find( source );
+	auto it = node_map_.find( source );
 
-	if ( it == _node_map.end() ) {
+	if ( it == node_map_.end() ) {
 
 		/* Source item is NOT in node_map. */
 		switch ( this->status_ ) {
@@ -844,14 +844,14 @@ WantParser::addSourceItem_( const std::string & source,
 		}
 
 		/* Insert the item in the node_map. */
-		auto const pair = this->_node_map.emplace(
+		auto const pair = this->node_map_.emplace(
 				source,
 				Node_t_(source, official_name, username)
 				);
 
 		/* Insert should have succeeded. */
 		if ( !pair.second ) {
-			throw std::logic_error("Could not insert node in _node_map.");
+			throw std::logic_error("Could not insert node in node_map_.");
 		}
 
 	} else {
@@ -880,7 +880,7 @@ WantParser::addSourceItem_( const std::string & source,
 				 * - If we do not have official names, it's a logic error.
 				 */
 				const bool source_has_wantlist =
-					(this->_arc_map.find(source) != this->_arc_map.end());
+					(this->arc_map_.find(source) != this->arc_map_.end());
 
 				if ( source_has_wantlist ) {
 					/* Condition must be true. */
@@ -954,7 +954,7 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 	 * This may happen if a user has defined multiple want lists
 	 * or another line was split over two lines.
 	 */
-	if ( _arc_map.find(source) != _arc_map.end() ) {
+	if ( arc_map_.find(source) != arc_map_.end() ) {
 		throw std::runtime_error("Multiple want lists for item "
 				+ source
 				+ ". Hint: check if an item want-list line has been split"
@@ -997,7 +997,7 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 		} else {
 
 			/* Parse the item name (dummy, uppercase, etc). */
-			const auto & username = this->_node_map.at( source ).username;
+			const auto & username = this->node_map_.at( source ).username;
 			const auto converted_target_name = convertItemName_( target, username );
 
 			/* Push (item-target) arc to map. */
@@ -1012,7 +1012,7 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 	 * in C++11 we can directly move the items from the original list
 	 * to the vector; we don't have to copy them!
 	 */
-	auto pair = _arc_map.emplace(
+	auto pair = arc_map_.emplace(
 			source,
 			std::vector< Arc_t_ > {
 				std::make_move_iterator(std::begin(arcs_to_add)),
@@ -1021,7 +1021,7 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 
 	/* Insertion should have succeeded. */
 	if ( !pair.second ) {
-		throw std::logic_error("Could not insert arcs in _arc_map.");
+		throw std::logic_error("Could not insert arcs in arc_map_.");
 	}
 }
 
