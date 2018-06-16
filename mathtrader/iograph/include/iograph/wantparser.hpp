@@ -15,8 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _WANTPARSER_HPP_
-#define _WANTPARSER_HPP_
+#ifndef _MATHTRADER_MATHTRADER_IOGRAPH_INCLUDE_IOGRAPH_WANTPARSER_HPP_
+#define _MATHTRADER_MATHTRADER_IOGRAPH_INCLUDE_IOGRAPH_WANTPARSER_HPP_
 
 #include <iostream>
 #include <list>
