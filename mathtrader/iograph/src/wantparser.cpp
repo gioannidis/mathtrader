@@ -735,11 +735,8 @@ WantParser::parseWantList_( const std::string & line ) {
 	 */
 	this->addSourceItem_( source, source, username );
 
-
-	/**
-	 * Finally, advance n_pos.
-	 * We should always have an offering item.
-	 */
+	/* Finally, advance n_pos.
+	 * We should always have an offering item. */
 	++ n_pos;
 
 
@@ -749,12 +746,10 @@ WantParser::parseWantList_( const std::string & line ) {
 
 	/* Dependent scope to open local variables. */
 	{
-		const bool has_colon = ((match.size() >= (n_pos + 1))
-				&& (match[n_pos].compare(":") == 0));
+		const bool has_colon = (n_pos < match.size())
+				&& (match.at(n_pos).compare(":") == 0);
 
-		/**
-		 * Advance n_pos if we have a colon
-		 */
+		/* Advance n_pos if we have a colon. */
 		if ( has_colon ) {
 			++ n_pos;
 		} else if ( this->bool_options_[REQUIRE_COLONS] ) {
@@ -767,94 +762,23 @@ WantParser::parseWantList_( const std::string & line ) {
 	 *	WANTED ITEMS (targets)	*
 	 ********************************/
 
-	/**
-	 * Check if want list already exists.
+	/* Check if want list already exists.
 	 * This may happen if a user has defined multiple want lists
 	 * or another line was split over two lines.
-	 * FIXME use "has_wantlist" pointer?
 	 */
 	if ( _arc_map.find(source) != _arc_map.end() ) {
 		throw std::runtime_error("Multiple want lists for item "
-				+ source);
+				+ source
+				+ ". Hint: check if an item want-list line has been split"
+				+ " over two lines.");
 	}
 
-	/**
-	 * First wanted item.
-	 */
-	const unsigned first_wanted_pos = n_pos;
+	/* Copy wanted items; first begins at n_pos */
+	const auto wanted_items = std::vector< std::string >(
+			match.begin() + n_pos,
+			match.end());
 
-	/**
-	 * Initialize rank
-	 */
-	int rank = 1;
-
-	/**
-	 * Initialize list with want-lists to be added.
-	 * All parsed want lists are added to this map
-	 * and they will be eventually added
-	 * to the official graph
-	 * if *no errors* whatsoever are detected.
-	 * On errors, the whole line is discarded.
-	 */
-	std::list< _Arc_t > arcs_to_add;
-
-
-	/**********************************//*
-	 *	WANTED ITEMS ITERATOR
-	 *************************************/
-
-	for ( unsigned i = first_wanted_pos; i < match.size(); ++ i ) {
-
-		auto const & small_step = _int_options[SMALL_STEP];
-		auto const & big_step   = _int_options[BIG_STEP];
-
-		std::string target = match.at(i);
-
-		/* Cases:
-		 * 1. Semicolon:
-		 * 	"increase the rank of the next item by the big-step value"
-		 * 	NOTE: the small-step of the previous item will also be applied.
-		 * 2. Colon: raise an error. There should be no colon here.
-		 * 3. Actual wanted item.
-		 */
-		if ( target.compare(";") == 0 ) {
-			rank += big_step;
-		} else if ( target.compare(":") == 0 ) {
-			throw std::runtime_error("Colon occurence at invalid position "
-					+ std::to_string(i+1));
-		} else {
-
-			/* Parse the item name (dummy, uppercase, etc). */
-			target = convertItemName_( target, username );
-
-			/* Push (item-target) arc to map. */
-			arcs_to_add.push_back(_Arc_t( source, target, rank ));
-		}
-
-		/**
-		 * Advance always the rank by small-step
-		 */
-		rank += small_step;
-	}
-
-	/* Create ArcMap entry for item;
-	 * in C++11 we can directly move the items from the original list
-	 * to the vector; we don't have to copy them!
-	 */
-	auto pair = _arc_map.emplace(
-			source,
-			std::vector< _Arc_t > {
-				std::make_move_iterator(std::begin(arcs_to_add)),
-				std::make_move_iterator(std::end(arcs_to_add)) }
-			);
-
-	/* Insertion should have succeeded. */
-	if ( !pair.second ) {
-		throw std::logic_error("Could not insert arcs in _arc_map.");
-	}
-
-	/* Source item has a want-list now. */
-	this->_node_map.at( source ).has_wantlist = true;
+	this->addTargetItems_( source, wanted_items );
 }
 
 std::string
@@ -1039,6 +963,75 @@ WantParser::convertItemName_( const std::string & item,
 	return target;
 }
 
+void
+WantParser::addTargetItems_( const std::string & source, const std::vector< std::string > & wanted_items ) {
+
+	/* Initialize rank. */
+	int rank = 1;
+
+	/* Initialize list with want-lists to be added.
+	 * All parsed want lists are added to this map
+	 * and they will be eventually added
+	 * to the official graph
+	 * if *no errors* whatsoever are detected.
+	 * On errors, the whole line is discarded.
+	 */
+	std::list< _Arc_t > arcs_to_add;
+
+	/********************************
+	 *	WANTED ITEMS ITERATOR	*
+	 ********************************/
+
+	for ( const auto & target : wanted_items ) {
+
+		/* Small and big steps. */
+		const auto register & small_step = _int_options[SMALL_STEP];
+		const auto register & big_step   = _int_options[BIG_STEP];
+
+		/* Cases:
+		 * 1. Semicolon:
+		 * 	"increase the rank of the next item by the big-step value"
+		 * 	NOTE: the small-step of the previous item will also be applied.
+		 * 2. Colon: raise an error. There should be no colon here.
+		 * 3. Actual wanted item.
+		 */
+		if ( target.compare(";") == 0 ) {
+			rank += big_step;
+		} else if ( target.compare(":") == 0 ) {
+			throw std::runtime_error("Invalid colon occurence.");
+		} else {
+
+			/* Parse the item name (dummy, uppercase, etc). */
+			const auto & username = this->_node_map.at( source ).username;
+			const auto converted_target_name = convertItemName_( target, username );
+
+			/* Push (item-target) arc to map. */
+			arcs_to_add.push_back(_Arc_t( source, converted_target_name, rank ));
+		}
+
+		/* Advance always the rank by small-step. */
+		rank += small_step;
+	}
+
+	/* Create ArcMap entry for item;
+	 * in C++11 we can directly move the items from the original list
+	 * to the vector; we don't have to copy them!
+	 */
+	auto pair = _arc_map.emplace(
+			source,
+			std::vector< _Arc_t > {
+				std::make_move_iterator(std::begin(arcs_to_add)),
+				std::make_move_iterator(std::end(arcs_to_add)) }
+			);
+
+	/* Insertion should have succeeded. */
+	if ( !pair.second ) {
+		throw std::logic_error("Could not insert arcs in _arc_map.");
+	}
+
+	/* Source item has a want-list now. */
+	this->_node_map.at( source ).has_wantlist = true;
+}
 
 /************************************//*
  * 	PRIVATE METHODS - UTILS

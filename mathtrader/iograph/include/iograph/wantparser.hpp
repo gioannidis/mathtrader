@@ -596,6 +596,9 @@ private:
 	std::string convertItemName_( const std::string & item,
 			const std::string username = std::string() ) const;
 
+	void addTargetItems_( const std::string & source,
+			const std::vector< std::string > & wanted_items );
+
 	/**
 	 * @brief Mark unknown items.
 	 * Parses all the arcs and checks
