@@ -762,17 +762,6 @@ WantParser::parseWantList_( const std::string & line ) {
 	 *	WANTED ITEMS (targets)	*
 	 ********************************/
 
-	/* Check if want list already exists.
-	 * This may happen if a user has defined multiple want lists
-	 * or another line was split over two lines.
-	 */
-	if ( _arc_map.find(source) != _arc_map.end() ) {
-		throw std::runtime_error("Multiple want lists for item "
-				+ source
-				+ ". Hint: check if an item want-list line has been split"
-				+ " over two lines.");
-	}
-
 	/* Copy wanted items; first begins at n_pos */
 	const auto wanted_items = std::vector< std::string >(
 			match.begin() + n_pos,
@@ -965,6 +954,17 @@ WantParser::convertItemName_( const std::string & item,
 
 void
 WantParser::addTargetItems_( const std::string & source, const std::vector< std::string > & wanted_items ) {
+
+	/* Check if want list already exists.
+	 * This may happen if a user has defined multiple want lists
+	 * or another line was split over two lines.
+	 */
+	if ( _arc_map.find(source) != _arc_map.end() ) {
+		throw std::runtime_error("Multiple want lists for item "
+				+ source
+				+ ". Hint: check if an item want-list line has been split"
+				+ " over two lines.");
+	}
 
 	/* Initialize rank. */
 	int rank = 1;

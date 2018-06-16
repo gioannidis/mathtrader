@@ -538,7 +538,7 @@ private:
 	 *
 	 * Parses a line giving the official name of an item.
 	 * Extracts the item ID, the username and the official item name
-	 * and inserts them in @ref _node_map.
+	 * and passes them to @ref addSourceItem_().
 	 *
 	 *  @param[in]	line to parse
 	 *  @throws	std::runtime_error if the line fails to parse, e.g., bad format
@@ -546,11 +546,43 @@ private:
 	 */
 	void parseOfficialName_( const std::string & line );
 
-	/**
-	 * @brief Parse want list
-	 * Parses lines giving the want lists.
-	 * If any errors are detected the whole line is discarded!
-	 * @return *this
+	/*! @brief Parse entire want-list line.
+	 *
+	 *  Minimum accepted format, indicating that target (wanted)
+	 *  items ``T1``, ``T2`` or ``T3`` are wanted for offered (source)
+	 *  item ``S``.
+	 *
+	 *  	S T1 T2 T3
+	 *
+	 *  If @ref REQUIRE_COLONS has been given,
+	 *  then the following format is required (otherwise, optional):
+	 *
+	 *  	S : T1 T2 T3
+	 *
+	 *  If @ref REQUIRE_USERNAMES has been given,
+	 *  then the following format is required (otherwise, optional):
+	 *
+	 * 	(USERNAME) S T1 T2 T3
+	 *
+	 *  Combined, if both @ref REQUIRE_COLONS and @ref REQUIRE_USERNAMES
+	 *  have been specified:
+	 *
+	 *  	(USERNAME) S : T1 T2 T3
+	 *
+	 *  The last example is the most usual format.
+	 *  No wanted items are registered if any errors are detected.
+	 *
+	 *  Calls:
+	 *  1. @ref extractUsername_() to retrieve the username from the line
+	 *  2. @ref addSourceItem_() to add the source item, if not already there
+	 *  3. @ref addTargetItems_() to add the target items for the extracted source item
+	 *
+	 *  @param[in]	line	line to extract and parse the want-list from
+	 *  @throws	std::runtime_error if bad line format is detected
+	 *  @throws	std::runtime_error if the username is absent
+	 *  		but @ref REQUIRE_USERNAMES has been given.
+	 *  @throws	std::runtime_error if a colon after the source item is absent
+	 *  		but @ref REQUIRE_COLONS has been given.
 	 */
 	void parseWantList_( const std::string & line );
 
@@ -561,10 +593,23 @@ private:
 	 *
 	 *  Example: if ``(Username123)`` is given, it extracts ``Username123``.
 	 *
-	 *  @param	token	token to parse and extract username
+	 *  @param[in]	token	token to parse and extract username
 	 *  @returns	extracted username; empty if ``token`` does not have a valid format
 	 */
 	static std::string extractUsername_( const std::string & token );
+
+	/*! @brief Add source (offered) item.
+	 *
+	 *  Registers a new source item,
+	 *  i.e., an item offered up for trade.
+	 *
+	 *  @param[in]	item	new source item to register
+	 *  @param[in]	official_name	official name of the item
+	 *  @param[in]	username	username of the item's owner
+	 *  @throws conditionally a std::runtime_error if the item
+	 *  has been already registered, except if we are currently reading
+	 *  the want lists and already have the official names.
+	 */
 	void addSourceItem_( const std::string & item,
 			const std::string & official_name,
 			const std::string & username );
@@ -596,6 +641,19 @@ private:
 	std::string convertItemName_( const std::string & item,
 			const std::string username = std::string() ) const;
 
+	/*! @brief Add target (wanted) items.
+	 *
+	 *  Adds new wanted items for a given source (offered) item.
+	 *  The wanted items are registered if and only if no errors are generated.
+	 *
+	 *  @param[in]	source	the source (offered) item
+	 *  @param[in]	wanted_items	vector of target (wanted) items
+	 *
+	 *  @throws	std::runtime_error if ``source`` item has already a want-list
+	 *  @throws	std::runtime_error if bad line format is detected
+	 *  @throws std::runtime_error if a dummy target item is detected,
+	 *  but @ref ALLOW_DUMMIES in @ref bool_options_ is ``false``.
+	 */
 	void addTargetItems_( const std::string & source,
 			const std::vector< std::string > & wanted_items );
 
@@ -630,12 +688,29 @@ private:
 	 * @param regex Regular expression defining the fields.
 	 * @return Vector with matches.
 	 */
-	static std::vector< std::string > split_(
-			const std::string & input,
-			const std::string & str );
+
+	/*! @brief Tokenize line.
+	 *
+	 *  Tokenizes a line based on a given regular expression.
+	 *  @param[in]	input	line to tokenize
+	 *  @param[in]	regex	regular expression to use
+	 *  @returns	vector with individual tokens
+	 */
 	static std::vector< std::string > split_(
 			const std::string & input,
 			const std::regex & regex );
+
+	/*! @brief Tokenize line.
+	 *
+	 *  Tokenizes a line based on a given regular expression.
+	 *  Converts input string to regex and calls @ref split_().
+	 *  @param[in]	input	line to tokenize
+	 *  @param[in]	str	string to convert to regular experssion
+	 *  @returns	vector with individual tokens
+	 */
+	static std::vector< std::string > split_(
+			const std::string & input,
+			const std::string & str );
 };
 
 #endif /* _WANTPARSER_HPP_ */
