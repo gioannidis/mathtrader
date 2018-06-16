@@ -26,6 +26,7 @@ set(SOURCES
 	src/baseparser.cpp
 	src/resultparser.cpp
 	src/wantparser.cpp
+	src/wantparser_wantlists.cpp
 )
 
 ###

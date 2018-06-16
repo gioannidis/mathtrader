@@ -18,13 +18,10 @@
 #include <iograph/wantparser.hpp>
 
 #include <fstream>
-#include <memory>
-#include <regex>
 #include <sstream>
-#include <stdexcept>
 
 
-/************************************//*
+/**************************************
  * 	PUBLIC METHODS - CONSTRUCTORS
  **************************************/
 
@@ -35,11 +32,77 @@ WantParser::WantParser() {
 }
 
 
-/************************************//*
+/**************************************
+ * 	PUBLIC METHODS - PARSING
+ **************************************/
+
+void
+WantParser::parseFile( const std::string & fn ) {
+
+	/* Open the file. */
+	std::filebuf fb;
+	auto fb_ptr = fb.open(fn, std::ios::in);
+
+	/* Check if failed */
+	if ( fb_ptr == NULL ) {
+		throw std::runtime_error("Failed to open "
+				+ fn);
+	}
+
+	/* Parse the want-file. */
+	std::istream is(&fb);
+	try {
+		this->parseStream(is);
+	} catch ( const std::exception & e ) {
+		/* If any exception is caught, close the file first.
+		 * Then re-throw. */
+		fb.close();
+		throw;
+	}
+
+	/* Close the file. */
+	fb.close();
+}
+
+void
+WantParser::parseStream( std::istream & is ) {
+
+	/* We will read line-by-line.
+	 * Allocate a buffer to read. */
+	const size_t BUFSIZE = (1<<10);
+	std::string buffer;
+	buffer.reserve(BUFSIZE);
+
+	/* The line number. */
+	uint64_t line_n = 0;
+
+	/* Repeat for every line
+	 * until the end of the stream. */
+	while (std::getline( is, buffer )) {
+
+		/* Increase line number;
+		 * useful to document the line number if it throws an error. */
+		++ line_n;
+		try {
+			/* Parse the individual line. */
+			this->parseLine_( buffer );
+
+		} catch ( const std::runtime_error & e ) {
+
+			/* Add the exception text to the error list.
+			 * Continue with the next line. */
+			this->errors_.push_back( std::to_string(line_n)
+					+ ":"
+					+ e.what() );
+		}
+	}
+}
+
+/***************************************
  * 	PUBLIC METHODS - OUTPUT
  **************************************/
 
-const WantParser &
+void
 WantParser::print( const std::string & fn ) const {
 
 	/* Open the file. */
@@ -65,10 +128,9 @@ WantParser::print( const std::string & fn ) const {
 
 	/* Close the file. */
 	fb.close();
-	return *this;
 }
 
-const WantParser &
+void
 WantParser::print( std::ostream &os ) const {
 
 	// Print Nodes in LGF file
@@ -144,11 +206,9 @@ WantParser::print( std::ostream &os ) const {
 			}
 		}
 	}
-
-	return *this;
 }
 
-const WantParser &
+void
 WantParser::printOptions( std::ostream & os ) const {
 
 	os << "Options: ";
@@ -156,11 +216,9 @@ WantParser::printOptions( std::ostream & os ) const {
 		os << option << " ";
 	}
 	os << std::endl;
-
-	return *this;
 }
 
-const WantParser &
+void
 WantParser::printMissing( std::ostream & os ) const {
 
 	unsigned count = 0;
@@ -193,11 +251,9 @@ WantParser::printMissing( std::ostream & os ) const {
 			<< ss.rdbuf()
 			<< std::endl;
 	}
-
-	return *this;
 }
 
-const WantParser &
+void
 WantParser::printErrors( std::ostream & os ) const {
 
 	/* Print the preliminary line 'ERRORS'
@@ -208,12 +264,11 @@ WantParser::printErrors( std::ostream & os ) const {
 			os << "**** " << err << std::endl;
 		}
 	}
-	return *this;
 }
 
-/************************************//*
+/********************************************
  * PUBLIC METHODS - EXTERNAL OPTIONS OUTPUT
- **************************************/
+ ********************************************/
 
 std::string
 WantParser::getPriorityScheme() const {
@@ -261,76 +316,9 @@ WantParser::sortByItem() const {
 }
 
 
-/************************************//*
- * 	PUBLIC METHODS - UTILITIES
- **************************************/
-
-
-/************************************//*
+/**************************************
  * 	PRIVATE METHODS - PARSING
  **************************************/
-
-void
-WantParser::parseFile( const std::string & fn ) {
-
-	/* Open the file. */
-	std::filebuf fb;
-	auto fb_ptr = fb.open(fn, std::ios::in);
-
-	/* Check if failed */
-	if ( fb_ptr == NULL ) {
-		throw std::runtime_error("Failed to open "
-				+ fn);
-	}
-
-	/* Parse the want-file. */
-	std::istream is(&fb);
-	try {
-		this->parseStream(is);
-	} catch ( const std::exception & e ) {
-		/* If any exception is caught, close the file first.
-		 * Then re-throw. */
-		fb.close();
-		throw;
-	}
-
-	/* Close the file. */
-	fb.close();
-}
-
-void
-WantParser::parseStream( std::istream & is ) {
-
-	/* We will read line-by-line.
-	 * Allocate a buffer to read. */
-	const size_t BUFSIZE = (1<<10);
-	std::string buffer;
-	buffer.reserve(BUFSIZE);
-
-	/* The line number. */
-	uint64_t line_n = 0;
-
-	/* Repeat for every line
-	 * until the end of the stream. */
-	while (std::getline( is, buffer )) {
-
-		/* Increase line number;
-		 * useful to document the line number if it throws an error. */
-		++ line_n;
-		try {
-			/* Parse the individual line. */
-			this->parseLine_( buffer );
-
-		} catch ( const std::runtime_error & e ) {
-
-			/* Add the exception text to the error list.
-			 * Continue with the next line. */
-			this->errors_.push_back( std::to_string(line_n)
-					+ ":"
-					+ e.what() );
-		}
-	}
-}
 
 void
 WantParser::parseLine_( const std::string & buffer ) {
@@ -411,7 +399,7 @@ WantParser::parseLine_( const std::string & buffer ) {
 				}
 			}
 
-		} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {\
+		} else if ( buffer.compare(0, 19, "!END-OFFICIAL-NAMES") == 0 ) {
 
 			/* Directive indicating that official names have ended. */
 			//TODO check if it's given multiple times
@@ -662,110 +650,9 @@ WantParser::parseOfficialName_( const std::string & line ) {
 	this->addSourceItem_( item, official_name, username );
 }
 
-void
-WantParser::parseWantList_( const std::string & line ) {
-
-	static const std::regex FPAT_want(
-		R"(\([^\)]+\))"		// Group 1: parentheses
-		"|"
-		R"([^\s:;]+)"		// Group 2: any non-whitespace,
-					// colon, or semicolon
-		"|"
-		R"(:)"
-		"|"
-		R"(;)"
-	);
-
-	/* Summary:
-	 * 1. Tokenize the line.
-	 * 2. Parse username.
-	 * 3. Parse offering item name (source).
-	 * 4. Parse colon.
-	 * 5. Parse wanted items (targets).
-	 *
-	 * Full want list format:
-	 * (user name) ITEM_A : ITEM_B ITEM_C ; ITEM_D %DUMMY1 %DUMMY2 ITEM_E
-	 *
-	 * REQUIRE-USERNAMES: "(user name)" are mandatories; optional otherwise.
-	 * REQUIRE-COLONS: ":" are mandatories; optional otherwise.
-	 * ALLOW-DUMMIES: not possible if REQUIRE-USERNAMES not set.
-	 */
-
-	/* Tokenize the line. */
-	auto const match = split_( line, FPAT_want );
-	if ( match.empty() ) {
-		throw std::runtime_error("Bad format of want list");
-	}
-
-	/********************************
-	 * 	PARSE USERNAME		*
-	 ********************************/
-
-	unsigned n_pos = 0;	/* current item that is being parsed */
-
-	std::string username = extractUsername_(match.at(n_pos));
-
-	/* Go to the next element if we have a valid username.
-	 * If we are missing a required username stop here. */
-	if ( !username.empty() ) {
-		++ n_pos ;
-	} else if (  this->bool_options_[ REQUIRE_USERNAMES ] ) {
-		throw std::runtime_error("Missing username from want list");
-	}
-
-	/****************************************
-	 *	OFFERED ITEM NAME (source)	*
-	 ****************************************/
-
-	/* Check whether we have reached the end of the line.
-	 * If so, the wanted item name is missing. */
-	if ( n_pos >= match.size() ) {
-		throw std::runtime_error("Missing offered item from want list");
-	}
-	const std::string & original_source = match.at(n_pos);
-
-	/* Convert item name. */
-	const std::string source = convertItemName_( original_source, username );
-
-	/* Add source item.
-	 * Item name is also used as the 'official' name
-	 */
-	this->addSourceItem_( source, source, username );
-
-	/* Finally, advance n_pos.
-	 * We should always have an offering item. */
-	++ n_pos;
-
-
-	/********************************
-	 *	CHECK COLONS		*
-	 ********************************/
-
-	/* Dependent scope to open local variables. */
-	{
-		const bool has_colon = (n_pos < match.size())
-				&& (match.at(n_pos).compare(":") == 0);
-
-		/* Advance n_pos if we have a colon. */
-		if ( has_colon ) {
-			++ n_pos;
-		} else if ( this->bool_options_[REQUIRE_COLONS] ) {
-			throw std::runtime_error("Missing colon from want list");
-		}
-	}
-
-
-	/********************************
-	 *	WANTED ITEMS (targets)	*
-	 ********************************/
-
-	/* Copy wanted items; first begins at n_pos */
-	const auto wanted_items = std::vector< std::string >(
-			match.begin() + n_pos,
-			match.end());
-
-	this->addTargetItems_( source, wanted_items );
-}
+/**************************************
+ * 	PRIVATE METHODS - UTILS
+ **************************************/
 
 std::string
 WantParser::extractUsername_( const std::string & token ) {
@@ -786,123 +673,6 @@ WantParser::extractUsername_( const std::string & token ) {
 		}
 	}
 	return username;
-}
-
-void
-WantParser::addSourceItem_( const std::string & source,
-		const std::string & official_name,
-		const std::string & username) {
-
-	/* Check if the source item is present in node_map. */
-	auto it = node_map_.find( source );
-
-	if ( it == node_map_.end() ) {
-
-		/* Source item is NOT in node_map. */
-		switch ( this->status_ ) {
-			case PARSE_NAMES:
-			case PARSE_WANTS_NONAMES: {
-
-				/* We are either:
-				 * 1. currently reading official names; OR
-				 * 2. currently reading want-lists without
-				 *    official names.
-				 *
-				 * These should be no entries in these cases.
-				 * Break here, add later.
-				 */
-				break;
-			}
-			case PARSE_WANTS_WITHNAMES: {
-
-				/* We are currently reading want-lists
-				 * WITH official names previously given.
-				 * There SHOULD be an entry
-				 * with a corresponding official name,
-				 * unless it's a dummy item.
-				 * This check usually catches spelling errors.
-				 *
-				 * Therefore, raise an error only if it's
-				 * a non-dummy item.
-				 * Otherwise, proceed to add.
-				 */
-				if ( !isDummy_(source) ) {
-
-					throw std::runtime_error("Non-dummy item "
-							+ source
-							+ " has no official name."
-							" Hint: spelling error?");
-				}
-				break;
-			}
-			default: {
-				throw std::logic_error("Unknown handler for internal status "
-						+ std::to_string( this->status_ )
-						+ "; source item not found in node map.");
-				break;
-			}
-		}
-
-		/* Insert the item in the node_map. */
-		auto const pair = this->node_map_.emplace(
-				source,
-				Node_t_(source, official_name, username)
-				);
-
-		/* Insert should have succeeded. */
-		if ( !pair.second ) {
-			throw std::logic_error("Could not insert node in node_map_.");
-		}
-
-	} else {
-		/* Source item IS in node_map. */
-		switch ( this->status_ ) {
-			case PARSE_NAMES: {
-
-				/* We are currently reading official names.
-				 * Ignore any item attempted to be inserted twice.
-				 */
-				throw std::runtime_error("Existing entry for item "
-						+ source);
-				break;
-			}
-			case PARSE_WANTS_WITHNAMES:
-			case PARSE_WANTS_NONAMES: {
-
-				/* We are currently reading want-lists either:
-				 * 1. without official names; OR
-				 * 2. with official names.
-				 *
-				 * If a want-list exists: ignore.
-				 * Otherwise:
-				 * - If we have official names, do nothing. We had previously inserted the item
-				 *   in parseOfficialName_.
-				 * - If we do not have official names, it's a logic error.
-				 */
-				const bool source_has_wantlist =
-					(this->arc_map_.find(source) != this->arc_map_.end());
-
-				if ( source_has_wantlist ) {
-					/* Condition must be true. */
-					throw std::runtime_error("Ignoring multiple wantlist for item "
-							+ source);
-				} else if ( this->status_ == PARSE_WANTS_NONAMES ) {
-					/* Sanity check. If no official names are being read
-					 * an existing item MUST have a want-list. */
-					throw std::logic_error("Existing item found in node list map "
-							"without a want-list, but official names "
-							"have not been given.");
-				}
-				break;
-			}
-			default: {
-				throw std::logic_error("Unknown handler for internal status "
-						+ std::to_string( this->status_ )
-						+ "; source item already found in node map.");
-				break;
-			}
-		}
-	}
 }
 
 std::string
@@ -947,86 +717,8 @@ WantParser::convertItemName_( const std::string & item,
 	return target;
 }
 
-void
-WantParser::addTargetItems_( const std::string & source, const std::vector< std::string > & wanted_items ) {
-
-	/* Check if want list already exists.
-	 * This may happen if a user has defined multiple want lists
-	 * or another line was split over two lines.
-	 */
-	if ( arc_map_.find(source) != arc_map_.end() ) {
-		throw std::runtime_error("Multiple want lists for item "
-				+ source
-				+ ". Hint: check if an item want-list line has been split"
-				+ " over two lines.");
-	}
-
-	/* Initialize rank. */
-	int rank = 1;
-
-	/* Initialize list with want-lists to be added.
-	 * All parsed want lists are added to this map
-	 * and they will be eventually added
-	 * to the official graph
-	 * if *no errors* whatsoever are detected.
-	 * On errors, the whole line is discarded.
-	 */
-	std::list< Arc_t_ > arcs_to_add;
-
-	/********************************
-	 *	WANTED ITEMS ITERATOR	*
-	 ********************************/
-
-	for ( const auto & target : wanted_items ) {
-
-		/* Small and big steps. */
-		const auto register & small_step = int_options_[SMALL_STEP];
-		const auto register & big_step   = int_options_[BIG_STEP];
-
-		/* Cases:
-		 * 1. Semicolon:
-		 * 	"increase the rank of the next item by the big-step value"
-		 * 	NOTE: the small-step of the previous item will also be applied.
-		 * 2. Colon: raise an error. There should be no colon here.
-		 * 3. Actual wanted item.
-		 */
-		if ( target.compare(";") == 0 ) {
-			rank += big_step;
-		} else if ( target.compare(":") == 0 ) {
-			throw std::runtime_error("Invalid colon occurence.");
-		} else {
-
-			/* Parse the item name (dummy, uppercase, etc). */
-			const auto & username = this->node_map_.at( source ).username;
-			const auto converted_target_name = convertItemName_( target, username );
-
-			/* Push (item-target) arc to map. */
-			arcs_to_add.push_back(Arc_t_( source, converted_target_name, rank ));
-		}
-
-		/* Advance always the rank by small-step. */
-		rank += small_step;
-	}
-
-	/* Create ArcMap entry for item;
-	 * in C++11 we can directly move the items from the original list
-	 * to the vector; we don't have to copy them!
-	 */
-	auto pair = arc_map_.emplace(
-			source,
-			std::vector< Arc_t_ > {
-				std::make_move_iterator(std::begin(arcs_to_add)),
-				std::make_move_iterator(std::end(arcs_to_add)) }
-			);
-
-	/* Insertion should have succeeded. */
-	if ( !pair.second ) {
-		throw std::logic_error("Could not insert arcs in arc_map_.");
-	}
-}
-
-/************************************//*
- * 	PRIVATE METHODS - UTILS
+/***************************************
+ * 	PRIVATE STATIC METHODS
  **************************************/
 
 bool
