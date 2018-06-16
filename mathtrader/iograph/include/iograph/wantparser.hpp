@@ -329,12 +329,6 @@ private:
 	 * 	OPTIONS		*
 	 ************************/
 
-	/*
-	 * 1. Boolean options.
-	 * 2. Integer options.
-	 * 3. Priority option.
-	 */
-
 	/*! @brief Supported want-list boolean options.
 	 *
 	 *  All want-list boolean options supported by the WantParser.
@@ -422,73 +416,66 @@ private:
 	};
 	Status _status;
 
-	/**
-	 * Indicates whether official names have been given.
-	 */
-	bool _official_given;
-
 	std::list< std::string > errors_; /*!< errors during parsing */
 
 	/***************************//*
 	 * INTERNAL DATA STRUCTURES
 	 *****************************/
 
-	/**
-	 * @brief Node struct
-	 * Structure to hold node information
+	/*! @brief Graph Node.
+	 *
+	 *  Represents an item, which is mapped to a graph node.
 	 */
-	typedef struct _Node_s {
+	typedef struct Node_s_ {
 
-		std::string item;		/*!< item name; e.g., 0001-PUERTO */
+		std::string item;		/*!< item name, representing the node ID; e.g., 0001-PUERTO */
 		std::string official_name;	/*!< official name; e.g., "Puerto Rico" */
 		std::string username;		/*!< username; "Aldie" */
-		bool dummy;			/*!< dummy node */
 
-		inline _Node_s ( const std::string & _item,
+		inline Node_s_ ( const std::string & _item,
 				const std::string & _official,
-				const std::string & _user,
-				bool _dummy = false
+				const std::string & _user
 				) :
 			item( _item ),
 			official_name( _official ),
-			username( _user ),
-			dummy( _dummy ) {}
-	} _Node_t;
+			username( _user ) {}
+	} Node_t_;
 
-	/**
-	 * @brief Arc struct
-	 * Structure to hold arc information
+	/*! @brief Graph Arc.
+	 *
+	 *  Represents a "want-item" relationship, which is mapped to a graph arc.
+	 *  The source node respresents the offered item,
+	 *  while the target node respresents the wanted item.
 	 */
-	typedef struct _Arc_s {
+	typedef struct Arc_s_ {
 
-		std::string item_s;	/**< Item name; source */
-		std::string item_t;	/**< Item name; target */
-		int rank;		/**< Rank of arc */
-		bool unknown;		/**< Unknown item; node is missing */
+		std::string item_s;	/**< item name; source ID */
+		std::string item_t;	/**< item name; target ID */
+		int rank;		/**< rank (cost) of arc */
 
-		inline _Arc_s ( const std::string & _source,
+		inline Arc_s_ ( const std::string & _source,
 				const std::string & _target,
 				int _rank ) :
 			item_s( _source ),
 			item_t( _target ),
-			rank( _rank ),
-			unknown( false ){}
+			rank( _rank ) {}
 
-	} _Arc_t;
+	} Arc_t_;
 
-	/**
-	 * Node & Arc maps; the key is the item reference name,
-	 * e.g., 0042-PUERTO
-	 * The Arc Map maps to a vector of arcs.
+	/*! @brief Map of graph nodes.
+	 *
+	 *  Hash map of all graph nodes. The node ID (item name)
+	 *  is used as the map key.
 	 */
-	std::map< std::string , _Node_t > _node_map;
+	std::map< std::string , Node_t_ > _node_map;
+
+	/*! @brief Map of graph arcs.
+	 *
+	 *  Hash map of all graph arcs. The source node ID (source item name)
+	 *  is used as the map key.
+	 */
 	std::map< std::string ,
-		std::vector< _Arc_t > >  _arc_map;
-
-	/**
-	 * Unknown items map:
-	 */
-	std::unordered_map< std::string, int > _unknown_item_map;
+		std::vector< Arc_t_ > >  _arc_map;
 
 
 	/***********************************
@@ -613,7 +600,7 @@ private:
 	/*! @brief Convert to upper case and append username.
 	 *
 	 *  Converts the item name to be subsequently stored
-	 *  as a graph node in @ref _Node_s.
+	 *  as a graph node in @ref Node_s_.
 	 *  It applies the following conversions:
 	 *
 	 *  1. Checks whether the item is dummy through @ref isDummy_()
@@ -653,15 +640,6 @@ private:
 	void addTargetItems_( const std::string & source,
 			const std::vector< std::string > & wanted_items );
 
-	/**
-	 * @brief Mark unknown items.
-	 * Parses all the arcs and checks
-	 * whether any target nodes are missing (unknown).
-	 * These won't be appended to the results.
-	 * @return *this
-	 */
-	WantParser & _markUnknownItems();
-
 
 	/****************************************
 	 *  	UTILITY STATIC FUNCTIONS	*
@@ -676,14 +654,6 @@ private:
 	 *  @returns	``true`` if the item name is dummy, ``false`` otherwise or if empty
 	 */
 	static bool isDummy_( const std::string & item );
-
-	/**
-	 * @brief Split string.
-	 * Splits the string based on a regular expression.
-	 * @param input The input string.
-	 * @param regex Regular expression defining the fields.
-	 * @return Vector with matches.
-	 */
 
 	/*! @brief Tokenize line.
 	 *

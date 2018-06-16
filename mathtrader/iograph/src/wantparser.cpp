@@ -105,7 +105,7 @@ WantParser::print( std::ostream &os ) const {
 		/* Skip if it has no want-list. */
 		if ( has_wantlist ) {
 
-			const bool dummy = node.second.dummy;
+			const bool dummy = isDummy_(item);
 
 			os << '"' << item << '"'	/* item also used as label */
 				<< '\t'
@@ -136,10 +136,8 @@ WantParser::print( std::ostream &os ) const {
 			auto const & target = arc.item_t;
 
 			/* Valid if:
-			 * 1) Arc is not unknown.
-			 * 2) Target is present
-			 * 	(TODO same as (1)?)
-			 * 3) Target has want list
+			 * 1) Target is in node map.
+			 * 2) Target has a want-list.
 			 */
 			const bool valid =
 				(_node_map.find(target) != _node_map.end())	/* valid target node */
@@ -189,7 +187,7 @@ WantParser::printMissing( std::ostream & os ) const {
 		if ( !this->isDummy_(item) && !has_wantlist ) {
 			++ count;
 			ss << "**** Missing want list for item "
-				<< item
+				<< "\"" << item << "\""
 				<< std::endl;
 		}
 	}
@@ -341,9 +339,6 @@ WantParser::parseStream( std::istream & is ) {
 					+ e.what() );
 		}
 	}
-
-	/* Mark unknown items. */
-	this->_markUnknownItems();
 }
 
 void
@@ -860,10 +855,7 @@ WantParser::addSourceItem_( const std::string & source,
 		/* Insert the item in the node_map. */
 		auto const pair = this->_node_map.emplace(
 				source,
-				_Node_s(
-					source, official_name, username,
-					isDummy_(source)
-					)
+				Node_t_(source, official_name, username)
 				);
 
 		/* Insert should have succeeded. */
@@ -988,7 +980,7 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 	 * if *no errors* whatsoever are detected.
 	 * On errors, the whole line is discarded.
 	 */
-	std::list< _Arc_t > arcs_to_add;
+	std::list< Arc_t_ > arcs_to_add;
 
 	/********************************
 	 *	WANTED ITEMS ITERATOR	*
@@ -1018,7 +1010,7 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 			const auto converted_target_name = convertItemName_( target, username );
 
 			/* Push (item-target) arc to map. */
-			arcs_to_add.push_back(_Arc_t( source, converted_target_name, rank ));
+			arcs_to_add.push_back(Arc_t_( source, converted_target_name, rank ));
 		}
 
 		/* Advance always the rank by small-step. */
@@ -1031,7 +1023,7 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 	 */
 	auto pair = _arc_map.emplace(
 			source,
-			std::vector< _Arc_t > {
+			std::vector< Arc_t_ > {
 				std::make_move_iterator(std::begin(arcs_to_add)),
 				std::make_move_iterator(std::end(arcs_to_add)) }
 			);
@@ -1046,36 +1038,6 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
  * 	PRIVATE METHODS - UTILS
  **************************************/
 
-WantParser &
-WantParser::_markUnknownItems() {
-
-	_unknown_item_map.clear();
-
-	for ( auto & it : _arc_map ) {
-
-		auto & arc_vector = it.second;
-		for ( auto & arc : arc_vector ) {
-
-			/**
-			 * Target not found?
-			 */
-			const std::string & target = arc.item_t;
-			if ( _node_map.find(target) == _node_map.end() ) {
-				arc.unknown = true;
-
-				auto it = _unknown_item_map.find(target);
-				if ( it != _unknown_item_map.end()) {
-					it->second ++ ;
-				} else {
-					_unknown_item_map.emplace(target,1);
-				}
-			}
-		}
-	}
-
-	return *this;
-}
-
 bool
 WantParser::isDummy_( const std::string & item ) {
 
@@ -1084,23 +1046,8 @@ WantParser::isDummy_( const std::string & item ) {
 		return false;
 	}
 
-	unsigned offset = 0;
-
-	/* Is the first character a quotation mark?
-	 * Then offset by 1. */
-	if ( item.front() == '"' ) {
-		offset = 1;
-	}
-
-	/* String must be longer than the offset.
-	 * Otherwise, string might be '"'. */
-	if ( item.size() <= offset ) {
-		return false;
-	}
-
-	/* Valid string; dummy if first character,
-	 * excluding '"', is '%'. */
-	return ( item.compare(0 + offset, 1, "%") == 0 );
+	/* Dummy if first character is '%'. */
+	return ( item.front() == '%' );
 }
 
 std::vector<std::string>
