@@ -116,7 +116,10 @@
 class WantParser {
 
 public:
+	/*! @brief Default constructor.
+	 */
 	WantParser();
+
 	~WantParser() = default;
 
 	/*! @brief Convert want-lists input file to graph.
@@ -397,20 +400,22 @@ private:
 	 *  All options are initialized to ``false``.
 	 *  Each position corresponds to a boolean option from @ref BoolOption_.
 	 */
-	std::vector< bool > bool_options_;
+	std::vector< bool > bool_options_
+		= std::vector< bool >( MAX_BOOL_OPTIONS, false );
 
 	/*! @brief Integer option vector.
 	 *
 	 *  Vector containing all supported integer options.
 	 *  Each position corresponds to a integer option from @ref IntOption_.
 	 */
-	std::vector< int > _int_options;
+	std::vector< int > int_options_
+		= std::vector< int >( MAX_INT_OPTIONS );
 
 	/*! @brief The priority scheme.
 	 *
 	 *  Holds the priority scheme that has been specified by the want-list file.
 	 */
-	std::string priority_scheme_;
+	std::string priority_scheme_ = "";
 
 	/*! @brief Provided options.
 	 *
@@ -437,7 +442,7 @@ private:
 	 *
 	 *  Indicates the current parsing status of the object.
 	 */
-	Status status_;
+	Status status_ = INITIALIZATION;
 
 	/*! @brief Generated errors.
 	 *

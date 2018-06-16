@@ -32,15 +32,10 @@
  * 	PUBLIC METHODS - CONSTRUCTORS
  **************************************/
 
-WantParser::WantParser() :
-	bool_options_( MAX_BOOL_OPTIONS, false ),
-	_int_options( MAX_INT_OPTIONS ),
-	priority_scheme_( "" ),
-	status_( INITIALIZATION )
-{
-	_int_options[SMALL_STEP] = 1;
-	_int_options[BIG_STEP] = 9;
-	_int_options[NONTRADE_COST] = 1e9;
+WantParser::WantParser() {
+	int_options_[SMALL_STEP] = 1;
+	int_options_[BIG_STEP] = 9;
+	int_options_[NONTRADE_COST] = 1e9;
 }
 
 
@@ -528,7 +523,7 @@ WantParser::parseOption_( const std::string & option_line ) {
 
 			/* Set the value of the int option. */
 			const IntOption_ int_option = it->second;
-			_int_options[ int_option ] = std::stoi(value);
+			int_options_[ int_option ] = std::stoi(value);
 
 		} else if ( std::regex_match(option, regex_prio) ) {
 			/* Boolean value indicating the priority scheme.
@@ -989,8 +984,8 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 	for ( const auto & target : wanted_items ) {
 
 		/* Small and big steps. */
-		const auto register & small_step = _int_options[SMALL_STEP];
-		const auto register & big_step   = _int_options[BIG_STEP];
+		const auto register & small_step = int_options_[SMALL_STEP];
+		const auto register & big_step   = int_options_[BIG_STEP];
 
 		/* Cases:
 		 * 1. Semicolon:
