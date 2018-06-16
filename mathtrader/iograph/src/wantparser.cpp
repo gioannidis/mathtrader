@@ -35,8 +35,8 @@
 WantParser::WantParser() :
 	bool_options_( MAX_BOOL_OPTIONS, false ),
 	_int_options( MAX_INT_OPTIONS ),
-	_priority_scheme( "" ),
-	_status( INITIALIZATION )
+	priority_scheme_( "" ),
+	status_( INITIALIZATION )
 {
 	_int_options[SMALL_STEP] = 1;
 	_int_options[BIG_STEP] = 9;
@@ -161,7 +161,7 @@ const WantParser &
 WantParser::printOptions( std::ostream & os ) const {
 
 	os << "Options: ";
-	for ( auto const option : _given_options ) {
+	for ( auto const option : given_options_ ) {
 		os << option << " ";
 	}
 	os << std::endl;
@@ -226,7 +226,7 @@ WantParser::printErrors( std::ostream & os ) const {
 
 std::string
 WantParser::getPriorityScheme() const {
-	return _priority_scheme;
+	return priority_scheme_;
 }
 
 bool
@@ -364,7 +364,7 @@ WantParser::parseLine_( const std::string & buffer ) {
 		/* Option line;
 		 * May only be given during initialization.
 		 * Isolate option (exlude "#!") and parse it. */
-		switch ( _status ) {
+		switch ( this->status_ ) {
 			case INITIALIZATION: {
 				const std::string option =
 					buffer.substr(2, std::string::npos);
@@ -392,11 +392,11 @@ WantParser::parseLine_( const std::string & buffer ) {
 		if ( buffer.compare(0, 21, "!BEGIN-OFFICIAL-NAMES") == 0 ) {
 
 			/* Directive indicating that official names are following. */
-			switch ( _status ) {
+			switch ( this->status_ ) {
 				case INITIALIZATION: {
 					/* Initialization: official names will
 					 * be parsed now. */
-					_status = PARSE_NAMES;
+					this->status_ = PARSE_NAMES;
 					break;
 				}
 
@@ -424,7 +424,7 @@ WantParser::parseLine_( const std::string & buffer ) {
 
 			/* Directive indicating that official names have ended. */
 			//TODO check if it's given multiple times
-			_status = PARSE_WANTS_WITHNAMES;
+			this->status_ = PARSE_WANTS_WITHNAMES;
 
 		} else {
 			throw std::runtime_error("Unrecognized directive: "
@@ -441,12 +441,12 @@ WantParser::parseLine_( const std::string & buffer ) {
 
 		/* If we are already in the initialization,
 		 * mark that no official names will be given. */
-		if ( this->_status == INITIALIZATION ) {
-			this->_status = PARSE_WANTS_NONAMES;
+		if ( this->status_ == INITIALIZATION ) {
+			this->status_ = PARSE_WANTS_NONAMES;
 		}
 
 		/* Parsing items or names? */
-		switch ( _status ) {
+		switch ( this->status_ ) {
 			case PARSE_WANTS_NONAMES:
 			case PARSE_WANTS_WITHNAMES:
 				parseWantList_( buffer );
@@ -459,7 +459,7 @@ WantParser::parseLine_( const std::string & buffer ) {
 			default:
 				throw std::logic_error("Unknown handler for"
 						" internal status "
-						+ std::to_string(_status));
+						+ std::to_string(this->status_));
 				break;
 		}
 	}
@@ -481,7 +481,7 @@ WantParser::parseOption_( const std::string & option_line ) {
 	for ( auto const & option : tokens ) {
 
 		/* Add to given options list. */
-		this->_given_options.push_back( option );
+		this->given_options_.push_back( option );
 
 		/* Regexes to match:
 		 * - Integer options
@@ -520,14 +520,14 @@ WantParser::parseOption_( const std::string & option_line ) {
 			const std::string &value = int_elems.at(1);
 
 			/* Get int option from map, if supported. */
-			auto const it = _int_option_map.find( int_option_name );
-			if ( it == _int_option_map.end() ) {
+			auto const it = int_option_map_.find( int_option_name );
+			if ( it == int_option_map_.end() ) {
 				throw std::runtime_error("Unknown integer option "
 						+ int_option_name);
 			}
 
 			/* Set the value of the int option. */
-			const IntOption int_option = it->second;
+			const IntOption_ int_option = it->second;
 			_int_options[ int_option ] = std::stoi(value);
 
 		} else if ( std::regex_match(option, regex_prio) ) {
@@ -537,7 +537,7 @@ WantParser::parseOption_( const std::string & option_line ) {
 			 * If given multiple times, the last value is considered.
 			 * TODO throw if already given
 			 */
-			_priority_scheme = option;
+			priority_scheme_ = option;
 
 		} else {
 			/* Finally, any other option without a value
@@ -808,7 +808,7 @@ WantParser::addSourceItem_( const std::string & source,
 	if ( it == _node_map.end() ) {
 
 		/* Source item is NOT in node_map. */
-		switch ( this->_status ) {
+		switch ( this->status_ ) {
 			case PARSE_NAMES:
 			case PARSE_WANTS_NONAMES: {
 
@@ -846,7 +846,7 @@ WantParser::addSourceItem_( const std::string & source,
 			}
 			default: {
 				throw std::logic_error("Unknown handler for internal status "
-						+ std::to_string( _status )
+						+ std::to_string( this->status_ )
 						+ "; source item not found in node map.");
 				break;
 			}
@@ -865,7 +865,7 @@ WantParser::addSourceItem_( const std::string & source,
 
 	} else {
 		/* Source item IS in node_map. */
-		switch ( this->_status ) {
+		switch ( this->status_ ) {
 			case PARSE_NAMES: {
 
 				/* We are currently reading official names.
@@ -895,7 +895,7 @@ WantParser::addSourceItem_( const std::string & source,
 					/* Condition must be true. */
 					throw std::runtime_error("Ignoring multiple wantlist for item "
 							+ source);
-				} else if ( this->_status == PARSE_WANTS_NONAMES ) {
+				} else if ( this->status_ == PARSE_WANTS_NONAMES ) {
 					/* Sanity check. If no official names are being read
 					 * an existing item MUST have a want-list. */
 					throw std::logic_error("Existing item found in node list map "
@@ -906,7 +906,7 @@ WantParser::addSourceItem_( const std::string & source,
 			}
 			default: {
 				throw std::logic_error("Unknown handler for internal status "
-						+ std::to_string( _status )
+						+ std::to_string( this->status_ )
 						+ "; source item already found in node map.");
 				break;
 			}
@@ -1086,12 +1086,8 @@ WantParser::bool_option_map_ = {
 	{"SORT-BY-ITEM",	SORT_BY_ITEM},
 };
 
-
-/**
- * Unordered_map to map string-options to enums.
- */
-const std::unordered_map< std::string, WantParser::IntOption  >
-WantParser::_int_option_map = {
+const std::unordered_map< std::string, WantParser::IntOption_ >
+WantParser::int_option_map_ = {
 	{"SMALL-STEP",		SMALL_STEP},
 	{"BIG-STEP",		BIG_STEP},
 	{"NONTRADE_COST",	NONTRADE_COST},

@@ -200,16 +200,14 @@ public:
 
 	/*! @} */ // end of group
 
-	/**
-	 * @brief Get priority scheme.
-	 * Gets the given priority scheme, in the form of
-	 * 	"PRIORITY-XXX"
-	 * Note that the priority scheme might be invalid
-	 * or not implemented yet;
-	 * it's not the responsibility of WantParser to check
-	 * its validity.
-	 * @return std::string with the priority scheme.
-	 * @return Null string if no priority has been given.
+	/*! @brief Get priority scheme.
+	 *
+	 *  Gets the given priority scheme, in the form of "PRIORITY-XXX".
+	 *
+	 *  Note that the priority scheme might be invalid or not implemented yet;
+	 *  it's not the responsibility of WantParser to check its validity.
+	 *
+	 *  @returns	the priority scheme; empty if no priority scheme has been given
 	 */
 	std::string getPriorityScheme() const ;
 
@@ -357,13 +355,23 @@ private:
 		/* Not implemented */
 		MAX_BOOL_OPTIONS	/*!< not an option; always the __last__ option */
 	};
-	enum IntOption {	/**< Int options enum */
-		SMALL_STEP,
-		BIG_STEP,
-		NONTRADE_COST,
-		MAX_INT_OPTIONS		/**< Not an option */
-	};
 
+	/*! @brief Supported want-list integer options.
+	 *
+	 *  All want-list integer options supported by the WantParser.
+	 *  Integer options are specified in the want-list file as,
+	 *  e.g., ``#! BIG-STEP=42``.
+	 *
+	 *  @ref int_option_map_ is used to map
+	 *  an option string to the actual @ref BoolOption_ value.
+	 */
+	enum IntOption_ {
+		SMALL_STEP = 0,		/*!< default arc cost increment in want-lists */
+		BIG_STEP,		/*!< additional arc cost increment in want-lists if ``;`` is given */
+		NONTRADE_COST,		/*!< cost of arcs that should not be chosen by default by the trade solver */
+		/* Not implemented */
+		MAX_INT_OPTIONS		/*!< not an option; always the __last__ option */
+	};
 
 	/*! @brief String to @ref BoolOption_ map.
 	 *
@@ -373,12 +381,15 @@ private:
 	 */
 	static const std::unordered_map< std::string, BoolOption_ >
 		bool_option_map_;
-	/**
-	 * Static members: unordered_maps
-	 * to map string options -> enums.
+
+	/*! @brief String to @ref IntOption_ map.
+	 *
+	 *  Maps integer option strings detected in a want-list file
+	 *  to a @ref @IntOption_ value.<br>
+	 *  Example: the ``"BIG-STEP=42"`` option string is mapped to @ref BIG_STEP.
 	 */
-	static const std::unordered_map< std::string, IntOption >
-		_int_option_map;
+	static const std::unordered_map< std::string, IntOption_ >
+		int_option_map_;
 
 	/*! @brief Boolean option vector.
 	 *
@@ -388,39 +399,57 @@ private:
 	 */
 	std::vector< bool > bool_options_;
 
-	/**
-	 * The actual vectors members
-	 * with all options.
+	/*! @brief Integer option vector.
+	 *
+	 *  Vector containing all supported integer options.
+	 *  Each position corresponds to a integer option from @ref IntOption_.
 	 */
 	std::vector< int > _int_options;
 
-	/**
-	 * The priority scheme
+	/*! @brief The priority scheme.
+	 *
+	 *  Holds the priority scheme that has been specified by the want-list file.
 	 */
-	std::string _priority_scheme;
+	std::string priority_scheme_;
 
-	/**
-	 * Given options in want file.
-	 * Used in @printOptions()
+	/*! @brief Provided options.
+	 *
+	 *  List of all options that were provided in the parsed
+	 *  want file.
 	 */
-	std::list< std::string > _given_options;
+	std::list< std::string > given_options_;
 
-	/**
-	 * Enum of current status
+	/*! @brief Parsing status.
+	 *
+	 *  This is used to control whether official names have been given or not,
+	 *  since they may only be given at the beginning.
 	 */
 	enum Status {
-		INITIALIZATION,		/**< options may be given */
-		PARSE_NAMES,		/**< parsing official names */
-		PARSE_WANTS_NONAMES,	/**< parsing wants; no given official names */
-		PARSE_WANTS_WITHNAMES,	/**< parsing wants; official names given */
+		INITIALIZATION = 0,	/*!< options may be given */
+		PARSE_NAMES,		/*!< parsing official names */
+		PARSE_WANTS_NONAMES,	/*!< parsing wants; no given official names */
+		PARSE_WANTS_WITHNAMES,	/*!< parsing wants; official names given */
+		/* Not implemented */
+		MAX_STATUS_ENUMS	/*!< not a status; always the __last__ option */
 	};
-	Status _status;
 
-	std::list< std::string > errors_; /*!< errors during parsing */
+	/*! @brief Current parsing status.
+	 *
+	 *  Indicates the current parsing status of the object.
+	 */
+	Status status_;
 
-	/***************************//*
-	 * INTERNAL DATA STRUCTURES
-	 *****************************/
+	/*! @brief Generated errors.
+	 *
+	 *  Holds a list of errors that were generated during
+	 *  the want-list file parsing,
+	 *  including the number of the line that generated the error.
+	 */
+	std::list< std::string > errors_;
+
+	/****************************************
+	 *	INTERNAL DATA STRUCTURES	*
+	 ****************************************/
 
 	/*! @brief Graph Node.
 	 *
