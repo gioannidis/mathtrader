@@ -92,16 +92,22 @@ WantParser::print( std::ostream &os ) const {
 
 	for ( auto const & node : _node_map ) {
 
-		// Skip if want-list is missing
-		if ( node.second.has_wantlist ) {
+		/* Get references to item details. */
+		const std::string
+			&item = node.second.item,
+			&official_name = node.second.official_name,
+			&username = node.second.username;
 
-			const std::string
-				&item = node.second.item,
-				&official_name = node.second.official_name,
-				&username = node.second.username;
-			bool dummy = node.second.dummy;
+		/* Check if it has a want-list (present in the arc map). */
+		const bool has_wantlist =
+			(this->_arc_map.find(item) != this->_arc_map.end());
 
-			os << '"' << item << '"'	// item also used as label
+		/* Skip if it has no want-list. */
+		if ( has_wantlist ) {
+
+			const bool dummy = node.second.dummy;
+
+			os << '"' << item << '"'	/* item also used as label */
 				<< '\t'
 				<< '"' << item << '"'
 				<< '\t'
@@ -175,8 +181,13 @@ WantParser::printMissing( std::ostream & os ) const {
 
 		const std::string & item = node_pair.first;
 		auto const & node = node_pair.second;
-		if ( !this->isDummy_(item) && !node.has_wantlist ) {
-			count ++ ;
+
+		const bool has_wantlist =
+			(this->_arc_map.find(item) != this->_arc_map.end());
+
+		/* Report if want-list is empty and is NOT a dummy item. */
+		if ( !this->isDummy_(item) && !has_wantlist ) {
+			++ count;
 			ss << "**** Missing want list for item "
 				<< item
 				<< std::endl;
@@ -885,7 +896,8 @@ WantParser::addSourceItem_( const std::string & source,
 				 *   in parseOfficialName_.
 				 * - If we do not have official names, it's a logic error.
 				 */
-				bool source_has_wantlist = it->second.has_wantlist;
+				const bool source_has_wantlist =
+					(this->_arc_map.find(source) != this->_arc_map.end());
 
 				if ( source_has_wantlist ) {
 					/* Condition must be true. */
@@ -1028,9 +1040,6 @@ WantParser::addTargetItems_( const std::string & source, const std::vector< std:
 	if ( !pair.second ) {
 		throw std::logic_error("Could not insert arcs in _arc_map.");
 	}
-
-	/* Source item has a want-list now. */
-	this->_node_map.at( source ).has_wantlist = true;
 }
 
 /************************************//*

@@ -443,20 +443,16 @@ private:
 		std::string official_name;	/*!< official name; e.g., "Puerto Rico" */
 		std::string username;		/*!< username; "Aldie" */
 		bool dummy;			/*!< dummy node */
-		bool has_wantlist;		/*!< want-list has been given */
 
 		inline _Node_s ( const std::string & _item,
 				const std::string & _official,
 				const std::string & _user,
-				bool _dummy = false,
-				bool _has_wantlist = false
+				bool _dummy = false
 				) :
 			item( _item ),
 			official_name( _official ),
 			username( _user ),
-			dummy( _dummy ),
-			has_wantlist( _has_wantlist ) {}
-
+			dummy( _dummy ) {}
 	} _Node_t;
 
 	/**
