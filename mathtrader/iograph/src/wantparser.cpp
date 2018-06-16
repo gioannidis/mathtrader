@@ -21,12 +21,11 @@
  */
 #include <iograph/wantparser.hpp>
 
+#include <fstream>
 #include <memory>
 #include <regex>
 #include <sstream>
 #include <stdexcept>
-
-#include <iograph/baseparser.hpp>
 
 
 /************************************//*
@@ -102,11 +101,15 @@ WantParser::print( std::ostream &os ) const {
 				&username = node.second.username;
 			bool dummy = node.second.dummy;
 
-			os << item << "\t"	// item also used as label
-				<< item << "\t"
-				<< official_name << "\t"
-				<< username << "\t"
-				<< dummy << "\t"
+			os << '"' << item << '"'	// item also used as label
+				<< '\t'
+				<< '"' << item << '"'
+				<< '\t'
+				<< '"' << official_name << '"'
+				<< '\t'
+				<< '"' << username << '"'
+				<< '\t'
+				<< dummy
 				<< std::endl;
 		}
 	}
@@ -132,13 +135,15 @@ WantParser::print( std::ostream &os ) const {
 			 * 	(TODO same as (1)?)
 			 * 3) Target has want list
 			 */
-			const bool valid = (!arc.unknown)
-				&& (_node_map.find(target) != _node_map.end())
-				&& (_node_map.find(target)->second.has_wantlist);
+			const bool valid =
+				(_node_map.find(target) != _node_map.end())	/* valid target node */
+				&& (_arc_map.find(target)  != _arc_map.end());	/* target node has a want-list too */
 
 			if ( valid ) {
-				os << arc.item_s << "\t"
-					<< arc.item_t << "\t"
+				os << '"' << arc.item_s << '"'
+					<< '\t'
+					<< '"' << arc.item_t << '"'
+					<< '\t'
 					<< arc.rank
 					<< std::endl;
 			}
@@ -325,6 +330,9 @@ WantParser::parseStream( std::istream & is ) {
 					+ e.what() );
 		}
 	}
+
+	/* Mark unknown items. */
+	this->_markUnknownItems();
 }
 
 void
@@ -435,7 +443,7 @@ WantParser::parseLine_( const std::string & buffer ) {
 		switch ( _status ) {
 			case PARSE_WANTS_NONAMES:
 			case PARSE_WANTS_WITHNAMES:
-				_parseWantList( buffer );
+				parseWantList_( buffer );
 				break;
 
 			case PARSE_NAMES:
@@ -457,7 +465,7 @@ WantParser::parseOption_( const std::string & option_line ) {
 	/* Tokenize line via regex: ignore whitespaces.
 	 * Multiple options may be present in the same line. */
 	static const std::regex e(R"(\S+)");
-	auto tokens = BaseParser::_split( option_line, e );
+	auto tokens = split_( option_line, e );
 
 	/* Handle option according to type in order:
 	 * - Integer
@@ -488,7 +496,7 @@ WantParser::parseOption_( const std::string & option_line ) {
 			/* Tokenize around '='.
 			 * Isolate the variable name and any integer values. */
 			static const std::regex digits(R"(([-+]?\d+)|(\b([^=])+))");
-			auto const int_elems = BaseParser::_split( option, digits );
+			auto const int_elems = split_( option, digits );
 
 			/* Int option; tokenize to retrieve name value.
 			 * Check whether the option has been tokenized
@@ -581,7 +589,7 @@ WantParser::parseOfficialName_( const std::string & line ) {
 	);
 
 	/* Tokenize the line. */
-	auto match = BaseParser::_split( line, FPAT_names );
+	auto match = split_( line, FPAT_names );
 
 	/* Sanity check for minimum number of matches
 	 * TODO the description (4th item) is optional. */
@@ -598,8 +606,7 @@ WantParser::parseOfficialName_( const std::string & line ) {
 	/* Parse item name (quotation marks, uppercase).
 	 * As we're not providing a username,
 	 * it will raise an error if it's dummy. */
-	std::string item( orig_item );
-	_parseItemName( item );
+	const std::string item = convertItemName_( orig_item );
 
 	/* Replace nested quotation marks in official_name with "'".
 	 * Replace backslashes with forward slashes;
@@ -608,20 +615,23 @@ WantParser::parseOfficialName_( const std::string & line ) {
 	 * TODO create static private method.
 	 */
 	std::string official_name( orig_official_name );
-	size_t pos = 1;
-	while ((( pos = official_name.find( "\"", pos )) != std::string::npos )
-			&& ( pos != official_name.length()-1 )) {
 
-		official_name.replace( pos, 1, "'");
-		pos += 1;
-	}
-	pos = 1;
-	while ((( pos = official_name.find( "\\", pos )) != std::string::npos )
-			&& ( pos != official_name.length()-1 )) {
+	/* Remove quotations.
+	 * std::remove pushes all quotes to the end
+	 * and erase() removes them.
+	 * Alternatively, replace double quotes with single quotes.
+	 */
+	auto remove_func = []( std::string & str, char c ) {
+		str.erase(
+				std::remove(str.begin(),str.end(),c),
+				str.end()
+				);
+	};
+	remove_func( official_name, '"');
 
-		official_name.replace( pos, 1, "/");
-		pos += 1;
-	}
+	/* Replace backslashes '\' with slashes '/'. */
+	std::replace(official_name.begin(), official_name.end(),
+			'\\', '/');
 
 	/* From_username is in format:
 	 * 	(from user name)
@@ -645,19 +655,18 @@ WantParser::parseOfficialName_( const std::string & line ) {
 	if ( !username.empty() ) {
 		username.pop_back(); /* remove last ')' */
 	}
-	BaseParser::_parseUsername( username ); /* add quotation marks, make uppercase */
 
-	/* Emplace the item. It should not exist in the node_map.
-	 * Throw if present. */
-	const auto rv = this->_node_map.emplace( item, _Node_s(item,official_name,username) );
-	if ( !rv.second ) {
-		throw std::runtime_error("Existing entry for item "
-				+ item);
+	/* Capitalize. */
+	if ( !this->bool_options_[CASE_SENSITIVE] ) {
+		std::transform(username.begin(), username.end(), username.begin(), ::toupper);
 	}
+
+	/* Add the item to _node_map. */
+	this->addSourceItem_( item, official_name, username );
 }
 
-WantParser &
-WantParser::_parseWantList( const std::string & line ) {
+void
+WantParser::parseWantList_( const std::string & line ) {
 
 	static const std::regex FPAT_want(
 		R"(\([^\)]+\))"		// Group 1: parentheses
@@ -670,8 +679,7 @@ WantParser::_parseWantList( const std::string & line ) {
 		R"(;)"
 	);
 
-	/**
-	 * Summary:
+	/* Summary:
 	 * 1. Tokenize the line.
 	 * 2. Parse username.
 	 * 3. Parse offering item name (source).
@@ -686,149 +694,47 @@ WantParser::_parseWantList( const std::string & line ) {
 	 * ALLOW-DUMMIES: not possible if REQUIRE-USERNAMES not set.
 	 */
 
-	/**
-	 * Tokenize the line
-	 */
-	auto const match = BaseParser::_split( line, FPAT_want );
+	/* Tokenize the line. */
+	auto const match = split_( line, FPAT_want );
 	if ( match.empty() ) {
 		throw std::runtime_error("Bad format of want list");
 	}
 
+	/********************************
+	 * 	PARSE USERNAME		*
+	 ********************************/
 
-	/**********************************//*
-	 *	USERNAME
-	 *************************************/
+	unsigned n_pos = 0;	/* current item that is being parsed */
 
-	/**
-	 * Check if there is a username;
-	 * first & last characters should be '(' && ')'.
-	 * It should be the first token.
-	 */
-	unsigned n_pos = 0;
-	const std::string &username_p = match[n_pos];
+	std::string username = extractUsername_(match.at(n_pos));
 
-	const bool has_username = (( username_p.front() == '(' )
-			&& ( username_p.back() == ')' ));
-
-	/**
-	 * Advance n_pos if we have a username.
-	 */
-	if ( has_username ) {
+	/* Go to the next element if we have a valid username.
+	 * If we are missing a required username stop here. */
+	if ( !username.empty() ) {
 		++ n_pos ;
 	} else if (  this->bool_options_[ REQUIRE_USERNAMES ] ) {
 		throw std::runtime_error("Missing username from want list");
 	}
 
+	/****************************************
+	 *	OFFERED ITEM NAME (source)	*
+	 ****************************************/
 
-	/**********************************//*
-	 *	OFFERED ITEM NAME (source)
-	 *************************************/
-
-	/**
-	 * Check whether there is a wanted item name.
-	 */
-	if ( match.size() < (n_pos + 1) ) {
+	/* Check whether we have reached the end of the line.
+	 * If so, the wanted item name is missing. */
+	if ( n_pos >= match.size() ) {
 		throw std::runtime_error("Missing offered item from want list");
 	}
-	const std::string &source = match[n_pos];
+	const std::string & original_source = match.at(n_pos);
 
-	/**
-	 * Append username on item name, if dummy.
+	/* Convert item name. */
+	const std::string source = convertItemName_( original_source, username );
+
+	/* Add source item.
+	 * Item name is also used as the 'official' name
 	 */
-	std::string item = source;
+	this->addSourceItem_( source, source, username );
 
-	/**
-	 * Parse the item name (dummy, uppercase, etc).
-	 */
-	if ( has_username ) {
-		_parseItemName( item, username_p );
-	} else {
-		_parseItemName( item );
-	}
-
-	/**
-	 * Remove parentheses from username: first and last character.
-	 * Parse the username.
-	 */
-	std::string username = username_p.substr(1, std::string::npos);
-	username.pop_back();
-	BaseParser::_parseUsername( username );
-
-	/**
-	 * Check if the item is present in node_map.
-	 * Handle cases when present or not.
-	 * Check if it has a want list.
-	 */
-	bool * has_wantlist = NULL;	/**< Will point to has_wantlist member */
-	{
-		auto it = _node_map.find(item);
-
-		if ( it == _node_map.end() ) {
-
-			/**
-			 * Handle case when offering item
-			 * is NOT in node_map:
-			 * --> dependent on when official names
-			 *     have been given or not.
-			 */
-			switch ( _status ) {
-				case PARSE_WANTS_NONAMES: {
-
-					/**
-					 * No official names have been given;
-					 * there should be no entry.
-					 * Sanity check:
-					 * If an entry is found, then it should have a want-list.
-					 */
-					break;
-				}
-
-				case PARSE_WANTS_WITHNAMES: {
-
-					/**
-					 * Official names have been given;
-					 * there SHOULD be an entry,
-					 * unless it's a dummy item.
-					 * This check usually catches spelling errors.
-					 */
-					if ( !this->isDummy_(item) ) {
-
-						throw std::runtime_error("Non-dummy item "
-								+ item
-								+ " has no official name."
-								" Hint: spelling error?");
-					}
-					break;
-				}
-
-				default:
-					throw std::logic_error("Bad internal status during"
-							" want list parsing: "
-							+ std::to_string( _status ));
-					break;
-			}
-
-			/**
-			 * Insert the item in the node_map.
-			 * Point the iterator to the new item.
-			 */
-			auto const & pair = this->_node_map.emplace(item,
-					_Node_s(item, item, username, this->isDummy_(item)));
-			it = pair.first;
-		}
-
-		/**
-		 * Now, iterator @it should point to the item's entry,
-		 * whether it's just been added or not.
-		 * Check if it has a want-list
-		 */
-		has_wantlist = &(it->second.has_wantlist);
-
-		if ( *has_wantlist ) {
-			throw std::runtime_error("Ignoring multiple wantlist for item "
-					+ item);
-		}
-	}
 
 	/**
 	 * Finally, advance n_pos.
@@ -837,14 +743,11 @@ WantParser::_parseWantList( const std::string & line ) {
 	++ n_pos;
 
 
-	/**********************************//*
-	 *	CHECK COLONS
-	 *************************************/
+	/********************************
+	 *	CHECK COLONS		*
+	 ********************************/
 
-	/**
-	 * Dependent scope, to limit
-	 * the unnecessary variables.
-	 */
+	/* Dependent scope to open local variables. */
 	{
 		const bool has_colon = ((match.size() >= (n_pos + 1))
 				&& (match[n_pos].compare(":") == 0));
@@ -860,9 +763,9 @@ WantParser::_parseWantList( const std::string & line ) {
 	}
 
 
-	/**********************************//*
-	 *	WANTED ITEMS (targets)
-	 *************************************/
+	/********************************
+	 *	WANTED ITEMS (targets)	*
+	 ********************************/
 
 	/**
 	 * Check if want list already exists.
@@ -870,9 +773,9 @@ WantParser::_parseWantList( const std::string & line ) {
 	 * or another line was split over two lines.
 	 * FIXME use "has_wantlist" pointer?
 	 */
-	if ( _arc_map.find(item) != _arc_map.end() ) {
+	if ( _arc_map.find(source) != _arc_map.end() ) {
 		throw std::runtime_error("Multiple want lists for item "
-				+ item);
+				+ source);
 	}
 
 	/**
@@ -905,10 +808,9 @@ WantParser::_parseWantList( const std::string & line ) {
 		auto const & small_step = _int_options[SMALL_STEP];
 		auto const & big_step   = _int_options[BIG_STEP];
 
-		std::string target = match[i];
+		std::string target = match.at(i);
 
-		/**
-		 * Cases:
+		/* Cases:
 		 * 1. Semicolon:
 		 * 	"increase the rank of the next item by the big-step value"
 		 * 	NOTE: the small-step of the previous item will also be applied.
@@ -922,19 +824,11 @@ WantParser::_parseWantList( const std::string & line ) {
 					+ std::to_string(i+1));
 		} else {
 
-			/**
-			 * Parse the item name (dummy, uppercase, etc).
-			 */
-			if ( has_username ) {
-				_parseItemName( target, username_p );
-			} else {
-				_parseItemName( target );
-			}
+			/* Parse the item name (dummy, uppercase, etc). */
+			target = convertItemName_( target, username );
 
-			/**
-			 * Push (item-target) arc to map.
-			 */
-			arcs_to_add.push_back(_Arc_t( item, target, rank ));
+			/* Push (item-target) arc to map. */
+			arcs_to_add.push_back(_Arc_t( source, target, rank ));
 		}
 
 		/**
@@ -943,39 +837,177 @@ WantParser::_parseWantList( const std::string & line ) {
 		rank += small_step;
 	}
 
-	/**
-	 * Create ArcMap entry for item;
+	/* Create ArcMap entry for item;
 	 * in C++11 we can directly move the items from the original list
 	 * to the vector; we don't have to copy them!
 	 */
-	_arc_map.emplace( item, std::vector< _Arc_t > {
-			std::make_move_iterator(std::begin(arcs_to_add)),
-			std::make_move_iterator(std::end(arcs_to_add)) }
+	auto pair = _arc_map.emplace(
+			source,
+			std::vector< _Arc_t > {
+				std::make_move_iterator(std::begin(arcs_to_add)),
+				std::make_move_iterator(std::end(arcs_to_add)) }
 			);
 
-	/**
-	 * Mark the item has having a want_list.
-	 */
-	if ( has_wantlist != NULL ) {
-		*has_wantlist = true;
-	} else {
-		/* Should never get here */
-		throw std::logic_error("Internal has_wantlist pointer"
-				" is NULL");
+	/* Insertion should have succeeded. */
+	if ( !pair.second ) {
+		throw std::logic_error("Could not insert arcs in _arc_map.");
 	}
 
-	return *this;
+	/* Source item has a want-list now. */
+	this->_node_map.at( source ).has_wantlist = true;
 }
 
-WantParser &
-WantParser::_parseItemName( std::string & item,
-		const std::string username ) {
+std::string
+WantParser::extractUsername_( const std::string & token ) {
 
+	/* Username to extract; empty if nothing is extracted. */
+	std::string username;
+	username.clear();
+
+	if ( !token.empty() ) {
+
+		/* Check username validity;
+		 * first & last characters should be '(' and ')'. */
+		const bool is_username = (( token.front() == '(' )
+				&& ( token.back() == ')' ));
+
+		if ( is_username ) {
+			username = token.substr(1, token.size()-2);
+		}
+	}
+	return username;
+}
+
+void
+WantParser::addSourceItem_( const std::string & source,
+		const std::string & official_name,
+		const std::string & username) {
+
+	/* Check if the source item is present in node_map. */
+	auto it = _node_map.find( source );
+
+	if ( it == _node_map.end() ) {
+
+		/* Source item is NOT in node_map. */
+		switch ( this->_status ) {
+			case PARSE_NAMES:
+			case PARSE_WANTS_NONAMES: {
+
+				/* We are either:
+				 * 1. currently reading official names; OR
+				 * 2. currently reading want-lists without
+				 *    official names.
+				 *
+				 * These should be no entries in these cases.
+				 * Break here, add later.
+				 */
+				break;
+			}
+			case PARSE_WANTS_WITHNAMES: {
+
+				/* We are currently reading want-lists
+				 * WITH official names previously given.
+				 * There SHOULD be an entry
+				 * with a corresponding official name,
+				 * unless it's a dummy item.
+				 * This check usually catches spelling errors.
+				 *
+				 * Therefore, raise an error only if it's
+				 * a non-dummy item.
+				 * Otherwise, proceed to add.
+				 */
+				if ( !isDummy_(source) ) {
+
+					throw std::runtime_error("Non-dummy item "
+							+ source
+							+ " has no official name."
+							" Hint: spelling error?");
+				}
+				break;
+			}
+			default: {
+				throw std::logic_error("Unknown handler for internal status "
+						+ std::to_string( _status )
+						+ "; source item not found in node map.");
+				break;
+			}
+		}
+
+		/* Insert the item in the node_map. */
+		auto const pair = this->_node_map.emplace(
+				source,
+				_Node_s(
+					source, official_name, username,
+					isDummy_(source)
+					)
+				);
+
+		/* Insert should have succeeded. */
+		if ( !pair.second ) {
+			throw std::logic_error("Could not insert node in _node_map.");
+		}
+
+	} else {
+		/* Source item IS in node_map. */
+		switch ( this->_status ) {
+			case PARSE_NAMES: {
+
+				/* We are currently reading official names.
+				 * Ignore any item attempted to be inserted twice.
+				 */
+				throw std::runtime_error("Existing entry for item "
+						+ source);
+				break;
+			}
+			case PARSE_WANTS_WITHNAMES:
+			case PARSE_WANTS_NONAMES: {
+
+				/* We are currently reading want-lists either:
+				 * 1. without official names; OR
+				 * 2. with official names.
+				 *
+				 * If a want-list exists: ignore.
+				 * Otherwise:
+				 * - If we have official names, do nothing. We had previously inserted the item
+				 *   in parseOfficialName_.
+				 * - If we do not have official names, it's a logic error.
+				 */
+				bool source_has_wantlist = it->second.has_wantlist;
+
+				if ( source_has_wantlist ) {
+					/* Condition must be true. */
+					throw std::runtime_error("Ignoring multiple wantlist for item "
+							+ source);
+				} else if ( this->_status == PARSE_WANTS_NONAMES ) {
+					/* Sanity check. If no official names are being read
+					 * an existing item MUST have a want-list. */
+					throw std::logic_error("Existing item found in node list map "
+							"without a want-list, but official names "
+							"have not been given.");
+				}
+				break;
+			}
+			default: {
+				throw std::logic_error("Unknown handler for internal status "
+						+ std::to_string( _status )
+						+ "; source item already found in node map.");
+				break;
+			}
+		}
+	}
+}
+
+std::string
+WantParser::convertItemName_( const std::string & item,
+		const std::string username ) const {
+
+	/* Target item name */
+	std::string target(item);
+
+	/* Handle cases where item is dummy */
 	if ( this->isDummy_(item) ) {
 
-		/**
-		 * Sanity check for dummy item
-		 */
+		/* Only proceed if dummy names are allowed. */
 		if ( !this->bool_options_[ALLOW_DUMMIES] ) {
 
 			throw std::runtime_error("Dummy item "
@@ -983,35 +1015,28 @@ WantParser::_parseItemName( std::string & item,
 					+ " detected, but dummy items"
 					" not allowed");
 
-		} else if ( username.length() == 0 ) {
+		} else if ( username.empty() ) {
 
+			/* Usernames MUST be present when giving a dummy item. */
 			throw std::runtime_error("Dummy item "
 					+ item
 					+ " detected, but username "
 					" not defined");
 		}
 
-		/**
-		 * Append username
-		 */
-		item.push_back('-');
-		item.append(username);
+		/* Append username to dummy name. */
+		target.append("-(");
+		target.append(username);
+		target.push_back(')');
 	}
 
-	/**
-	 * Unless item names are case sensitive,
-	 * convert to uppercase.
-	 */
+	/* Unless item names are case sensitive,
+	 * convert to uppercase. */
 	if ( !this->bool_options_[CASE_SENSITIVE] ) {
-		BaseParser::_toUpper( item );
+		std::transform(target.begin(), target.end(), target.begin(), ::toupper);
 	}
 
-	/**
-	 * Enclose in quotation marks
-	 */
-	BaseParser::_quotationMarks(item);
-
-	return *this;
+	return target;
 }
 
 
@@ -1074,6 +1099,20 @@ WantParser::isDummy_( const std::string & item ) {
 	/* Valid string; dummy if first character,
 	 * excluding '"', is '%'. */
 	return ( item.compare(0 + offset, 1, "%") == 0 );
+}
+
+std::vector<std::string>
+WantParser::split_( const std::string & input, const std::string & str ) {
+	std::regex regex(str);
+	return split_( input, regex );
+}
+
+std::vector< std::string >
+WantParser::split_( const std::string & input, const std::regex & regex ) {
+	std::sregex_token_iterator
+		first{input.begin(), input.end(), regex, 0},
+		last;
+	return {first, last};
 }
 
 

@@ -21,6 +21,7 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <regex>
 #include <unordered_map>
 #include <vector>
 
@@ -508,7 +509,7 @@ private:
 	 *  2. If a directive, changes the @ref state_ of the class.
 	 *  (TODO write own method)
 	 *  3. Otherwise, calls the respective method:
-	 *  @ref parseOption_(), @ref parseOfficialName_(), or @ref _parseWantList().
+	 *  @ref parseOption_(), @ref parseOfficialName_(), or @ref parseWantList_().
 	 *
 	 *  @param[in]	line	the entire line to parse
 	 *  @throws	std::runtime_error if the line fails to parse
@@ -551,21 +552,49 @@ private:
 	 * If any errors are detected the whole line is discarded!
 	 * @return *this
 	 */
-	WantParser & _parseWantList( const std::string & line );
+	void parseWantList_( const std::string & line );
 
-	/**
-	 * @brief Parse Item Name.
-	 * Checks whether the item is dummy, appends username if needed
-	 * and finally appends quotation marks.
-	 * Converts to uppercase unless items are case sensitive.
-	 * Raises an exception if a dummy is found but dummies are not allowed
-	 * or the username is undefined.
-	 * @param item item name to be parsed.
-	 * @param username username of item's owner (default: empty)
-	 * @return *this
+	/*! @brief Extract username from token.
+	 *
+	 *  Parses a string token and extracts the username from it.
+	 *  Expected token format: a username enclosed in parentheses, e.g., ``(USERNAME)``
+	 *
+	 *  Example: if ``(Username123)`` is given, it extracts ``Username123``.
+	 *
+	 *  @param	token	token to parse and extract username
+	 *  @returns	extracted username; empty if ``token`` does not have a valid format
 	 */
-	WantParser & _parseItemName( std::string & item,
-			const std::string username = "" );
+	static std::string extractUsername_( const std::string & token );
+	void addSourceItem_( const std::string & item,
+			const std::string & official_name,
+			const std::string & username );
+
+	/*! @brief Convert to upper case and append username.
+	 *
+	 *  Converts the item name to be subsequently stored
+	 *  as a graph node in @ref _Node_s.
+	 *  It applies the following conversions:
+	 *
+	 *  1. Checks whether the item is dummy through @ref isDummy_()
+	 *  and appends ``username`` to the target item name, enclosed in parentheses.
+	 *  2. Converts the target item name to uppercase,
+	 *  unless the @ref CASE_SENSITIVE option in the @ref bool_options_
+	 *  has been given.
+	 *  3. Encloses the entire item name in quotation marks.
+	 *
+	 *  Example: dummy item ``%Puerto`` from user ``Aldie``
+	 *  with no case-sensitive items will become ``%PUERTO-(ALDIE)``.
+	 *
+	 *  @param	item	the item name to be converted
+	 *  @param	username	username to append to ``item``, if dummy
+	 *  @returns	converted item name
+	 *
+	 *  @throws std::runtime_error if a dummy item is given,
+	 *  but @ref ALLOW_DUMMIES in @ref bool_options_ is ``false``.
+	 *  @throws std::runtime_error if ``item`` is dummy, but the ``username`` is empty.
+	 */
+	std::string convertItemName_( const std::string & item,
+			const std::string username = std::string() ) const;
 
 	/**
 	 * @brief Mark unknown items.
@@ -590,6 +619,20 @@ private:
 	 *  @returns	``true`` if the item name is dummy, ``false`` otherwise or if empty
 	 */
 	static bool isDummy_( const std::string & item );
+
+	/**
+	 * @brief Split string.
+	 * Splits the string based on a regular expression.
+	 * @param input The input string.
+	 * @param regex Regular expression defining the fields.
+	 * @return Vector with matches.
+	 */
+	static std::vector< std::string > split_(
+			const std::string & input,
+			const std::string & str );
+	static std::vector< std::string > split_(
+			const std::string & input,
+			const std::regex & regex );
 };
 
 #endif /* _WANTPARSER_HPP_ */
