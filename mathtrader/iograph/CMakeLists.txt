@@ -69,3 +69,29 @@ export(TARGETS ${LIBNAME} FILE ${LIB_CONFIG_FILENAME}.cmake)
 ##############################
 #	TESTING
 ##############################
+
+# Check if GTest has been installed.
+find_package(GTest)
+if (GTEST_FOUND)
+
+	enable_testing()
+
+	# Library Unit Tests
+	add_executable(testwantlib
+		test/testlib.cpp
+	)
+
+	target_link_libraries(testwantlib
+		${LIBNAME}
+		${GTEST_BOTH_LIBRARIES}
+	)
+
+	# Add extra linker flags.
+	set_target_properties(testwantlib
+		PROPERTIES
+		LINK_FLAGS "-lpthread"
+	)
+
+	add_test(testwantlib testwantlib)
+
+endif (GTEST_FOUND)
