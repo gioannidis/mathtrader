@@ -26,9 +26,12 @@
 #include <gtest/gtest.h>
 #include <iograph/wantparser.hpp>
 
-TEST( WantParserTest, UrlFetch ) {
+TEST( WantParserTest, 2018_April_US_url ) {
 	WantParser want_parser;
 	want_parser.parseUrl("http://bgg.activityclub.org/olwlg/239646-officialwants.txt");
+
+	EXPECT_EQ(3789, want_parser.getNumItems());
+	EXPECT_EQ(125, want_parser.getNumMissingItems());
 }
 
 int main( int argc, char ** argv ) {

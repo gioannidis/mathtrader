@@ -18,6 +18,7 @@
 #include <iograph/wantparser.hpp>
 
 #include <fstream>
+#include <unordered_set>
 
 
 /***************************************
@@ -243,17 +244,24 @@ WantParser::sortByItem() const {
 
 unsigned
 WantParser::getNumItems() const {
-	/* Count all non-dummy items. */
-	return std::count_if(
-			this->node_map_.begin(),
-			this->node_map_.end(),
-			[]( const decltype(this->node_map_)::value_type & pair ) {
-					/* Const reference to item being checked. */
-					const auto & item = pair.second.item;
-					/* True if item is not dummy. */
-					return !isDummy_(item);
-				}
-			);
+	/* Unordered set to store UNIQUE non-dummy items. */
+	std::unordered_set< std::string > node_set;
+
+	/* Count UNIQUE non-dummy items. */
+	for ( const auto & pair : this->node_map_ ) {
+
+		/* Const reference to item being checked. */
+		const auto & item = pair.second.item;
+
+		/* If want-list is non-dummy add to set. */
+		if ( !isDummy_(item) ) {
+			/* Strip "-COPY" until the end, if present. */
+			const size_t found = item.find("-COPY");
+			const std::string unique_item = item.substr(0, found);
+			node_set.emplace( unique_item );
+		}
+	}
+	return node_set.size();
 }
 
 unsigned
@@ -261,18 +269,25 @@ WantParser::getNumMissingItems() const {
 	/* Arc map to check for missing want-lists. */
 	const auto & arc_map = this->arc_map_;
 
+	/* Unordered set to store UNIQUE occurences of items. */
+	std::unordered_set< std::string > node_set;
+
 	/* Count items with missing wantlists. */
-	return std::count_if(
-			this->node_map_.begin(),
-			this->node_map_.end(),
-			[& arc_map]( const decltype(this->node_map_)::value_type & pair ) {
-					/* Const reference to item being checked. */
-					const auto & item = pair.second.item;
-					/* Item has a want-list. */
-					const bool has_wantlist = (arc_map.find(item)
-						!= arc_map.end());
-					/* True if want-list is missing. */
-					return !has_wantlist;
-				}
-			);
+	for ( const auto & pair : this->node_map_ ) {
+
+		/* Const reference to item being checked. */
+		const auto & item = pair.second.item;
+
+		/* Item has a want-list. */
+		const bool has_wantlist = (arc_map.find(item)
+			!= arc_map.end());
+
+		/* If want-list is missing and non-dummy add to set. */
+		if ( !has_wantlist && !isDummy_(item) ) {
+			const size_t found = item.find("-COPY");
+			const std::string unique_item = item.substr(0, found);
+			node_set.emplace( unique_item );
+		}
+	}
+	return node_set.size();
 }

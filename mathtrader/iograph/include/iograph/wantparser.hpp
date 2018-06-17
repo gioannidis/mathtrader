@@ -377,15 +377,27 @@ public:
 	 */
 	/*! @{ */ // start of group
 
-	/*! @brief Total number of items.
+	/*! @brief Total number of submitted items.
 	 *
-	 *  Queries the object for the total number of officially trading items.
+	 *  Queries the object for
+	 *  the total number of officially trading items.
 	 *  This includes items without a want-list,
 	 *  but not unknown or dummy items.
+	 *  Multiple copies of the same item are reported as a unique item.
 	 *
 	 *  @returns number of officially trading items
 	 */
 	unsigned getNumItems() const ;
+
+	/*! @brief Number of missing want-lists.
+	 *
+	 *  Queries the object for
+	 *  the number of missing want-lists.
+	 *  This does not include dummy items with missing want-lists.
+	 *  Multiple copies of the same item are reported as a unique item.
+	 *
+	 *  @returns number of officially trading items
+	 */
 	unsigned getNumMissingItems() const ;
 
 	/*! @} */ // end of group
