@@ -129,6 +129,17 @@ public:
 
 	~WantParser() = default;
 
+	/************************
+	 * 	INPUT		*
+	 ************************/
+
+	/*! @name Want-list input
+	 *
+	 *  Methods to feed a want-list file to be parsed
+	 *  and converted to a graph.
+	 */
+	/*! @{ */ // start of group
+
 	/*! @brief Convert want-lists input file to graph.
 	 *
 	 *  Reads a want-list from the given input stream
@@ -149,7 +160,13 @@ public:
 	 */
 	void parseStream( std::istream & is );
 
-	/*! @name Output methods
+	/*! @} */ // end of group
+
+	/************************
+	 * 	GRAPH OUTPUT	*
+	 ************************/
+
+	/*! @name Graph and debug output
 	 *
 	 *  Methods to retrieve the generated graph
 	 *  and provided options from the want-list file.
@@ -205,18 +222,11 @@ public:
 
 	/*! @} */ // end of group
 
-	/*! @brief Get priority scheme.
-	 *
-	 *  Gets the given priority scheme, in the form of "PRIORITY-XXX".
-	 *
-	 *  Note that the priority scheme might be invalid or not implemented yet;
-	 *  it's not the responsibility of WantParser to check its validity.
-	 *
-	 *  @returns	the priority scheme; empty if no priority scheme has been given
-	 */
-	std::string getPriorityScheme() const ;
+	/********************************
+	 * 	INDIVIDUAL OPTIONS	*
+	 ********************************/
 
-	/*! @name Want-List file options
+	/*! @name Query individual options in want-list file
 	 *
 	 *  These methods indicate whether the various options
 	 *  have been provided in the want-list file.
@@ -325,13 +335,20 @@ public:
 	 */
 	bool sortByItem() const ;
 
+	/*! @brief Get priority scheme.
+	 *
+	 *  Gets the given priority scheme, in the form of "PRIORITY-XXX".
+	 *
+	 *  Note that the priority scheme might be invalid or not implemented yet;
+	 *  it's not the responsibility of WantParser to check its validity.
+	 *
+	 *  @returns	the priority scheme; empty if no priority scheme has been given
+	 */
+	std::string getPriorityScheme() const ;
+
 	/*! @} */ // end of group
 
 private:
-	/************************
-	 * 	OPTIONS		*
-	 ************************/
-
 	/*! @brief Supported want-list boolean options.
 	 *
 	 *  All want-list boolean options supported by the WantParser.
