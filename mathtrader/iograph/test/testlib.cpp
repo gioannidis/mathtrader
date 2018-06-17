@@ -26,7 +26,9 @@
 #include <gtest/gtest.h>
 #include <iograph/wantparser.hpp>
 
-TEST( LibTest, BasicTest ) {
+TEST( WantParserTest, UrlFetch ) {
+	WantParser want_parser;
+	want_parser.parseUrl("http://bgg.activityclub.org/olwlg/207635-officialwants.txt");
 }
 
 int main( int argc, char ** argv ) {
