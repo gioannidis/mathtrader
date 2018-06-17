@@ -396,7 +396,7 @@ public:
 	 *  This does not include dummy items with missing want-lists.
 	 *  Multiple copies of the same item are reported as a unique item.
 	 *
-	 *  @returns number of officially trading items
+	 *  @returns number of missing want-lists
 	 */
 	unsigned getNumMissingItems() const ;
 
