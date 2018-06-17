@@ -27,6 +27,7 @@ set(SOURCES
 	src/resultparser.cpp
 	src/wantparser.cpp
 	src/wantparser_input.cpp
+	src/wantparser_output.cpp
 	src/wantparser_wantlists.cpp
 	src/PracticalSocket.cpp
 )
