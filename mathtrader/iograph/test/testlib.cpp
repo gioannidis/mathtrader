@@ -26,6 +26,30 @@
 #include <gtest/gtest.h>
 #include <iograph/wantparser.hpp>
 
+TEST( WantParserTest, 2016_April_GR_url ) {
+	const std::string input = "http://bgg.activityclub.org/olwlg/207635-officialwants.txt";
+
+	WantParser want_parser;
+	want_parser.parseUrl(input);
+
+	EXPECT_EQ(1153, want_parser.getNumItems());
+	EXPECT_EQ(36, want_parser.getNumMissingItems());
+	EXPECT_EQ(74, want_parser.getNumUsers());
+	EXPECT_EQ(74-2, want_parser.getNumTradingUsers());
+}
+
+TEST( WantParserTest, 2018_June_UK_url ) {
+	const std::string input = "http://bgg.activityclub.org/olwlg/241767-officialwants.txt";
+
+	WantParser want_parser;
+	want_parser.parseUrl(input);
+
+	EXPECT_EQ(2251, want_parser.getNumItems());
+	EXPECT_EQ(78, want_parser.getNumMissingItems());
+	EXPECT_EQ(168, want_parser.getNumUsers());
+	EXPECT_EQ(168-15, want_parser.getNumTradingUsers());
+}
+
 TEST( WantParserTest, 2018_April_Origins_url ) {
 	const std::string input = "http://bgg.activityclub.org/olwlg/240154-officialwants.txt";
 
