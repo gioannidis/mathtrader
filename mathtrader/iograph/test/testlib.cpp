@@ -26,12 +26,16 @@
 #include <gtest/gtest.h>
 #include <iograph/wantparser.hpp>
 
-TEST( WantParserTest, 2018_April_US_url ) {
-	WantParser want_parser;
-	want_parser.parseUrl("http://bgg.activityclub.org/olwlg/239646-officialwants.txt");
+TEST( WantParserTest, 2018_April_Origins_url ) {
+	const std::string input = "http://bgg.activityclub.org/olwlg/240154-officialwants.txt";
 
-	EXPECT_EQ(3789, want_parser.getNumItems());
-	EXPECT_EQ(125, want_parser.getNumMissingItems());
+	WantParser want_parser;
+	want_parser.parseUrl(input);
+
+	EXPECT_EQ(4074, want_parser.getNumItems());
+	EXPECT_EQ(138, want_parser.getNumMissingItems());
+	EXPECT_EQ(205, want_parser.getNumUsers());
+	EXPECT_EQ(205-12, want_parser.getNumTradingUsers());
 }
 
 int main( int argc, char ** argv ) {
