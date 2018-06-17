@@ -188,9 +188,9 @@ WantParser::printErrors( std::ostream & os ) const {
 	}
 }
 
-/********************************************
- * PUBLIC METHODS - EXTERNAL OPTIONS OUTPUT
- ********************************************/
+/********************************************************
+ *	PUBLIC METHODS - EXTERNAL OPTIONS OUTPUT	*
+ ********************************************************/
 
 std::string
 WantParser::getPriorityScheme() const {
@@ -235,4 +235,44 @@ WantParser::showMissing() const {
 bool
 WantParser::sortByItem() const {
 	return this->bool_options_[SORT_BY_ITEM];
+}
+
+/****************************************
+ *	PUBLIC METHODS - STATS OUTPUT	*
+ ****************************************/
+
+unsigned
+WantParser::getNumItems() const {
+	/* Count all non-dummy items. */
+	return std::count_if(
+			this->node_map_.begin(),
+			this->node_map_.end(),
+			[]( const decltype(this->node_map_)::value_type & pair ) {
+					/* Const reference to item being checked. */
+					const auto & item = pair.second.item;
+					/* True if item is not dummy. */
+					return !isDummy_(item);
+				}
+			);
+}
+
+unsigned
+WantParser::getNumMissingItems() const {
+	/* Arc map to check for missing want-lists. */
+	const auto & arc_map = this->arc_map_;
+
+	/* Count items with missing wantlists. */
+	return std::count_if(
+			this->node_map_.begin(),
+			this->node_map_.end(),
+			[& arc_map]( const decltype(this->node_map_)::value_type & pair ) {
+					/* Const reference to item being checked. */
+					const auto & item = pair.second.item;
+					/* Item has a want-list. */
+					const bool has_wantlist = (arc_map.find(item)
+						!= arc_map.end());
+					/* True if want-list is missing. */
+					return !has_wantlist;
+				}
+			);
 }

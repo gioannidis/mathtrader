@@ -365,6 +365,31 @@ public:
 
 	/*! @} */ // end of group
 
+	/************************
+	 * 	OUTPUT STATS	*
+	 ************************/
+
+	/*! @name Stats of the generated want-list graph
+	 *
+	 *  These methods allow the user to query for specific
+	 *  stats regarding the generated want-list graph,
+	 *  such as total number of trading items.
+	 */
+	/*! @{ */ // start of group
+
+	/*! @brief Total number of items.
+	 *
+	 *  Queries the object for the total number of officially trading items.
+	 *  This includes items without a want-list,
+	 *  but not unknown or dummy items.
+	 *
+	 *  @returns number of officially trading items
+	 */
+	unsigned getNumItems() const ;
+	unsigned getNumMissingItems() const ;
+
+	/*! @} */ // end of group
+
 private:
 	/*! @brief Supported want-list boolean options.
 	 *

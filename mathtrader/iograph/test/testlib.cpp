@@ -28,7 +28,7 @@
 
 TEST( WantParserTest, UrlFetch ) {
 	WantParser want_parser;
-	want_parser.parseUrl("http://bgg.activityclub.org/olwlg/207635-officialwants.txt");
+	want_parser.parseUrl("http://bgg.activityclub.org/olwlg/239646-officialwants.txt");
 }
 
 int main( int argc, char ** argv ) {
