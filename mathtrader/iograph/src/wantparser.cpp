@@ -353,11 +353,6 @@ WantParser::parseOfficialName_( const std::string & line ) {
 		username.pop_back(); /* remove last ')' */
 	}
 
-	/* Capitalize. */
-	if ( !this->bool_options_[CASE_SENSITIVE] ) {
-		std::transform(username.begin(), username.end(), username.begin(), ::toupper);
-	}
-
 	/* Add the item to node_map_. */
 	this->addSourceItem_( item, official_name, username );
 }

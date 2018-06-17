@@ -125,7 +125,11 @@ WantParser::parseWantList_( const std::string & line ) {
 void
 WantParser::addSourceItem_( const std::string & source,
 		const std::string & official_name,
-		const std::string & username) {
+		const std::string & username_orig) {
+
+	/* Always capitalize usernames. */
+	std::string username( username_orig );
+	std::transform(username.begin(), username.end(), username.begin(), ::toupper);
 
 	/* Check if the source item is present in node_map. */
 	auto it = node_map_.find( source );
