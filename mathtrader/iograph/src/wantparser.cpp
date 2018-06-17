@@ -18,7 +18,6 @@
 #include <iograph/wantparser.hpp>
 
 #include <fstream>
-#include <sstream>
 
 
 /**************************************
@@ -29,73 +28,6 @@ WantParser::WantParser() {
 	int_options_[SMALL_STEP] = 1;
 	int_options_[BIG_STEP] = 9;
 	int_options_[NONTRADE_COST] = 1e9;
-}
-
-
-/**************************************
- * 	PUBLIC METHODS - PARSING
- **************************************/
-
-void
-WantParser::parseFile( const std::string & fn ) {
-
-	/* Open the file. */
-	std::filebuf fb;
-	auto fb_ptr = fb.open(fn, std::ios::in);
-
-	/* Check if failed */
-	if ( fb_ptr == NULL ) {
-		throw std::runtime_error("Failed to open "
-				+ fn);
-	}
-
-	/* Parse the want-file. */
-	std::istream is(&fb);
-	try {
-		this->parseStream(is);
-	} catch ( const std::exception & e ) {
-		/* If any exception is caught, close the file first.
-		 * Then re-throw. */
-		fb.close();
-		throw;
-	}
-
-	/* Close the file. */
-	fb.close();
-}
-
-void
-WantParser::parseStream( std::istream & is ) {
-
-	/* We will read line-by-line.
-	 * Allocate a buffer to read. */
-	const size_t BUFSIZE = (1<<10);
-	std::string buffer;
-	buffer.reserve(BUFSIZE);
-
-	/* The line number. */
-	uint64_t line_n = 0;
-
-	/* Repeat for every line
-	 * until the end of the stream. */
-	while (std::getline( is, buffer )) {
-
-		/* Increase line number;
-		 * useful to document the line number if it throws an error. */
-		++ line_n;
-		try {
-			/* Parse the individual line. */
-			this->parseLine_( buffer );
-
-		} catch ( const std::runtime_error & e ) {
-
-			/* Add the exception text to the error list.
-			 * Continue with the next line. */
-			this->errors_.push_back( std::to_string(line_n)
-					+ ":"
-					+ e.what() );
-		}
-	}
 }
 
 /***************************************

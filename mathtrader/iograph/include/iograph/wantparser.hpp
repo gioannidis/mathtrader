@@ -160,6 +160,15 @@ public:
 	 */
 	void parseStream( std::istream & is );
 
+	/*! @brief Convert want-lists from URL to graph.
+	 *
+	 *  Reads a want-list from the given URL
+	 *  and converts it to a graph.
+	 *
+	 *  @param[in]	url	URL of input stream to fetch and read
+	 */
+	void parseUrl( const std::string & url );
+
 	/*! @} */ // end of group
 
 	/************************
@@ -534,7 +543,6 @@ private:
 	std::map< std::string ,
 		std::vector< Arc_t_ > >  arc_map_;
 
-
 	/***********************************
 	 *  PARSING METHODS
 	 ***********************************/
@@ -734,6 +742,19 @@ private:
 	static std::vector< std::string > split_(
 			const std::string & input,
 			const std::string & str );
+
+	/*! @brief Retrieve payload from URL.
+	 *
+	 *  Accepts a URL, downloads the data and returns the payload.
+	 *
+	 *  @param[in]	url	the URL to fetch the data from
+	 *  @param[out]	data	stores the retrieved payload; existing data is overwritten
+	 *  @throw	SocketException		if a socket error occurs
+	 *  @throw	std::runtime_error	if malformed data is received
+	 *  @throw	std::logic_error	if the receive buffer is too short
+	 */
+	static void getUrl_( const std::string & url,
+			std::string & data );
 };
 
 #endif /* _WANTPARSER_HPP_ */
