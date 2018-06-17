@@ -164,6 +164,14 @@ public:
 	 *
 	 *  Reads a want-list from the given URL
 	 *  and converts it to a graph.
+	 *  The input url is expected to be in the form of:
+	 *
+	 *  	http://bgg.activityclub.org/olwlg/XXXXXX-officialwants.txt
+	 *
+	 *  Where ``XXXXXX`` is the unique identifier of the trade.<br>
+	 *  Example:
+	 *
+	 *  	http://bgg.activityclub.org/olwlg/207635-officialwants.txt
 	 *
 	 *  @param[in]	url	URL of input stream to fetch and read
 	 */
