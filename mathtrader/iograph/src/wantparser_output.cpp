@@ -291,3 +291,37 @@ WantParser::getNumMissingItems() const {
 	}
 	return node_set.size();
 }
+
+unsigned
+WantParser::getNumUsers() const {
+
+	std::unordered_set< std::string > username_set;
+	for ( const auto & pair : this->node_map_ ) {
+
+		const auto & username = pair.second.username;
+		username_set.emplace( username );
+	}
+	return username_set.size();
+}
+
+unsigned
+WantParser::getNumTradingUsers() const {
+
+	std::unordered_set< std::string > username_set;
+	const auto & arc_map = this->arc_map_;
+
+	for ( const auto & pair : this->node_map_ ) {
+
+		/* Has the item a want-list? */
+		const auto & item = pair.second.item;
+		const bool has_wantlist =
+			(arc_map.find(item) != arc_map.end());
+
+		/* Add username if it has a want-list. */
+		if ( has_wantlist ) {
+			const auto & username = pair.second.username;
+			username_set.emplace( username );
+		}
+	}
+	return username_set.size();
+}

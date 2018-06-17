@@ -400,6 +400,27 @@ public:
 	 */
 	unsigned getNumMissingItems() const ;
 
+	/*! @brief Total number of users.
+	 *
+	 *  Queries the object for
+	 *  the total number of users who have submitted items.
+	 *  This includes users with missing want-lists.
+	 *
+	 *  @returns number of total users
+	 */
+	unsigned getNumUsers() const ;
+
+	/*! @brief Number of trading users.
+	 *
+	 *  Queries the object for
+	 *  the number of users who have submitted items
+	 *  and want-lists.
+	 *  This does not include users with missing want-lists.
+	 *
+	 *  @returns number of trading users
+	 */
+	unsigned getNumTradingUsers() const ;
+
 	/*! @} */ // end of group
 
 private:
