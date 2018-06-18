@@ -36,7 +36,7 @@ WantParser::parseUrl( const std::string & url ) {
 	try {
 		getUrl_( url, data );
 
-	} catch ( const SocketException & error ) {
+	} catch ( const socket_utils::SocketException & error ) {
 		throw std::runtime_error("Socket Exception: "
 				+ std::string(error.what()));
 
@@ -152,7 +152,7 @@ WantParser::getUrl_( const std::string & url,
 	/* Open the socket;
 	 * socket destructor will close it.
 	 * Throws exception on failure. */
-	TCPSocket sock(server, 80);
+	socket_utils::TCPSocket sock(server, 80);
 
 	/* Send the HTTP request. */
 	sock.send(request.c_str(), request.length());

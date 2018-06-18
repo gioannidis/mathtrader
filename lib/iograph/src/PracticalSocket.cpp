@@ -45,6 +45,8 @@ using namespace std;
 static bool initialized = false;
 #endif
 
+namespace socket_utils {
+
 // SocketException Code
 
 SocketException::SocketException(const string &message, bool inclSysMsg)
@@ -382,3 +384,5 @@ void UDPSocket::leaveGroup(const string &multicastGroup) throw(SocketException) 
     throw SocketException("Multicast group leave failed (setsockopt())", true);
   }
 }
+
+} /* namespace socket_utils */

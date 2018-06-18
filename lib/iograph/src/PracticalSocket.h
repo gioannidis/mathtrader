@@ -26,6 +26,14 @@
 #include <string>            // For string
 #include <exception>         // For exception class
 
+/*! @brief %Socket-related utility classes.
+ *
+ *  Provides classes to facilitate socket-related operations,
+ *  such as opening a socket or retrieving a remote file
+ *  from a server.
+ */
+namespace socket_utils {
+
 /**
  *   Signals a problem with the execution of a socket call.
  */
@@ -337,4 +345,6 @@ private:
   void setBroadcast();
 };
 
-#endif
+} /* namespace socket_utils */
+
+#endif /* include guard */
