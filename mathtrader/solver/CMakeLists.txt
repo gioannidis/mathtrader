@@ -73,25 +73,29 @@ export(TARGETS ${LIBNAME} FILE ${LIB_CONFIG_FILENAME}.cmake)
 find_package(GTest)
 if (GTEST_FOUND)
 
+	# The executable name
+	set(TESTEXECNAME testsolver)
+
+	# Enable testing
 	enable_testing()
 
 	# Library Unit Tests
-	add_executable(testsolverlib
+	add_executable(${TESTEXECNAME}
 		test/testlib.cpp
 	)
 
-	target_link_libraries(testsolverlib
+	target_link_libraries(${TESTEXECNAME}
 		${LIBNAME}
 		iograph
 		${GTEST_BOTH_LIBRARIES}
 	)
 
 	# Add extra linker flags.
-	set_target_properties(testsolverlib
+	set_target_properties(${TESTEXECNAME}
 		PROPERTIES
 		LINK_FLAGS "-lpthread"
 	)
 
-	add_test(testsolverlib testsolverlib)
+	add_test(${TESTEXECNAME} ${TESTEXECNAME})
 
 endif (GTEST_FOUND)

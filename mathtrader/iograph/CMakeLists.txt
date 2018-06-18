@@ -77,24 +77,28 @@ export(TARGETS ${LIBNAME} FILE ${LIB_CONFIG_FILENAME}.cmake)
 find_package(GTest)
 if (GTEST_FOUND)
 
+	# The executable name
+	set(TESTEXECNAME testiograph)
+
+	# Enable testing
 	enable_testing()
 
 	# Library Unit Tests
-	add_executable(testwantlib
+	add_executable(${TESTEXECNAME}
 		test/testlib.cpp
 	)
 
-	target_link_libraries(testwantlib
+	target_link_libraries(${TESTEXECNAME}
 		${LIBNAME}
 		${GTEST_BOTH_LIBRARIES}
 	)
 
 	# Add extra linker flags.
-	set_target_properties(testwantlib
+	set_target_properties(${TESTEXECNAME}
 		PROPERTIES
 		LINK_FLAGS "-lpthread"
 	)
 
-	add_test(testwantlib testwantlib)
+	add_test(${TESTEXECNAME} ${TESTEXECNAME})
 
 endif (GTEST_FOUND)
