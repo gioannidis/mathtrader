@@ -97,5 +97,6 @@ if (GTEST_FOUND)
 	)
 
 	add_test(${TESTEXECNAME} ${TESTEXECNAME})
-
+else (GTEST_FOUND)
+	message("-- GTest needed to be installed to compile the solver unit tests")
 endif (GTEST_FOUND)
