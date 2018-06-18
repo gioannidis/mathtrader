@@ -1,8 +1,4 @@
-/* This file is part of MathTrader++, a C++ utility
- * for finding, on a directed graph whose arcs have costs,
- * a set of vertex-disjoint cycles that maximizes the number
- * of covered vertices as a first priority
- * and minimizes the total cost as a second priority.
+/* This file is part of MathTrader++.
  *
  * Copyright (C) 2018 George Ioannidis
  *
@@ -21,8 +17,6 @@
  */
 #include <iograph/wantparser.hpp>
 #include <solver/mathtrader.hpp>
-
-#include "PracticalSocket.h"
 
 #include <exception>
 #include <iomanip>
@@ -70,16 +64,6 @@ private:
 	 * when writing to a file.
 	 */
 	std::ofstream _ofs;
-
-	/**
-	 * Retrieve want file from remote url via HTTP.
-	 * The HTTP header is stripped.
-	 * TODO add support for "https://"
-	 * @param url the remote url; should begin with "http://"
-	 * @param data the received payload
-	 */
-	static int _getUrl( const std::string & url,
-			std::string & data );
 
 	/**
 	 * Make uppercase
@@ -478,115 +462,37 @@ Interface::run() {
 
 	} else {
 
-		/**
-		 * Choose the input stream.
-		 * Create buffer to store local/remote contents.
-		 */
-		std::istream *is = NULL;
-		std::stringstream input_buffer;
-
-		if ( ap.given("-input-url") ) {
-
-			/**
-			 * Start the timer
-			 */
-			std::stringstream time_ss;
-			time_ss << std::left << std::setw(TABWIDTH)
-				<< "Retrieving remote wants file: ";
-			lemon::TimeReport t(time_ss.str());
-
-			/**
-			 * Remote file;
-			 * retrieve data.
-			 */
-			const std::string & url = ap["-input-url"];
-
-			/**
-			 * Payload data.
-			 */
-			std::string data;
-
-			/**
-			 * Retrieve the remote file.
-			 */
-			try {
-				_getUrl( url, data );
-
-			} catch ( const SocketException & error ) {
-				os << "Socket Exception: "
-					<< error.what()
-					<< std::endl;
-				return -1;
-
-			} catch ( const std::exception & error ) {
-				os << "Error during retrieving data: "
-					<< error.what()
-					<< std::endl;
-				return -2;
-			}
-
-			input_buffer << data;
-			is = &input_buffer;
-
-		} else if ( ap.given("-input-file") ) {
-
-			/**
-			 * Start the timer
-			 */
-			std::stringstream time_ss;
-			time_ss << std::left << std::setw(TABWIDTH)
-				<< "Reading local wants file: ";
-			lemon::TimeReport t(time_ss.str());
-
-			/**
-			 * Open input file
-			 */
-			const std::string & fn = ap["-input-file"];
-			std::ifstream file(fn);
-
-			if ( !file ) {
-				os << "Error; could not open file "
-					<< fn
-					<< std::endl;
-				return -1;
-			}
-
-			/**
-			 * Copy to buffer.
-			 * and close file
-			 */
-			input_buffer << file.rdbuf();
-			file.close();
-
-			/**
-			 * Set the input stream for the want parser.
-			 */
-			is = &input_buffer;
-
-		} else {
-			/**
-			 * Just read from stdin
-			 */
-			is = &std::cin;
-		}
-
-		/**
-		 * Run the parser
-		 */
+		/* A want-list file will be provided.
+		 * Invoke the WantParser to convert it
+		 * to a LGF file. */
 		try {
-			/**
-			 * Start the timer
-			 */
-			std::stringstream time_ss;
 			time_ss << std::left << std::setw(TABWIDTH)
 				<< "Parsing want-lists: ";
+
+			/* Start the timer. */
+			std::stringstream time_ss;
 			lemon::TimeReport t(time_ss.str());
 
-			/** Parse **/
-			want_parser.parseStream(*is);
+			/* Check input source. */
+			if ( ap.given("-input-url") ) {
+
+				/* Remote file. */
+				const std::string & url = ap["-input-url"];
+				want_parser.parseUrl(url);
+
+			} else if ( ap.given("-input-file") ) {
+
+				/* Local file. */
+				const std::string & fn = ap["-input-file"];
+				want_parser.parseFile(fn);
+			} else {
+				/* Read from stdin. */
+				want_parser.parseStream(std::cin);
+			}
 
 		} catch ( const std::exception & error ) {
-			std::cerr << "WantParser error: " << error.what()
+			std::cerr << "Error during want-list parsing: "
+				<< error.what()
 				<< std::endl;
 			return -1;
 		}
@@ -943,181 +849,6 @@ Interface::run() {
 	if ( ap.given("-export-output-dot-file") ) {
 		const std::string &fn = ap["-export-output-dot-file"];
 		math_trader.exportOutputToDot(fn);
-	}
-
-	return 0;
-}
-
-int
-Interface::_getUrl( const std::string & url,
-		std::string & data ) {
-
-	/**
-	 * Clear the @data
-	 */
-	data.clear();
-
-	/**
-	 * Sanity check: url
-	 */
-	if ( url.compare(0,7,"http://") != 0 ) {
-		throw std::runtime_error("Provided url "
-				"is not HTTP; "
-				"expected url beginning "
-				"with 'http://'");
-	}
-
-	size_t prot_pos = url.find("/",7);
-	if ( prot_pos == std::string::npos ) {
-		return -1;
-	}
-
-	/**
-	 * Server and request
-	 */
-	const std::string
-		server  = url.substr(7,prot_pos-7), /**< strip 'http://' */
-		request = "GET "
-			+ url.substr(prot_pos,std::string::npos)
-			+ " HTTP/1.1\r\n"
-			+ "Host: " + server + "\r\n"
-			+ "\r\n";
-
-	/**
-	 * Open the socket;
-	 * socket destructor will close it.
-	 * Throws exception on failure.
-	 */
-	TCPSocket sock(server, 80);
-
-	/**
-	 * Send the HTTP request.
-	 */
-	sock.send(request.c_str(), request.length());
-
-	/**
-	 * Receive buffer
-	 */
-	const int BUFSIZE = (10 * (1 << 20));
-	std::unique_ptr< char > buffer( new char [BUFSIZE] );
-
-	/**
-	 * Fetch the HTTP header.
-	 */
-	int message_size = sock.recv(buffer.get(), BUFSIZE);
-	if ( message_size <= 0 ) {
-		throw std::runtime_error("No data received");
-	}
-
-
-	/**
-	 * Total payload size
-	 * and received-so-far
-	 */
-	int payload  = 0;
-	int received = 0;
-
-	/**
-	 * Dependent scope to calculate
-	 * content length and remove header.
-	 */
-	{
-		std::string header(buffer.get(), message_size);
-
-		/**
-		 * Get the response code
-		 */
-		size_t i = header.find("HTTP/1.1 ");
-		if ( i == std::string::npos ) {
-			throw std::runtime_error("Malformed HTTP "
-					"header; could not find "
-					" 'HTTP/1.1'");
-		}
-		size_t code_start = i + 9;
-
-		i = header.find_first_of("\n\r", code_start);
-		size_t code_end = i;
-
-		const std::string & response_code =
-			header.substr(code_start, code_end-code_start);
-
-		if ( response_code.compare("200 OK") != 0 ) {
-			throw std::runtime_error("Unexpected response code; "
-					"received " + response_code);
-		}
-
-		/**
-		 * Get the content length
-		 */
-		i = header.find("Content-Length: ");
-		if ( i == std::string::npos ) {
-			throw std::runtime_error("Malformed HTTP "
-					"header; could not find "
-					" 'Content-Length'");
-		}
-		size_t content_start = i + 16;
-
-		i = header.find_first_of("\n\r ", content_start);
-		if ( i == std::string::npos ) {
-			throw std::logic_error("Receive buffer "
-					"is too short");
-		}
-		size_t content_end = i;
-
-		/**
-		 * Get the payload substring
-		 */
-		const std::string & content =
-			header.substr(content_start, content_end-content_start);
-
-		/**
-		 * Convert to integer
-		 */
-		payload = std::stoi(content);
-
-		/**
-		 * HTTP headers end with an empty line,
-		 * as the protocol specifies.
-		 */
-		i = header.find("\r\n\r\n");
-		if ( i == std::string::npos ) {
-			throw std::runtime_error("Malformed HTTP "
-					"header; could not determine "
-					" header end");
-		}
-
-		size_t payload_pos = i + 4;
-
-		const std::string & payload =
-			header.substr(payload_pos, std::string::npos);
-
-		data.append(payload);
-		received += payload.length();
-	}
-
-	/**
-	 * Receive response until
-	 * no further bytes are received.
-	 */
-	while ((message_size = sock.recv(buffer.get(), BUFSIZE)) > 0 ) {
-		data.append(buffer.get(), message_size);
-		received += message_size;
-
-		if ( received >= payload ) {
-			break;
-		}
-	}
-
-	/**
-	 * Sanity check if we've received the expected
-	 * number of bytes.
-	 */
-	if ( received != payload ) {
-		throw std::logic_error("Expected payload of "
-				+ std::to_string(payload)
-				+ " bytes; received "
-				+ std::to_string(received)
-				+ " bytes");
 	}
 
 	return 0;

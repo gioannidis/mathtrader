@@ -20,7 +20,6 @@ project(AppProject LANGUAGES CXX)
 # Define the executable(s).
 add_executable(mathtrader++
 	mathtrader.cpp
-	PracticalSocket.cpp
 )
 add_executable(routechecker
 	routechecker.cpp
