@@ -76,6 +76,8 @@ The following packages are required to build the library:
 * The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon). To
 install the LEMON library, please refer to the respective
 [installation guide](http://lemon.cs.elte.hu/trac/lemon/wiki/InstallGuide).
+  * Note that packages ``GLPK``, ``ILOG``, ``COIN`` and ``SOPLEX`` may be reported
+  as missing. It is not necessary to install them to build LEMON.
   * On a Windows IDE, you might have to appropriately configure your IDE to enable C++11 support.
 
 ### Optional Packages
