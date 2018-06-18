@@ -16,12 +16,7 @@
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
-#include <chrono>
-#include <fstream>
 #include <thread>	// Google Test runs on threads
-#include <vector>
-#include <iostream>
 
 #include <gtest/gtest.h>
 #include <iograph/wantparser.hpp>
