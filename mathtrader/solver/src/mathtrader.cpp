@@ -1,8 +1,4 @@
-/* This file is part of MathTrader++, a C++ utility
- * for finding, on a directed graph whose arcs have costs,
- * a set of vertex-disjoint cycles that maximizes the number
- * of covered vertices as a first priority
- * and minimizes the total cost as a second priority.
+/* This file is part of MathTrader++.
  *
  * Copyright (C) 2018 George Ioannidis
  *
@@ -731,6 +727,16 @@ MathTrader::exportOutputToDot( const std::string & fn ) const {
 	return *this;
 }
 
+/********************************
+ * 	PUBLIC METHODS - STATS	*
+ ********************************/
+
+unsigned
+MathTrader::getNumTrades() const {
+	auto const & result_graph = this->_output_graph;
+	auto const cycle_forest = filterArcs( result_graph, this->_chosen_arc );
+	return countArcs(cycle_forest);
+}
 
 /************************************//*
  * 	PRIVATE METHODS - Flows

@@ -138,6 +138,19 @@ public:
 	 */
 	const MathTrader & exportOutputToDot( const std::string & fn ) const ;
 
+
+	/************************
+	 * 	OUTPUT STATS	*
+	 ************************/
+
+	/*! @brief Number of trades.
+	 *
+	 *  Returns the number of trades between items.
+	 *
+	 *  @return number of trading items
+	 */
+	unsigned getNumTrades() const ;
+
 private:
 	/**
 	 * @brief Minimum Cost Flow Algorithms
