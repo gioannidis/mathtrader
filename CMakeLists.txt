@@ -73,8 +73,7 @@ link_libraries(${LEMON_LIBRARIES})
 ########################################
 
 add_subdirectory(app)
-add_subdirectory(mathtrader)
-
+add_subdirectory(lib)
 
 ########################################
 ### DOCUMENTATION
@@ -108,5 +107,5 @@ if (DOXYGEN_FOUND)
 		VERBATIM
 	)
 else (DOXYGEN_FOUND)
-	message("Doxygen needed to be installed to generate the doxygen documentation")
+	message("-- Doxygen needed to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)

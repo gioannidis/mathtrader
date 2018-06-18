@@ -172,8 +172,8 @@ Unit tests under the Google Test framework are provided.
 The Google Test framework package is required to build them.
 The following testing executables are compiled:
 
-* ``build/mathtrader/iograph/testiograph`` : test the library that parses the want-list files
-* ``build/mathtrader/solver/testsolver`` : test the library that solves the math trades
+* ``build/lib/iograph/testiograph`` : test the library that parses the want-list files
+* ``build/lib/solver/testsolver`` : test the library that solves the math trades
 
 Simply run the executables to test the libraries.
 
