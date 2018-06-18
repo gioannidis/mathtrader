@@ -12,6 +12,8 @@ In this project we are approaching the real-world problem of
 
 ## Introduction
 
+### Background
+
 Math Trades have been taking place on BGG since the early 2000's.
 Various algorithms had been developed at the time,
 most applying a brute-force search,
@@ -52,7 +54,7 @@ itself in order to maximize the number of users that are trading at least one it
 rather than rely on metrics.
 Therefore, we are also dealing with an algorithmic challenge.
 
-## Formal problem
+### Formal problem
 
 The Math Trading problem may be formally stated as:
 
@@ -63,39 +65,60 @@ The Math Trading problem may be formally stated as:
 > set of optimal solutions.
 
 
-## Dependencies
+## Packages
 
+### Required Packages
+
+The following packages are required to build the library:
+
+* ``g++`` compiler version ``4.9.2`` or newer
+* ``cmake`` version ``3.0.2`` or newer
 * The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon). To
 install the LEMON library, please refer to the respective
 [installation guide](http://lemon.cs.elte.hu/trac/lemon/wiki/InstallGuide).
-  * ``cmake 3.0.2`` or newer is recommended.
-* ``g++ 4.9`` compiler or newer.
   * On a Windows IDE, you might have to appropriately configure your IDE to enable C++11 support.
+
+### Optional Packages
+
+#### Documentation
+
+To generate the Doxygen-supported documentation, the following optional packages are required:
+
+* ``doxygen``
+* ``graphviz``
+
+#### Unit Testing
+
+The following package is required
+to run the library unit tests under the Google Test framework:
+
+* ``libgtest-dev``
 
 ## Compiling
 
 * On Linux systems, execute from the top directory:
 
-	mkdir build
-	cd build
-	cmake ..
-	make
+		mkdir build
+		cd build
+		cmake ..
+		make
 
-* Optionally, you may also run `make doc` to create the html documentation.
-This requires the `doxygen` package.
-* On Windows systems, you will have to pass the compiling options
-found in the `Makefile` to your IDE's compiler.
+This creates the ``mathtrader++`` executable under ``build/app/mathtrader++``.
+
+* Optionally, you may also run `make doc` to create the documentation
+if ``doxygen`` has been installed.
 
 ## Running
 
-_Note that this guide applies mostly on Linux systems_
+_Note that this guide applies mostly on Linux systems._
 
 Testcases from past trades may be found online
 at the [Online Want List Generator (OLWLG)](http://bgg.activityclub.org/olwlg/).
 The official wantslists of previous Math Trades are linked
 under the respective `[WANT]` tag.
 
-Note, that you may see the full option list of `mathtrader++` by running `./mathtrader++ -h`.
+The ``mathtrader++`` executable is found under ``build/app/mathtrader++``.
+You may see the full option list of `mathtrader++` by running `./mathtrader++ -h`.
 
 ### Using a remote want-list file
 
@@ -122,6 +145,35 @@ You may redirect the output to a file or use the `--output-file` option:
 
     ./mathtrader++ --input-url http://bgg.activityclub.org/olwlg/207635-officialwants.txt > 207635-results-official.txt
     ./mathtrader++ --input-url http://bgg.activityclub.org/olwlg/207635-officialwants.txt --output-file 207635-results-official.txt
+
+## Documentation
+
+This library has been documented using ``Doxygen``.
+To build it, type ``make doc`` within the ``build/`` directory.
+
+### ``html`` documentation
+
+Open in a web browser the ``build/html/index.html`` file.
+
+### ``LaTeX`` documentation
+
+A ``refman.pdf`` file may be compiled with the entire documentation.
+Execute the following steps from the ``build/`` directory:
+
+1. ``cd latex``
+2. ``make``
+3. Open the ``refman.pdf`` file.
+
+## Unit Testing
+
+Unit tests under the Google Test framework are provided.
+The Google Test framework package is required to build them.
+The following testing executables are compiled:
+
+* ``build/mathtrader/iograph/testiograph`` : test the library that parses the want-list files
+* ``build/mathtrader/solver/testsolver`` : test the library that solves the math trades
+
+Simply run the executables to test the libraries.
 
 ## Future Tasks
 
