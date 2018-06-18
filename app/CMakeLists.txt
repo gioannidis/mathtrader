@@ -18,7 +18,7 @@
 project(AppProject LANGUAGES CXX)
 
 # Define the executable(s).
-add_executable(mathtrader
+add_executable(mathtrader++
 	mathtrader.cpp
 	PracticalSocket.cpp
 )
@@ -27,7 +27,7 @@ add_executable(routechecker
 )
 
 # Define the libraries the executables depend upon.
-target_link_libraries(mathtrader
+target_link_libraries(mathtrader++
 	iograph
 	solver
 )
