@@ -177,17 +177,11 @@ Simply run the executables to test the libraries.
 
 ## Future Tasks
 
-- [x] Resolve cost discrepancy vs other applications.
 - [ ] Implement scaled priority schemes.
 - [ ] Add _users-trading_ as a metric.
-- [x] Catch user spelling errors by comparing items in official names with the given ones.
 - [ ] Handle corner cases where there are no want lists at all.
-- [x] Allow multiple options in one line.
 - [ ] Parse EXPLICIT priorities; parse want lists formatted as ITEM=VALUE
-- [x] Resolve cost of items protected by duplicate protection.
 - [ ] Add I/O checksums.
-- [x] Echo overridden options to results.
-- [x] Downloading remote files.
 - [ ] Write own method in WantParser::parseLine to handle directives.
 - [ ] If an OPTION fails to parse, do not skip the entire line, if multiple options are given in a single line.
 - [ ] Report unknown items, i.e., items that appear in want lists but have not been previously defined.
