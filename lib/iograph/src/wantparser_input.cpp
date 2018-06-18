@@ -20,7 +20,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "PracticalSocket.h"
+#include "PracticalSocket.hpp"
 
 /**************************************
  * 	PUBLIC METHODS - PARSING
