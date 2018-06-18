@@ -25,9 +25,7 @@
 #include <new>
 #include <sstream>
 
-/* Version */
-#define MT_VERSION "1.3a"
-#define MT_YEAR "2016"
+#include "config.hpp"
 
 /* Tabular width for timer output */
 #define TABWIDTH (32)
@@ -230,7 +228,7 @@ int main(int argc, char **argv) {
 
 	if ( ap.given("-version") ) {
 		Interface::showVersion();
-		std::cout << "Copyright (C) " << MT_YEAR << "."
+		std::cout << "Copyright (C) " << MATHTRADERPROJECT_YEAR << "."
 			<< std::endl
 			<< "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>"
 			<< std::endl
@@ -863,5 +861,9 @@ Interface::_toUpper( std::string & str ) {
 
 void
 Interface::showVersion( std::ostream & os ) {
-	os << "mathtrader++ version " << MT_VERSION << std::endl;
+	os << "mathtrader++ version "
+		<< MATHTRADERPROJECT_VERSION_MAJOR
+		<< "."
+		<< MATHTRADERPROJECT_VERSION_MINOR
+		<< std::endl;
 }

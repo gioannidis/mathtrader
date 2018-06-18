@@ -34,3 +34,18 @@ target_link_libraries(routechecker
 	iograph
 	solver
 )
+
+# Configure header files to pass some of the CMake settings
+# to the source code.
+set(BINARY_INCLUDE_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
+configure_file (
+	"${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in"
+	"${BINARY_INCLUDE_CONFIG_DIR}/config.hpp"
+)
+
+# Add subdirectory to the search path for include files
+# so that we will find the configured header files.
+target_include_directories(mathtrader++
+	PRIVATE
+	${BINARY_INCLUDE_CONFIG_DIR}
+)
