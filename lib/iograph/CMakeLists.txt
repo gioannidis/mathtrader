@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
 
-project(SolverProject LANGUAGES CXX)
+project(IoGraphProject LANGUAGES CXX)
 
 # The library name
 set(LIBNAME iograph)
@@ -68,10 +68,12 @@ install(EXPORT ${LIB_CONFIG_FILENAME} DESTINATION share/${PROJECT_NAME}/cmake)
 # This makes the project importable from the build directory.
 export(TARGETS ${LIBNAME} FILE ${LIB_CONFIG_FILENAME}.cmake)
 
-
 ##############################
 #	TESTING
 ##############################
+
+# Testcase folder.
+set(IoGraphProject_TESTCASES_DIR ${PROJECT_SOURCE_DIR}/test/testcases)
 
 # Check if GTest has been installed.
 find_package(GTest)
@@ -97,6 +99,21 @@ if (GTEST_FOUND)
 	set_target_properties(${TESTEXECNAME}
 		PROPERTIES
 		LINK_FLAGS "-lpthread"
+	)
+
+	# Configure header files to pass some of the CMake settings
+	# to the source code.
+	set(BINARY_INCLUDE_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}/include")
+	configure_file (
+		"${CMAKE_CURRENT_SOURCE_DIR}/test/config.hpp.in"
+		"${BINARY_INCLUDE_CONFIG_DIR}/config.hpp"
+	)
+
+	# Add subdirectory to the search path for include files
+	# so that we will find the configured header files.
+	target_include_directories(${TESTEXECNAME}
+		PRIVATE
+		${BINARY_INCLUDE_CONFIG_DIR}
 	)
 
 	add_test(${TESTEXECNAME} ${TESTEXECNAME})

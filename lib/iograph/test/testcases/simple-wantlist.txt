@@ -1,0 +1,8 @@
+(Alice) A1 : B1 B2
+(Alice) A2 : B3
+
+(Bob) B1 : C
+(Bob) B2 : A2
+(Bob) B3 : A1
+
+(Charlie) C : A1

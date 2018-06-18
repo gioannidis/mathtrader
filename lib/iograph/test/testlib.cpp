@@ -20,6 +20,21 @@
 
 #include <gtest/gtest.h>
 #include <iograph/wantparser.hpp>
+#include "config.hpp"
+
+TEST( CornerTests, SimpleTest ) {
+	const std::string input =
+		std::string(IOGRAPH_PROJECT_TESTCASES_DIR)
+		+ "/simple-wantlist.txt";
+
+	WantParser want_parser;
+	want_parser.parseFile(input);
+
+	EXPECT_EQ(6, want_parser.getNumItems());
+	EXPECT_EQ(0, want_parser.getNumMissingItems());
+	EXPECT_EQ(3, want_parser.getNumUsers());
+	EXPECT_EQ(3, want_parser.getNumTradingUsers());
+}
 
 TEST( WantParserTest, 2016_April_GR_url ) {
 	const std::string input = "http://bgg.activityclub.org/olwlg/207635-officialwants.txt";
