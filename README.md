@@ -72,9 +72,8 @@ The following packages are required to build the library:
 
 * ``g++`` compiler version ``4.9.2`` or newer
 * ``cmake`` version ``3.0.2`` or newer
-* The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon). See
-<a href=https://github.com/gioannidis/mathtrader/blob/master/doc/LemonInstall.md>
-Installing the LEMON library</a>.
+* The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon).
+See <a href=https://github.com/gioannidis/mathtrader/blob/master/doc/LemonInstall.md>Installing the LEMON library</a>.
 
 ### Optional Packages
 
