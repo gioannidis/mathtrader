@@ -57,7 +57,51 @@ include(GNUInstallDirs)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake_extensions)
 
 # Look for the Lemon package.
-find_package(Lemon REQUIRED)
+#
+# First, it tries to use LEMON as a CMAKE subproject by looking for
+# in the 'lemon' or 'deps/lemon' subdirectories or in directory
+# given by the LEMON_SOURCE_ROOT_DIR variable.
+#
+# If LEMON isn't there, then CMAKE will try to find an installed
+# version of LEMON. If it is installed at some non-standard place,
+# then you must tell its location in the LEMON_ROOT_DIR CMAKE config
+# variable. (Do not hard code it into your config! Others may keep
+# LEMON at different places.)
+# Set it when calling cmake as:
+#	cmake .. -D LEMON_ROOT_DIR=/path/to/install
+
+find_path(LEMON_SOURCE_ROOT_DIR CMakeLists.txt
+	paths
+		${CMAKE_SOURCE_DIR}/lemon
+		${CMAKE_SOURCE_DIR}/deps/lemon
+		${CMAKE_SOURCE_DIR}/lemon-1.3.1
+		${CMAKE_SOURCE_DIR}/deps/lemon-1.3.1
+		NO_DEFAULT_PATH
+	doc "Location of LEMON source as a CMAKE subproject"
+)
+if(EXISTS ${LEMON_SOURCE_ROOT_DIR})
+
+	# Create lemon subdir under build dir
+	set(${LEMON_BINARY_DIR} ${CMAKE_BINARY_DIR}/lemon)
+	add_subdirectory(${LEMON_SOURCE_ROOT_DIR} ${LEMON_BINARY_DIR})
+
+	# Add include dirs of LEMON library
+	set(LEMON_INCLUDE_DIR
+		${LEMON_SOURCE_ROOT_DIR}
+		${CMAKE_BINARY_DIR}/deps/lemon
+		${LEMON_BINARY_DIR}	# for <lemon/config.h>
+	)
+	set(LEMON_LIBRARIES lemon)
+
+	unset(LEMON_ROOT_DIR CACHE)
+	unset(LEMON_DIR CACHE)
+	unset(LEMON_INCLUDE_DIR CACHE)
+	unset(LEMON_LIBRARY CACHE)
+
+else()
+	find_package(Lemon QUIET NO_MODULE)
+	find_package(Lemon REQUIRED)
+endif()
 
 # Include external headers as system includes.
 # Adding them as "SYSTEM" includes suppresses their warnings.
