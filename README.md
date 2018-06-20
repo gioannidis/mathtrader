@@ -64,7 +64,6 @@ The Math Trading problem may be formally stated as:
 > and minimizes the total edge cost among the
 > set of optimal solutions.
 
-
 ## Packages
 
 ### Required Packages
@@ -73,12 +72,7 @@ The following packages are required to build the library:
 
 * ``g++`` compiler version ``4.9.2`` or newer
 * ``cmake`` version ``3.0.2`` or newer
-* The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon). To
-install the LEMON library, please refer to the respective
-[installation guide](http://lemon.cs.elte.hu/trac/lemon/wiki/InstallGuide).
-  * Note that packages ``GLPK``, ``ILOG``, ``COIN`` and ``SOPLEX`` may be reported
-  as missing. It is not necessary to install them to build LEMON.
-  * On a Windows IDE, you might have to appropriately configure your IDE to enable C++11 support.
+* The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon). See @ref LemonInstall.
 
 ### Optional Packages
 
