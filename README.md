@@ -182,3 +182,4 @@ Simply run the executables to test the libraries.
 - [ ] Write own method in WantParser::parseLine to handle directives.
 - [ ] If an OPTION fails to parse, do not skip the entire line, if multiple options are given in a single line.
 - [ ] Report unknown items, i.e., items that appear in want lists but have not been previously defined.
+- [ ] Add qt-based GUI.
