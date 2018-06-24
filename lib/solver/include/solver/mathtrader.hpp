@@ -36,6 +36,104 @@ public:
 	 */
 	~MathTrader();
 
+	/************************
+	 * 	GRAPH INPUT	*
+	 ************************/
+
+	/*! @name LEMON graph input
+	 *
+	 *  Methods to feed a Lemon-Graph-Format (LGF) file
+	 *  and construct a LEMON graph.
+	 */
+	/*! @{ */ // start of group
+
+	/*! @brief Construct LEMON graph from input stream.
+	 *
+	 *  Constructs the input LEMON graph
+	 *  from the given input stream.
+	 *  A Lemon-Graph-Format (LGF) file is expected
+	 *  to be given.
+	 *
+	 *  @param[in,out]	is	the input stream to read from
+	 */
+	void graphReader( std::istream & is = std::cin );
+
+	/*! @brief Construct LEMON graph from input file.
+	 *
+	 *  Constructs the input LEMON graph
+	 *  from the given input stream.
+	 *  A Lemon-Graph-Format (LGF) file is expected
+	 *  to be given.
+	 *  Calls @ref graphReader().
+	 *
+	 *  @param[in]	file_name	the input file name to read the graph from
+	 */
+	void graphReader( const std::string & file_name );
+
+	/*! @} */ // end of group
+
+	/************************
+	 * 	GRAPH EXPORT	*
+	 ************************/
+
+	/*! @name Export input/output graphs
+	 *
+	 *  Methods to export the LEMON input or output graphs
+	 *  to text files. Supported formats:
+	 *
+	 *  * ``.dot`` format, compatibile with the ``graphviz`` visualization package
+	 *  * ``.lgf`` format, the Lemon-Graph-Format, so that it may be
+	 *  	subsequently used by other LEMON-based functions
+	 */
+	/*! @{ */ // start of group
+
+	/*! @brief Export input graph to stream as ``.dot``.
+	 *
+	 *  Exports the input graph,
+	 *  representing the want lists,
+	 *  to the given output stream
+	 *  as a ``.dot`` file.
+	 *  @param[out]	os	the output stream to export the graph to
+	 */
+	void exportInputToDot( std::ostream & os = std::cout ) const ;
+
+	/*! @brief Export input graph to file as ``.dot``.
+	 *
+	 *  Exports the input graph,
+	 *  representing the want lists,
+	 *  to the given output file
+	 *  as a ``.dot`` file.
+	 *  If the target file exists, it is overwritten.
+	 *  @param[in]	file_name	the file name to export the graph to
+	 */
+	void exportInputToDot( const std::string & file_name ) const ;
+
+	/*! @brief Export output graph to stream as ``.dot``.
+	 *
+	 *  Exports the output graph,
+	 *  representing the trade cycles,
+	 *  to the given output stream
+	 *  as a ``.dot`` file.
+	 *  @param[out]	os	the output stream to export the graph to
+	 */
+	void exportOutputToDot( std::ostream & os = std::cout ) const ;
+
+	/*! @brief Export output graph to file as ``.dot``.
+	 *
+	 *  Exports the output graph,
+	 *  representing the trade cycles,
+	 *  to the given output file
+	 *  as a ``.dot`` file.
+	 *  If the target file exists, it is overwritten.
+	 *  @param[in]	file_name	the file name to export the graph to
+	 */
+	void exportOutputToDot( const std::string & file_name ) const ;
+
+	/*! @} */ // end of group
+
+	/************************
+	 * 	OPTIONS INPUT	*
+	 ************************/
 	/**
 	 * @brief Select Algorithm
 	 * Set the minimum cost flow algorithm to be used.
@@ -120,24 +218,6 @@ public:
 	 */
 	const MathTrader & writeResults( std::ostream & os = std::cout ) const ;
 
-	/**
-	 * @brief Export output graph to dot format.
-	 * Writes the results graph
-	 * to the given output stream as .dot format.
-	 * @param os output stream (default: stdout)
-	 * @return *this
-	 */
-	const MathTrader & exportOutputToDot( std::ostream & os = std::cout ) const ;
-
-	/**
-	 * @brief Export output graph to dot format.
-	 * Writes the results graph
-	 * to the given file as .dot format.
-	 * @param fn file name to write to
-	 * @return *this
-	 */
-	const MathTrader & exportOutputToDot( const std::string & fn ) const ;
-
 
 	/************************
 	 * 	OUTPUT STATS	*
@@ -150,24 +230,6 @@ public:
 	 *  @return number of trading items
 	 */
 	unsigned getNumTrades() const ;
-
-	/**
-	 * @brief Read graph from istream.
-	 * Constructs the input trade graph,
-	 * from the given input stream.
-	 * @param is input stream (default: stdin)
-	 * @return *this
-	 */
-	MathTrader & graphReader( std::istream & is = std::cin );
-
-	/**
-	 * @brief Read graph from file.
-	 * Constructs the input trade graph,
-	 * from the given file.
-	 * @param fn file name
-	 * @return *this
-	 */
-	MathTrader & graphReader( const std::string & fn );
 
 	/**
 	 * @brief Set priorities.
@@ -198,24 +260,6 @@ public:
 	 * once including dummy items, once without.
 	 */
 	const MathTrader & writeStrongComponents( std::ostream & os = std::cout ) const ;
-
-	/**
-	 * @brief Export input graph to dot format.
-	 * Writes the input graph
-	 * to the given output stream as .dot format.
-	 * @param os output stream (default: stdout)
-	 * @return *this
-	 */
-	const MathTrader & exportInputToDot( std::ostream & os = std::cout ) const ;
-
-	/**
-	 * @brief Export input graph to dot format.
-	 * Writes the input graph
-	 * to the given file as .dot format.
-	 * @param fn file name to write to
-	 * @return *this
-	 */
-	const MathTrader & exportInputToDot( const std::string & fn ) const ;
 
 private:
 	/**

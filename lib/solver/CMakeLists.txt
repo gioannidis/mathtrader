@@ -25,6 +25,7 @@ set(LIB_CONFIG_FILENAME SolverLibConfig)
 set(SOURCES
 	src/basemath.cpp
 	src/mathtrader.cpp
+	src/mathtrader_io.cpp
 	src/routechecker.cpp
 )
 
