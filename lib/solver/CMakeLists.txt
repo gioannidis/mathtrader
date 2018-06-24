@@ -26,6 +26,7 @@ set(SOURCES
 	src/basemath.cpp
 	src/mathtrader.cpp
 	src/mathtrader_io.cpp
+	src/mathtrader_options.cpp
 	src/routechecker.cpp
 )
 

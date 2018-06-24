@@ -74,10 +74,6 @@ MathTrader::MathTrader() :
 {
 }
 
-MathTrader::~MathTrader() {
-}
-
-
 int64_t
 MathTrader::_getCost( int rank, bool dummy_source ) const {
 
@@ -154,84 +150,6 @@ MathTrader::clearPriorities() {
 	_priority_scheme = NO_PRIORITIES;
 	return *this;
 }
-MathTrader &
-MathTrader::setPriorities( const std::string & priorities ) {
-
-	typedef std::unordered_map< std::string, PriorityScheme > PrioMap_t;
-	static const PrioMap_t prioMap = {
-		{"LINEAR-PRIORITIES", LINEAR_PRIORITIES},
-		{"TRIANGLE-PRIORITIES", TRIANGLE_PRIORITIES},
-		{"SQUARE-PRIORITIES", SQUARE_PRIORITIES},
-		{"SCALED-PRIORITIES", SCALED_PRIORITIES},
-	};
-
-	auto const & it = prioMap.find( priorities );
-	if ( it == prioMap.end() ) {
-		throw std::runtime_error("Invalid priority scheme given: "
-				+ priorities);
-	}
-
-	_priority_scheme = it->second;
-
-	return *this;
-}
-MathTrader &
-MathTrader::setAlgorithm( const std::string & algorithm ) {
-
-	typedef std::unordered_map< std::string, MCFA > AlgoMap_t;
-	static const AlgoMap_t algoMap = {
-		{"NETWORK-SIMPLEX", NETWORK_SIMPLEX},
-		{"COST-SCALING", COST_SCALING},
-		{"CAPACITY-SCALING", CAPACITY_SCALING},
-		{"CYCLE-CANCELING", CYCLE_CANCELING},
-	};
-
-	auto const & it = algoMap.find( algorithm );
-	if ( it == algoMap.end() ) {
-		throw std::runtime_error("Invalid algorithm given: "
-				+ algorithm);
-	}
-
-	_mcfa = it->second;
-
-	return *this;
-}
-
-
-/************************************//*
- * 	PUBLIC METHODS - OUTPUT OPTIONS
- **************************************/
-
-MathTrader &
-MathTrader::hideLoops( bool v ) {
-	_hide_loops = v;
-	return *this;
-}
-
-MathTrader &
-MathTrader::hideNonTrades( bool v ) {
-	_hide_non_trades = v;
-	return *this;
-}
-
-MathTrader &
-MathTrader::hideStats( bool v ) {
-	_hide_stats = v;
-	return *this;
-}
-
-MathTrader &
-MathTrader::hideSummary( bool v ) {
-	_hide_summary = v;
-	return *this;
-}
-
-MathTrader &
-MathTrader::sortByItem( bool v ) {
-	_sort_by_item = v;
-	return *this;
-}
-
 
 /************************************//*
  * 	PUBLIC METHODS - RUNNABLE
@@ -1026,13 +944,3 @@ MathTrader::_runFlowAlgorithm( const DGR & g,
 	 */
 	trade_ptr->flowMap( flow_map );
 }
-
-
-/************************************//*
- * 	PRIVATE METHODS - Parameters
- **************************************/
-
-
-/************************************//*
- * 	PRIVATE METHODS - Utilities
- **************************************/

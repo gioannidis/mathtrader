@@ -24,23 +24,22 @@
 class MathTrader {
 
 public:
-	/**
-	 * @brief Constructor.
-	 * Details.
+	/*! @brief Default constructor.
 	 */
 	MathTrader();
 
 	/**
-	 * @brief Destructor.
-	 * Details.
+	 * @brief MathTrade algorithm.
+	 * Runs the MathTrade algorithm.
 	 */
-	~MathTrader();
+	void run();
+
 
 	/************************
 	 * 	GRAPH INPUT	*
 	 ************************/
 
-	/*! @name LEMON graph input
+	/*! @name LEMON graph input.
 	 *
 	 *  Methods to feed a Lemon-Graph-Format (LGF) file
 	 *  and construct a LEMON graph.
@@ -72,11 +71,12 @@ public:
 
 	/*! @} */ // end of group
 
+
 	/************************
 	 * 	GRAPH EXPORT	*
 	 ************************/
 
-	/*! @name Export input/output graphs
+	/*! @name Export input/output graphs.
 	 *
 	 *  Methods to export the LEMON input or output graphs
 	 *  to text files. Supported formats:
@@ -131,83 +131,130 @@ public:
 
 	/*! @} */ // end of group
 
+
 	/************************
-	 * 	OPTIONS INPUT	*
+	 * 	TRADING OPTIONS	*
 	 ************************/
-	/**
-	 * @brief Select Algorithm
-	 * Set the minimum cost flow algorithm to be used.
-	 * If not called, Network Simplex will be used.
-	 * @param algorithm The algorithm to be used. Accepted values:
-	 * 	NETWORK-SIMPLEX
-	 * 	COST-SCALING
-	 * 	CAPACITY-SCALING
-	 * 	CYCLE-CANCELING
-	 * @return *this
+
+	/*! @name Set trading options.
+	 *
+	 *  Methods to set the trading options.
+	 *  These options affect the execution
+	 *  of the algorithm that solves the math trade.
+	 *  Trading options must be set before @ref run() is called.
 	 */
-	MathTrader & setAlgorithm( const std::string & algorithm );
+	/*! @{ */ // start of group
+
+	/*! @brief Select MCF algorithm.
+	 *
+	 *  Set the minimum cost flow algorithm (MCFA) to be used.
+	 *  By default, Network Simplex will be used.
+	 *  Accepted string values:
+	 *
+	 *	 	"NETWORK-SIMPLEX"
+	 * 		"COST-SCALING"
+	 * 		"CAPACITY-SCALING"
+	 * 		"CYCLE-CANCELING"
+	 *
+	 *  @param[in]	algorithm	the MCFA to be used
+	 */
+	void setAlgorithm( const std::string & algorithm );
+
+	/*! @brief Set arc cost priorities.
+	 *
+	 *  Defines how the "cost" of the graph arc cost
+	 *
+	 *  Each input arc has a specified ``rank`` attribute,
+	 *  which is translated to an arc ``cost`` via a function
+	 *  ``cost = f(arc)``.
+	 *  The priority scheme is the function ``f``.
+	 *  If not called, no priorities will be used.<br>
+	 *  The following values are accepted:
+	 *
+	 *  1. ``"LINEAR-PRIORITIES"``, where ``cost = rank``
+	 *  2. ``"TRIANGLE-PRIORITIES"``, where ``cost = (rank*(rank+1))/2``
+	 *  3. ``"SQUARE-PRIORITIES"``, where ``cost = rank*rank``
+	 *  4. ``"SCALED-PRIORITIES"``, not yet implemented
+	 *
+	 * @param[in]	priorities	the priority to be used
+	 */
+	void setPriorities( const std::string & priorities );
 
 	/**
-	 * @brief MathTrade algorithm.
-	 * Runs the MathTrade algorithm.
-	 */
-	void run();
-
-	/**
-	 * @brief Merge dummies.
-	 * If not run, dummy nodes will be printed
-	 * by writeResults().
-	 * Run to merge them.
+	 * @brief Clear priorities.
+	 * Clears any previously given priorities.
+	 * No priorities will be used.
 	 * @return *this
 	 */
-	MathTrader & mergeDummyItems();
+	MathTrader & clearPriorities();
 
-	/**
-	 * @brief Hide loops.
-	 * Trade loops will not be shown
-	 * in the results.
-	 * @param option Set the option (default: true)
-	 * @return *this
+	/*! @} */ // end of group
+
+
+	/************************
+	 * 	RESULT OPTIONS	*
+	 ************************/
+
+	/*! @name Set output options.
+	 *
+	 *  Methods to set options affecting
+	 *  how and which output results and statistics
+	 *  will be displayed by @ref writeResults().
+	 *  These options affect the execution
+	 *  of the algorithm that solves the math trade.
+	 *  Trading options must be set before @ref run() is called.
+	 */
+	/*! @{ */ // start of group
+
+	/*! @brief Hide trade loops.
+	 *
+	 *  If specified,
+	 *  trade loops will not be shown in the results.
+	 *  @param[in]	options	value to set
+	 *  @return	reference to current object
 	 */
 	MathTrader & hideLoops( bool option = true );
 
-	/**
-	 * @brief Hide non-trades.
-	 * Items not being traded will not be shown
-	 * in the results.
-	 * @param option Set the option (default: true)
-	 * @return *this
+	/*! @brief Hide non-traded items.
+	 *
+	 *  If specified,
+	 *  items not being traded will not be shown in the results.
+	 *  @param[in]	options	value to set
+	 *  @return	reference to current object
 	 */
 	MathTrader & hideNonTrades( bool option = true );
 
-	/**
-	 * @brief Hide stats.
-	 * No statistics will be shown
-	 * in the results, except trading items.
-	 * @param option Set the option (default: true)
-	 * @return *this
+	/*! @brief Hide trade stats.
+	 *
+	 *  If specified,
+	 *  no other trade statistics will be shown in the results,
+	 *  apart from trading items.
+	 *  @param[in]	options	value to set
+	 *  @return	reference to current object
 	 */
 	MathTrader & hideStats( bool option = true );
 
-	/**
-	 * @brief Hide item summary.
-	 * Items summary will not be shown
-	 * in the results.
-	 * @param option Set the option (default: true)
-	 * @return *this
+	/*! @brief Hide item summary.
+	 *
+	 *  If specified,
+	 *  the items summary will not be shown in the results.
+	 *  @param[in]	options	value to set
+	 *  @return	reference to current object
 	 */
 	MathTrader & hideSummary( bool option = true );
 
-	/**
-	 * @brief Sort items summary by item name.
-	 * Items shown in the item summary
-	 * will be sorted by item name, instead of username.
-	 * If hideSummary() has been called,
-	 * this option has no effect.
-	 * @param option Set the option (default: true)
-	 * @return *this
+	/*! @brief Sort items summary by item name instead of username.
+	 *
+	 *  If specified,
+	 *  items shown in the item summary
+	 *  will be sorted by item name, instead of username.
+	 *  @note If @ref hideSummary() has been called, no item summary will be shown.
+	 *  @param[in]	options	value of option to set
+	 *  @return	reference to current object
 	 */
 	MathTrader & sortByItem( bool option = true );
+
+	/*! @} */ // end of group
 
 	/**
 	 * @brief Display trade loops.
@@ -218,6 +265,14 @@ public:
 	 */
 	const MathTrader & writeResults( std::ostream & os = std::cout ) const ;
 
+	/**
+	 * @brief Merge dummies.
+	 * If not run, dummy nodes will be printed
+	 * by writeResults().
+	 * Run to merge them.
+	 * @return *this
+	 */
+	MathTrader & mergeDummyItems();
 
 	/************************
 	 * 	OUTPUT STATS	*
@@ -230,28 +285,6 @@ public:
 	 *  @return number of trading items
 	 */
 	unsigned getNumTrades() const ;
-
-	/**
-	 * @brief Set priorities.
-	 * Set the priorities to be used by
-	 * the math trade algorithm.
-	 * If not called, no priorities will be used.
-	 * @param priorities The type of priorities to be used. Accepted values:
-	 * 	LINEAR-PRIORITIES
-	 * 	TRIANGLE-PRIORITIES
-	 * 	SQUARE-PRIORITIES
-	 * 	SCALED-PRIORITIES
-	 * @return *this
-	 */
-	MathTrader & setPriorities( const std::string & priorities );
-
-	/**
-	 * @brief Clear priorities.
-	 * Clears any previously given priorities.
-	 * No priorities will be used.
-	 * @return *this
-	 */
-	MathTrader & clearPriorities();
 
 	/**
 	 * @brief Analyze the graph into strongly connected components.
