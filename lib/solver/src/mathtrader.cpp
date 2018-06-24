@@ -28,6 +28,7 @@
 /* Lemon base libraries */
 #include <lemon/adaptors.h>
 #include <lemon/connectivity.h>
+#include <lemon/lgf_reader.h>
 
 /* Lemon Algorithms */
 #include <lemon/capacity_scaling.h>
@@ -43,8 +44,14 @@
  **************************************/
 
 MathTrader::MathTrader() :
-	/* Base class */
-	BaseMath(),
+	/* input graph maps */
+	_name( _input_graph ),
+	_username( _input_graph ),
+	_dummy( _input_graph, false ),
+	_in_rank( _input_graph, 0 ),
+
+	/* options */
+	_priority_scheme( NO_PRIORITIES ),	/**< Option: priorities */
 
 	/* options */
 	_mcfa( NETWORK_SIMPLEX ),		/**< Option: algorithm 	*/
@@ -77,6 +84,148 @@ MathTrader::~MathTrader() {
  * 	PUBLIC METHODS - INPUT OPTIONS
  **************************************/
 
+MathTrader &
+MathTrader::graphReader( std::istream & is ) {
+
+	/**
+	 * The only instance where we are allowed to modify
+	 * the input graph.
+	 */
+	digraphReader( const_cast< InputGraph & >(_input_graph), is ).
+		nodeMap( "item", _name ).
+		nodeMap( "dummy", _dummy ).
+		nodeMap( "username", _username ).
+		arcMap( "rank", _in_rank ).
+		run();
+
+	return *this;
+}
+const MathTrader &
+MathTrader::exportInputToDot( std::ostream & os ) const {
+
+	_exportToDot< InputGraph >( os, _input_graph,
+			"Input_Graph",
+			_name );
+
+	return *this;
+}
+int64_t
+MathTrader::_getCost( int rank, bool dummy_source ) const {
+
+	/**
+	 * If the source is dummy, assign zero cost,
+	 * no matter the scheme or the rank.
+	 */
+	if ( dummy_source ) {
+		return 0;
+	}
+
+	/**
+	 * Source: https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4
+	 */
+	switch ( this->_priority_scheme ) {
+		case NO_PRIORITIES:
+			return 1;
+			break;
+		case LINEAR_PRIORITIES:
+			return rank;
+			break;
+		case TRIANGLE_PRIORITIES:
+			return (rank*(rank+1))/2;
+			break;
+		case SQUARE_PRIORITIES:
+			return (rank*rank);
+		case SCALED_PRIORITIES:
+		default:
+			throw std::logic_error("No implementation of chosen priority scheme");
+			break;
+	}
+	return -1;
+}
+const MathTrader &
+MathTrader::exportInputToDot( const std::string & fn ) const {
+
+	std::filebuf fb;
+	fb.open(fn, std::ios::out);
+	std::ostream os(&fb);
+	exportInputToDot(os);
+	fb.close();
+	return *this;
+}
+const MathTrader &
+MathTrader::writeStrongComponents( std::ostream & os ) const {
+
+	typedef InputGraph Graph;
+	auto const & g = this->_input_graph;
+
+	Graph::NodeMap< int > component_id(g);
+	const int n_components = stronglyConnectedComponents( g, component_id );
+
+	std::vector< int > component_size( n_components, 0 );
+	std::vector< int > component_non_dummy_size( n_components, 0 );
+
+	/**
+	 * Iterate all nodes, get the component id,
+	 * update the size.
+	 */
+	for ( Graph::NodeIt n(g); n != lemon::INVALID; ++ n ) {
+		++ component_size[ component_id[n] ];
+		if ( !_dummy[n] ) {
+			++ component_non_dummy_size[ component_id[n] ];
+		}
+	}
+
+	os << "Strongly connected components of input graph = " << n_components << std::endl;
+	os << "Component sizes =";
+	for ( auto n : component_size ) {
+		os << " " << n;
+	}
+	os << std::endl;
+
+	os << "Component sizes (non-dummy) =";
+	for ( auto n : component_non_dummy_size ) {
+		os << " " << n;
+	}
+	os << std::endl;
+
+	return *this;
+}
+MathTrader &
+MathTrader::clearPriorities() {
+	_priority_scheme = NO_PRIORITIES;
+	return *this;
+}
+MathTrader &
+MathTrader::setPriorities( const std::string & priorities ) {
+
+	typedef std::unordered_map< std::string, PriorityScheme > PrioMap_t;
+	static const PrioMap_t prioMap = {
+		{"LINEAR-PRIORITIES", LINEAR_PRIORITIES},
+		{"TRIANGLE-PRIORITIES", TRIANGLE_PRIORITIES},
+		{"SQUARE-PRIORITIES", SQUARE_PRIORITIES},
+		{"SCALED-PRIORITIES", SCALED_PRIORITIES},
+	};
+
+	auto const & it = prioMap.find( priorities );
+	if ( it == prioMap.end() ) {
+		throw std::runtime_error("Invalid priority scheme given: "
+				+ priorities);
+	}
+
+	_priority_scheme = it->second;
+
+	return *this;
+}
+MathTrader &
+MathTrader::graphReader( const std::string & fn ) {
+
+	std::filebuf fb;
+	fb.open(fn, std::ios::in);
+	std::istream is(&fb);
+	graphReader(is);
+	fb.close();
+	return *this;
+}
 MathTrader &
 MathTrader::setAlgorithm( const std::string & algorithm ) {
 
