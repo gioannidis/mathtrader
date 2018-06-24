@@ -15,8 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with MathTrader++.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _MATHTRADER_HPP_
-#define _MATHTRADER_HPP_
+#ifndef _MATHTRADER_LIB_SOLVER_INCLUDE_SOLVER_MATHTRADER_HPP_
+#define _MATHTRADER_LIB_SOLVER_INCLUDE_SOLVER_MATHTRADER_HPP_
 
 #include <lemon/list_graph.h>
 #include <lemon/smart_graph.h>
@@ -359,35 +359,5 @@ private:
 			const typename DGR::template  ArcMap< int64_t > & cost,
 			      typename DGR::template  ArcMap< int64_t > & flow );
 };
-/************************************//*
- * 	PRIVATE TEMPLATES - Utilities
- **************************************/
 
-template < typename DGR >
-void
-MathTrader::_exportToDot( std::ostream & os,
-		const DGR & g,
-		const std::string & title,
-		const typename DGR::template NodeMap< std::string > & node_label ) {
-
-	os << "digraph "
-		<< title
-		<< " {"
-		<< std::endl;
-
-	for ( typename DGR::NodeIt n(g); n != lemon::INVALID; ++n ) {
-		os << "\t"
-			<< "n" << g.id(n)
-			<< " [label=\"" << node_label[n] << "\"];"
-			<< std::endl;
-	}
-	for ( typename DGR::ArcIt a(g); a != lemon::INVALID; ++a ) {
-		os << "\t"
-			<< "n" << g.id( g.source(a) )
-			<< " -> " << "n" << g.id(g.target(a))
-			<< std::endl;
-	}
-	os << "}" << std::endl;
-}
-
-#endif /* _MATHTRADER_HPP_ */
+#endif /* include guard */

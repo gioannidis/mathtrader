@@ -37,6 +37,7 @@
 #include <lemon/network_simplex.h>
 
 #include "algowrapper.hpp"
+#include "lemon_io.hpp"
 
 
 /************************************//*
@@ -103,10 +104,17 @@ MathTrader::graphReader( std::istream & is ) {
 const MathTrader &
 MathTrader::exportInputToDot( std::ostream & os ) const {
 
-	_exportToDot< InputGraph >( os, _input_graph,
-			"Input_Graph",
-			_name );
+	LemonIo::getInstance().exportToDot< InputGraph >( os, _input_graph,
+			_name, "Input_Graph" );
 
+	return *this;
+}
+const MathTrader &
+MathTrader::exportInputToDot( const std::string & fn ) const {
+
+	LemonIo::getInstance().exportToDot< InputGraph >( fn, _input_graph,
+			_name,
+			"Input_Graph" );
 	return *this;
 }
 int64_t
@@ -141,16 +149,6 @@ MathTrader::_getCost( int rank, bool dummy_source ) const {
 			break;
 	}
 	return -1;
-}
-const MathTrader &
-MathTrader::exportInputToDot( const std::string & fn ) const {
-
-	std::filebuf fb;
-	fb.open(fn, std::ios::out);
-	std::ostream os(&fb);
-	exportInputToDot(os);
-	fb.close();
-	return *this;
 }
 const MathTrader &
 MathTrader::writeStrongComponents( std::ostream & os ) const {
@@ -859,8 +857,8 @@ MathTrader::exportOutputToDot( std::ostream & os ) const {
 			composeMap(_name, _node_out2in),
 			item_name);
 
-	_exportToDot< CycleForest >( os, cycle_forest,
-			"Output_Graph", item_name);
+	LemonIo::getInstance().exportToDot< CycleForest >( os, cycle_forest,
+			item_name, "Output_Graph");
 
 	return *this;
 }
