@@ -350,6 +350,10 @@ public:
 	const MathTrader & writeStrongComponents( std::ostream & os = std::cout ) const ;
 
 private:
+	/************************
+	 * 	PRIORITY SCHEME	*
+	 ************************/
+
 	/*! @brief Arc cost priority schemes.
 	 *
 	 *  All supported arc-cost priority schemes
@@ -367,89 +371,92 @@ private:
 
 	PriorityScheme _priority_scheme = PriorityScheme::NO_PRIORITIES; /*!< Priority scheme to be used by @ref _getCost(). */
 
-	/**
-	 * @brief Input Graph
-	 * Type of Input Graph, member and maps.
-	 * Nodes: items
-	 * Arc A->B: item A is offered for item B
-	 */
-	typedef lemon::SmartDigraph InputGraph;	/**< type of input graph */
-	const InputGraph _input_graph;		/**< actual input graph */
-
-
-	InputGraph::NodeMap< std::string >	/**< node maps: strings */
-		_name,				/**< official item name	*/
-		_username;			/**< owner's username	*/
-
-	InputGraph::NodeMap< bool >	/**< node maps: boolean	*/
-		_dummy;			/**< item is a dummy */
-
-	InputGraph::ArcMap< int >	/**< arc maps: integer	*/
-		_in_rank;		/**< rank of want	*/
-
-	/**
-	 * @brief Output Graph
-	 * Type of Output Graph, member and maps.
-	 */
-
-	/*! @brief Convert arc rank to cost.
+	/*! @name Private Input Graph Type and Attributes
 	 *
-	 *  Calculates an arc's cost, to be used by the trading algorithm,
-	 *  based on the given priority scheme and
-	 *  the arc's rank.
+	 *  The input graph models the user want-lists.
+	 *  Its components represent:
 	 *
-	 *  @param[in]	rank the rank of the arc
-	 *  @param[in]	dummy_source	indicates whether the source node is dummy
-	 *  @return	The arc cost to be used by the flow algorithm.
-	 *  @note	Arcs with a dummy source node are always assigned a cost of zero (``0``).
-	 *  @see	@ref setPriorities()
-	 *  @see	@ref PriorityScheme
-	 */
-	int64_t _getCost( int rank, bool dummy_source = false ) const ;
-
-	/**
-	 * @brief Export to .dot format.
-	 * Exports a graph to a file compatible with
-	 * graphviz, to visualize the graph.
-	 */
-	template < typename DGR >
-	static void _exportToDot( std::ostream & os,
-			const DGR & g,
-			const std::string & title,
-			const typename DGR::template NodeMap< std::string > & node_label );
-
-	/*! @brief Minimum Cost Flow Algorithms.
+	 *  * Nodes: items submitted to the math trade
+	 *  * Arcs: source arc models an offered item,
+	 *  target arcs models a wanted item.
 	 *
-	 *  All available minimum cost flow algorithm implementations.
-	 */
-	enum MCFA {
-		NETWORK_SIMPLEX,
-		COST_SCALING,
-		CAPACITY_SCALING,
-		CYCLE_CANCELING,
-	};
-
-	MCFA _mcfa = MCFA::NETWORK_SIMPLEX;	/*!< @ref MCFA to be used by @ref run(). */
-
-	/*! @name Output option members.
-	 *
-	 *  Options that will determine what should be printed
-	 *  or not by @ref writeResults().
+	 *  > *Example:* Alice offers her item in exchange for either Bob's, Charlie's or Daniel's items.
+	 *  > Her want list is:
+	 *  >
+	 *  >		(Alice) A : B C D
+	 *  >
+	 *  > The following arcs are added:
+	 *  > ``(A -> B)``, ``(A -> C)`` and ``(A -> D)``.
 	 */
 	/*! @{ */ // start of group
 
-	bool _hide_loops = false;	/*!< Do not show trade loops. */
-	bool _hide_non_trades = false;	/*!< Do not show non-trading items. */
-	bool _hide_stats = false;	/*!< Do not show statistics, apart from items traded. */
-	bool _hide_summary = false;	/*!< Do not show the item summary. */
-	bool _sort_by_item = false;	/*!< Sort item summary by item name, instead of by username. */
+
+	/********************************
+	 * 	INPUT/OUTPUT GRAPHS	*
+	 ********************************/
+
+	/*! @brief Input graph type.
+	 *
+	 *  The type of input graph to use.
+	 *  We are using the ``lemon::SmartDigraph`` type,
+	 *  which is memory and time efficient,
+	 *  but does not support node and arc deletion.
+	 *
+	 *  @see @ref _input_graph
+	 */
+	typedef lemon::SmartDigraph InputGraph;
+	const InputGraph _input_graph;	/*!< The unmodified input graph
+					  as provided by the want-list input.
+					  @see @ref InputGraph
+					  @see @ref graphReader(), the only method
+					  allowed to modify it
+					  */
+
+
+	InputGraph::NodeMap< std::string >	/*!< node maps: strings */
+		_name,				/*!< official item name	*/
+		_username;			/*!< owner's username	*/
+
+	InputGraph::NodeMap< bool >	/*!< node maps: boolean	*/
+		_dummy;			/*!< item is a dummy */
+
+	InputGraph::ArcMap< int >	/*!< arc maps: integer	*/
+		_in_rank;		/*!< rank of want	*/
 
 	/*! @} */ // end of group
 
-	/**
-	 * @brief Output Graph
-	 * Type of Output Graph, member and maps.
+	/*! @name Private Output Graph Type and Attributes
+	 *
+	 *  The output graph models the trade cycles chosen by
+	 *  the trading algorithm.
+	 *  Its components represent:
+	 *
+	 *  * Nodes: the actual items chosen to be traded.
+	 *  * Arcs: owner of item represented by the **target** node
+	 *  sends it to the owner of item represented by the **source** node.
+	 *
+	 *  > *Example:* the following want-lists have been submitted
+	 *  > by Alice, Bob, Charlie and Daniel.
+	 *  >
+	 *  >		(Alice)   A : B C D
+	 *  >		(Bob)     B : A D
+	 *  >		(Charlie) C : A
+	 *  >		(Daniel)  D : A
+	 *  >
+	 *  > The following arcs are added:
+	 *  > ``(A -> B)``, ``(A -> C)``, ``(A -> D)``,
+	 *  > ``(B -> A)``, ``(B -> D)``, ``(C -> A)`` and ``(D -> A)``.
+	 *  >
+	 *  > The trading algorithm choses the following arcs:
+	 *  > ``(A -> B)``, ``(B -> D)`` and ``(D -> A)``.
+	 *  > Therefore:
+	 *  > * ALICE sends to DANIEL and receives from BOB
+	 *  > * BOB sends to ALICE and receives from DANIEL
+	 *  > * CHARLIE does not trade.
+	 *  > * DANIEL sends to BOB and receives from ALICE
 	 */
+
+	/*! @{ */ // start of group
 	typedef lemon::ListDigraph OutputGraph;
 	OutputGraph _output_graph;
 
@@ -474,6 +481,41 @@ private:
 	OutputGraph::ArcMap< bool >	/**< arc maps: boolean	*/
 		_chosen_arc;		/**< want has been chosen */
 
+	/*! @} */ // end of group
+
+
+	/********************************
+	 * 	TRADING ALGORITHM	*
+	 ********************************/
+
+	/*! @brief Convert arc rank to cost.
+	 *
+	 *  Calculates an arc's cost, to be used by the trading algorithm,
+	 *  based on the given priority scheme and
+	 *  the arc's rank.
+	 *
+	 *  @param[in]	rank the rank of the arc
+	 *  @param[in]	dummy_source	indicates whether the source node is dummy
+	 *  @return	The arc cost to be used by the flow algorithm.
+	 *  @note	Arcs with a dummy source node are always assigned a cost of zero (``0``).
+	 *  @see	@ref setPriorities()
+	 *  @see	@ref PriorityScheme
+	 */
+	int64_t _getCost( int rank, bool dummy_source = false ) const ;
+
+	/*! @brief Minimum Cost Flow Algorithms.
+	 *
+	 *  All available minimum cost flow algorithm implementations.
+	 */
+	enum MCFA {
+		NETWORK_SIMPLEX,
+		COST_SCALING,
+		CAPACITY_SCALING,
+		CYCLE_CANCELING,
+	};
+
+	MCFA _mcfa = MCFA::NETWORK_SIMPLEX;	/*!< @ref MCFA to be used
+						  by @ref run(). */
 
 	/**
 	 * @brief Solve the trade; maximize trading items
@@ -498,6 +540,25 @@ private:
 			const typename DGR::template  ArcMap< int64_t > & capacity,
 			const typename DGR::template  ArcMap< int64_t > & cost,
 			      typename DGR::template  ArcMap< int64_t > & flow );
+
+	/************************
+	 * 	OUTPUT OPTIONS	*
+	 ************************/
+
+	/*! @name Output option members
+	 *
+	 *  Options that will determine what should be printed
+	 *  or not by @ref writeResults().
+	 */
+	/*! @{ */ // start of group
+
+	bool _hide_loops = false;	/*!< Do not show trade loops. */
+	bool _hide_non_trades = false;	/*!< Do not show non-trading items. */
+	bool _hide_stats = false;	/*!< Do not show statistics, apart from items traded. */
+	bool _hide_summary = false;	/*!< Do not show the item summary. */
+	bool _sort_by_item = false;	/*!< Sort item summary by item name, instead of by username. */
+
+	/*! @} */ // end of group
 };
 
 #endif /* include guard */
