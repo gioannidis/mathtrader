@@ -28,13 +28,6 @@ public:
 	 */
 	MathTrader();
 
-	/**
-	 * @brief MathTrade algorithm.
-	 * Runs the MathTrade algorithm.
-	 */
-	void run();
-
-
 	/************************
 	 * 	GRAPH INPUT	*
 	 ************************/
@@ -71,6 +64,44 @@ public:
 
 	/*! @} */ // end of group
 
+	/************************
+	 * 	EXECUTION	*
+	 ************************/
+
+	/*! @brief Execute trading algorithm.
+	 *
+	 *  Executes the trading algorithm by finding an optimal solution
+	 *  to the following problem:
+	 *  > Given a weighted directed graph ``G=(V,E)`` with weights ``w(E)``,
+	 *  > find a set of vertex-disjoint cycles that maximizes
+	 *  > the number of covered vertices and minimizes
+	 *  > the total edge cost among the set of optimal solutions.
+	 *
+	 *  In other words, it finds cycles without common vertices
+	 *  and maximizes the number of chosen vertices.
+	 *  Amongst the optimal solutions, it choses the one
+	 *  with the minimum arc cost.
+	 */
+	void run();
+
+	/************************
+	 * 	RESULT GRAPH	*
+	 ************************/
+
+	/*! @brief Display trade loops.
+	 * Displays the trade loops that have been found
+	 * to the given output stream.
+	 * @param os output stream (default: stdout)
+	 * @return *this
+	 */
+	const MathTrader & writeResults( std::ostream & os = std::cout ) const ;
+
+	/*! @brief Merge dummies.
+	 *
+	 * If not run, dummy nodes will be printed by @ref writeResults().
+	 * Run to merge them.
+	 */
+	void mergeDummyItems();
 
 	/************************
 	 * 	GRAPH EXPORT	*
@@ -256,23 +287,6 @@ public:
 
 	/*! @} */ // end of group
 
-	/**
-	 * @brief Display trade loops.
-	 * Displays the trade loops that have been found
-	 * to the given output stream.
-	 * @param os output stream (default: stdout)
-	 * @return *this
-	 */
-	const MathTrader & writeResults( std::ostream & os = std::cout ) const ;
-
-	/**
-	 * @brief Merge dummies.
-	 * If not run, dummy nodes will be printed
-	 * by writeResults().
-	 * Run to merge them.
-	 * @return *this
-	 */
-	MathTrader & mergeDummyItems();
 
 	/************************
 	 * 	OUTPUT STATS	*

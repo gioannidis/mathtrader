@@ -181,7 +181,7 @@ MathTrader::run() {
  * 	PUBLIC METHODS - OUTPUT
  **************************************/
 
-MathTrader &
+void
 MathTrader::mergeDummyItems() {
 
 	OutputGraph & g = this->_output_graph;
@@ -374,8 +374,6 @@ MathTrader::mergeDummyItems() {
 	for ( int id : id_to_delete ) {
 		g.erase(g.nodeFromId(id));
 	}
-
-	return *this;
 }
 
 
