@@ -193,13 +193,49 @@ public:
 
 	/*! @brief Set arc cost priorities.
 	 *
-	 *  Defines how the "cost" of the graph arc cost
+	 *  The priority scheme defines how an arc's ``cost``
+	 *  will be calculated based on its ``rank``.
+	 *  Arc ranks are provided through @ref graphReader(),
+	 *  but the arc costs are used to execute
+	 *  the math trading algorithm.
 	 *
-	 *  Each input arc has a specified ``rank`` attribute,
-	 *  which is translated to an arc ``cost`` via a function
-	 *  ``cost = f(arc)``.
-	 *  The priority scheme is the function ``f``.
-	 *  If not called, no priorities will be used.<br>
+	 *  By default, no priorities are used.
+	 *  It is the responsibility of the **trade moderator**
+	 *  to set a specific priority.
+	 *
+	 *  ### Arc ``rank`` ###
+	 *  Each arc of the input graph has a unique ``rank``
+	 *  attribute, which usually corresponds to
+	 *  its position within the user's want-list.
+	 *  The ranks indicate a user's preference to trade
+	 *  a particular item over an other.
+	 *
+	 *  > *Example:* Alice offers her item in exchange for either Bob's, Charlie's or Daniel's items.
+	 *  > Her want list is:
+	 *  >
+	 *  >		(Alice) A : B C D
+	 *  >
+	 *  > Based on the order of her wanted items,
+	 *  > arc ``(A -> B)`` has a rank of ``1``,
+	 *  > arc ``(A -> C)`` has a rank of ``2`` and
+	 *  > arc ``(A -> D)`` has a rank of ``3``.
+	 *  > Alice prefers to trade her item first with Bob,
+	 *  > then with Charlie and finally with Daniel.
+	 *
+	 *  ### Arc cost ###
+	 *
+	 *  An arc's ``cost`` is the actual value that is
+	 *  used within the math trading algorithm.
+	 *  When a trade ``A -> B`` is chosen, the arc's
+	 *  cost is added to the total cost of the trade.
+	 *  The trading algorithm, by default,
+	 *  tries to minimize the total cost of the trade.
+	 *
+	 *  ### Priority Schemes ###
+	 *
+	 *  The priority scheme is the function ``f``
+	 *  that calculates an arc's cost based on its rank,
+	 *  i.e., it executes: ``cost = f(arc)``.
 	 *  The following values are accepted:
 	 *
 	 *  1. ``"LINEAR-PRIORITIES"``, where ``cost = rank``
@@ -207,7 +243,9 @@ public:
 	 *  3. ``"SQUARE-PRIORITIES"``, where ``cost = rank*rank``
 	 *  4. ``"SCALED-PRIORITIES"``, not yet implemented
 	 *
-	 * @param[in]	priorities	the priority to be used
+	 * @param[in]	priorities	the priority scheme to be used
+	 * @throws	std::runtime_error if an unsupported priority scheme is given
+	 * @see https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4
 	 */
 	void setPriorities( const std::string & priorities );
 
@@ -309,11 +347,12 @@ public:
 	const MathTrader & writeStrongComponents( std::ostream & os = std::cout ) const ;
 
 private:
-	/**
-	 * @brief Priorities enum.
-	 * Enumerates all available priority implementations.
-	 * The priority will be set by the moderator.
-	 * Default is NO_PRIORITIES.
+	/*! @brief Arc cost priority schemes.
+	 *
+	 *  All supported arc-cost priority schemes
+	 *  to convert an arc's ``rank`` to ``cost``.
+	 *  @see @ref setPriorities()
+	 *  @see @ref _priority_scheme
 	 */
 	enum PriorityScheme {
 		NO_PRIORITIES,
@@ -323,7 +362,8 @@ private:
 		SCALED_PRIORITIES,
 	};
 
-	PriorityScheme _priority_scheme;
+	PriorityScheme _priority_scheme = PriorityScheme::NO_PRIORITIES; /*!< Priority scheme to be used by @ref _getCost(). */
+
 	/**
 	 * @brief Input Graph
 	 * Type of Input Graph, member and maps.
@@ -348,14 +388,19 @@ private:
 	 * @brief Output Graph
 	 * Type of Output Graph, member and maps.
 	 */
-	/**
-	 * @brief Convert rank to cost.
-	 * Receives the rank of an arc
-	 * and generates the cost to be used
-	 * for the minimum flow algorithm.
-	 * @param rank The rank of the arc.
-	 * @param dummy_source Indicates whether the source node is dummy.
-	 * @return The corresponding cost.
+
+	/*! @brief Convert arc rank to cost.
+	 *
+	 *  Calculates an arc's cost, to be used by the trading algorithm,
+	 *  based on the given priority scheme and
+	 *  the arc's rank.
+	 *
+	 *  @param[in]	rank the rank of the arc
+	 *  @param[in]	dummy_source	indicates whether the source node is dummy
+	 *  @return	The arc cost to be used by the flow algorithm.
+	 *  @note	Arcs with a dummy source node are always assigned a cost of zero (``0``).
+	 *  @see	@ref setPriorities()
+	 *  @see	@ref PriorityScheme
 	 */
 	int64_t _getCost( int rank, bool dummy_source = false ) const ;
 
@@ -369,10 +414,10 @@ private:
 			const DGR & g,
 			const std::string & title,
 			const typename DGR::template NodeMap< std::string > & node_label );
-	/**
-	 * @brief Minimum Cost Flow Algorithms
-	 * Enumerates all available minimum cost flow algorithm implementations.
-	 * Default is NETWORK_SIMPLEX.
+
+	/*! @brief Minimum Cost Flow Algorithms.
+	 *
+	 *  All available minimum cost flow algorithm implementations.
 	 */
 	enum MCFA {
 		NETWORK_SIMPLEX,
@@ -381,21 +426,22 @@ private:
 		CYCLE_CANCELING,
 	};
 
-	MCFA _mcfa;
+	MCFA _mcfa = MCFA::NETWORK_SIMPLEX;	/*!< @ref MCFA to be used by @ref run(). */
 
-	/**
-	 * @brief Output Options
-	 * Options that will determine what should be printed
-	 * or not by writeResults().
-	 * Default value is false.
+	/*! @name Output option members.
+	 *
+	 *  Options that will determine what should be printed
+	 *  or not by @ref writeResults().
 	 */
-	bool _hide_loops;	/**< hide trade loops */
-	bool _hide_non_trades;	/**< hide non-trading items */
-	bool _hide_stats;	/**< hide statistics, apart from items traded */
-	bool _hide_summary;	/**< hide item summary */
-	bool _sort_by_item;	/**< sort item summary by item name;
-				  * _hide_summary must be false
-				  */
+	/*! @{ */ // start of group
+
+	bool _hide_loops = false;	/*!< Do not show trade loops. */
+	bool _hide_non_trades = false;	/*!< Do not show non-trading items. */
+	bool _hide_stats = false;	/*!< Do not show statistics, apart from items traded. */
+	bool _hide_summary = false;	/*!< Do not show the item summary. */
+	bool _sort_by_item = false;	/*!< Sort item summary by item name, instead of by username. */
+
+	/*! @} */ // end of group
 
 	/**
 	 * @brief Output Graph

@@ -48,17 +48,6 @@ MathTrader::MathTrader() :
 	_dummy( _input_graph, false ),
 	_in_rank( _input_graph, 0 ),
 
-	/* options */
-	_priority_scheme( NO_PRIORITIES ),	/**< Option: priorities */
-
-	/* options */
-	_mcfa( NETWORK_SIMPLEX ),		/**< Option: algorithm 	*/
-	_hide_loops( false ),
-	_hide_non_trades( false ),
-	_hide_stats( false ),
-	_hide_summary( false ),
-	_sort_by_item( false ),
-
 	/* input-output (cross) references */
 	_node_in2out( _input_graph ),
 	_arc_in2out( _input_graph ),
@@ -74,39 +63,6 @@ MathTrader::MathTrader() :
 {
 }
 
-int64_t
-MathTrader::_getCost( int rank, bool dummy_source ) const {
-
-	/**
-	 * If the source is dummy, assign zero cost,
-	 * no matter the scheme or the rank.
-	 */
-	if ( dummy_source ) {
-		return 0;
-	}
-
-	/**
-	 * Source: https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4
-	 */
-	switch ( this->_priority_scheme ) {
-		case NO_PRIORITIES:
-			return 1;
-			break;
-		case LINEAR_PRIORITIES:
-			return rank;
-			break;
-		case TRIANGLE_PRIORITIES:
-			return (rank*(rank+1))/2;
-			break;
-		case SQUARE_PRIORITIES:
-			return (rank*rank);
-		case SCALED_PRIORITIES:
-		default:
-			throw std::logic_error("No implementation of chosen priority scheme");
-			break;
-	}
-	return -1;
-}
 const MathTrader &
 MathTrader::writeStrongComponents( std::ostream & os ) const {
 
@@ -941,4 +897,32 @@ MathTrader::_runFlowAlgorithm( const DGR & g,
 	 * Get the flow map
 	 */
 	trade_ptr->flowMap( flow_map );
+}
+
+int64_t
+MathTrader::_getCost( int rank, bool dummy_source ) const {
+
+	/* Source node dummy: always zero cost. */
+	if ( dummy_source ) {
+		return 0;
+	}
+
+	switch ( this->_priority_scheme ) {
+		case NO_PRIORITIES:
+			return 1;
+			break;
+		case LINEAR_PRIORITIES:
+			return rank;
+			break;
+		case TRIANGLE_PRIORITIES:
+			return (rank*(rank+1))/2;
+			break;
+		case SQUARE_PRIORITIES:
+			return (rank*rank);
+		case SCALED_PRIORITIES:
+		default:
+			throw std::logic_error("No implementation of chosen priority scheme");
+			break;
+	}
+	return -1;
 }
