@@ -59,6 +59,11 @@ MathTrader::setAlgorithm( const std::string & algorithm ) {
 	_mcfa = it->second;
 }
 
+void
+MathTrader::clearPriorities() {
+	_priority_scheme = NO_PRIORITIES;
+}
+
 /********************************
  * 	PUBLIC - OUTPUT OPTIONS	*
  ********************************/

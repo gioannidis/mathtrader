@@ -101,11 +101,6 @@ MathTrader::writeStrongComponents( std::ostream & os ) const {
 
 	return *this;
 }
-MathTrader &
-MathTrader::clearPriorities() {
-	_priority_scheme = NO_PRIORITIES;
-	return *this;
-}
 
 /************************************//*
  * 	PUBLIC METHODS - RUNNABLE

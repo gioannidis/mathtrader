@@ -243,19 +243,22 @@ public:
 	 *  3. ``"SQUARE-PRIORITIES"``, where ``cost = rank*rank``
 	 *  4. ``"SCALED-PRIORITIES"``, not yet implemented
 	 *
-	 * @param[in]	priorities	the priority scheme to be used
-	 * @throws	std::runtime_error if an unsupported priority scheme is given
-	 * @see https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4
+	 *  @param[in]	priorities	the priority scheme to be used
+	 *  @throws	std::runtime_error if an unsupported priority scheme is given
+	 *  @see ["How do priorities work?"](https://www.boardgamegeek.com/wiki/page/TradeMaximizer#toc4)
+	 *  on [BoardGameGeek](https://www.boardgamegeek.com).
+	 *  @see	@ref clearPriorities()
 	 */
 	void setPriorities( const std::string & priorities );
 
-	/**
-	 * @brief Clear priorities.
-	 * Clears any previously given priorities.
-	 * No priorities will be used.
-	 * @return *this
+	/*! @brief Clear arc cost priority scheme.
+	 *
+	 *  Clears any previously given priority scheme.
+	 *  No priorities will be used to calculate an arc's cost.
+	 *
+	 *  @see	setPriorities()
 	 */
-	MathTrader & clearPriorities();
+	void clearPriorities();
 
 	/*! @} */ // end of group
 
