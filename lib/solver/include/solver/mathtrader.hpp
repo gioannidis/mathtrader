@@ -371,6 +371,11 @@ private:
 
 	PriorityScheme _priority_scheme = PriorityScheme::NO_PRIORITIES; /*!< Priority scheme to be used by @ref _getCost(). */
 
+
+	/********************************
+	 * 	INPUT/OUTPUT GRAPHS	*
+	 ********************************/
+
 	/*! @name Private Input Graph Type and Attributes
 	 *
 	 *  The input graph models the user want-lists.
@@ -389,11 +394,6 @@ private:
 	 *  > ``(A -> B)``, ``(A -> C)`` and ``(A -> D)``.
 	 */
 	/*! @{ */ // start of group
-
-
-	/********************************
-	 * 	INPUT/OUTPUT GRAPHS	*
-	 ********************************/
 
 	/*! @brief Input graph type.
 	 *
@@ -429,11 +429,13 @@ private:
 	 *
 	 *  The output graph models the trade cycles chosen by
 	 *  the trading algorithm.
+	 *  It is a *forest*, where each subgraph is a circle.
 	 *  Its components represent:
 	 *
 	 *  * Nodes: the actual items chosen to be traded.
 	 *  * Arcs: owner of item represented by the **target** node
 	 *  sends it to the owner of item represented by the **source** node.
+	 *
 	 *
 	 *  > *Example:* the following want-lists have been submitted
 	 *  > by Alice, Bob, Charlie and Daniel.
@@ -458,28 +460,28 @@ private:
 
 	/*! @{ */ // start of group
 	typedef lemon::ListDigraph OutputGraph;
-	OutputGraph _output_graph;
+	OutputGraph _output_graph;	/*!< The result graph of the trading algorithm. */
 
-	InputGraph::NodeMap< OutputGraph::Node >	/**< node reference: in -> out */
+	InputGraph::NodeMap< OutputGraph::Node >	/*!< node reference: in -> out */
 		_node_in2out;
-	InputGraph::ArcMap< OutputGraph::Arc >		/**< arc reference: in -> out */
+	InputGraph::ArcMap< OutputGraph::Arc >		/*!< arc reference: in -> out */
 		_arc_in2out;
 
-	OutputGraph::NodeMap< InputGraph::Node >	/**< node cross reference: out -> in */
+	OutputGraph::NodeMap< InputGraph::Node >	/*!< node cross reference: out -> in */
 		_node_out2in;
-	OutputGraph::ArcMap< InputGraph::Arc >		/**< arc cross reference: out -> in */
+	OutputGraph::ArcMap< InputGraph::Arc >		/*!< arc cross reference: out -> in */
 		_arc_out2in;
 
-	OutputGraph::NodeMap< OutputGraph::Node >	/**< node maps: nodes -> nodes */
-		_send,					/**< will send to this node */
-		_receive;				/**< will receive from this node */
+	OutputGraph::NodeMap< OutputGraph::Node >	/*!< node maps: nodes -> nodes */
+		_send,					/*!< will send to this node */
+		_receive;				/*!< will receive from this node */
 
-	OutputGraph::NodeMap< bool >	/**< node maps: boolean	*/
-		_trade;			/**< item will trade	*/
-	OutputGraph::ArcMap< int >	/**< arc maps: integer	*/
-		_out_rank;		/**< rank of want	*/
-	OutputGraph::ArcMap< bool >	/**< arc maps: boolean	*/
-		_chosen_arc;		/**< want has been chosen */
+	OutputGraph::NodeMap< bool >	/*!< node maps: boolean	*/
+		_trade;			/*!< item will trade	*/
+	OutputGraph::ArcMap< int >	/*!< arc maps: integer	*/
+		_out_rank;		/*!< rank of want	*/
+	OutputGraph::ArcMap< bool >	/*!< arc maps: boolean	*/
+		_chosen_arc;		/*!< want has been chosen */
 
 	/*! @} */ // end of group
 
