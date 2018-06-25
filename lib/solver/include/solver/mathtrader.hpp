@@ -425,7 +425,8 @@ private:
 
 	/*! @} */ // end of group
 
-	/*! @name Private Output Graph Type and Attributes
+	/*! @defgroup OutGraphGroup
+	 *  @name Private Output Graph Type and Attributes
 	 *
 	 *  The output graph models the trade cycles chosen by
 	 *  the trading algorithm.
@@ -457,20 +458,40 @@ private:
 	 *  > * CHARLIE does not trade.
 	 *  > * DANIEL sends to BOB and receives from ALICE
 	 */
-
 	/*! @{ */ // start of group
+
+	/*! @brief Output graph type.
+	 *
+	 *  The type of output graph to use.
+	 *  We are using the ``lemon::ListDigraph`` type,
+	 *  as it supports node and arc deletion.
+	 *
+	 *  @see @ref _output_graph
+	 */
 	typedef lemon::ListDigraph OutputGraph;
 	OutputGraph _output_graph;	/*!< The result graph of the trading algorithm. */
 
-	InputGraph::NodeMap< OutputGraph::Node >	/*!< node reference: in -> out */
-		_node_in2out;
-	InputGraph::ArcMap< OutputGraph::Arc >		/*!< arc reference: in -> out */
-		_arc_in2out;
+	/*! @name Node and Arc reference maps.
+	 *  @ingroup OutGraphGroup
+	 *
+	 *  Maps.
+	 */
+	/*! @{ */ // start of subgroup
 
-	OutputGraph::NodeMap< InputGraph::Node >	/*!< node cross reference: out -> in */
-		_node_out2in;
-	OutputGraph::ArcMap< InputGraph::Arc >		/*!< arc cross reference: out -> in */
-		_arc_out2in;
+	InputGraph::NodeMap< OutputGraph::Node >
+		_node_in2out;				/*!< Node reference map:
+							  input nodes -> output nodes. */
+	InputGraph::ArcMap< OutputGraph::Arc >
+		_arc_in2out;				/*!< Arc reference map:
+							  input arcs -> output arcs. */
+
+	OutputGraph::NodeMap< InputGraph::Node >
+		_node_out2in;				/*!< Node cross-reference map:
+							  output nodes -> input nodes. */
+	OutputGraph::ArcMap< InputGraph::Arc >
+		_arc_out2in;				/*!< Arc cross-reference map:
+							  output arcs -> input arcs. */
+	/*! @} */ // end of subgroup
 
 	OutputGraph::NodeMap< OutputGraph::Node >	/*!< node maps: nodes -> nodes */
 		_send,					/*!< will send to this node */
