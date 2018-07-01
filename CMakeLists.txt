@@ -28,7 +28,7 @@ project(MathTraderProject LANGUAGES CXX)
 # The version number.
 # Copyright year
 set(MathTraderProject_VERSION_MAJOR 1)
-set(MathTraderProject_VERSION_MINOR 3beta)
+set(MathTraderProject_VERSION_MINOR 3)
 set(MathTraderProject_YEAR 2018)
 
 
