@@ -46,3 +46,34 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# Rules to build the stateless module that parses wantlists.
+cc_library(
+    name = "wantlist_parser",
+    srcs = ["wantlist_parser.cc"],
+    hdrs = ["wantlist_parser.h"],
+    deps = [
+        "//mathtrader/common:item_attributes",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "//mathtrader/util:strings",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_glog//:glog",
+        "@com_google_re2//:re2",
+    ],
+)
+
+cc_test(
+    name = "wantlist_parser_test",
+    size = "small",
+    srcs = ["wantlist_parser_test.cc"],
+    deps = [
+        ":wantlist_parser",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
