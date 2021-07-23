@@ -77,3 +77,45 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# Rules to build the internal, stateful parser.
+cc_library(
+    name = "internal_parser",
+    srcs = [
+        "internal_parser.cc",
+        "internal_parser_api.cc",
+        "internal_parser_directives.cc",
+    ],
+    hdrs = ["internal_parser.h"],
+    visibility = ["//mathtrader/parser:__pkg__"],
+    deps = [
+        ":item_parser",
+        ":wantlist_parser",
+        "//mathtrader/common:item_attributes",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "//mathtrader/parser:parser_result_cc_proto",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_glog//:glog",
+        "@com_google_or_tools//ortools/base:filelineiter",
+        "@com_google_or_tools//ortools/base:map_util",
+        "@com_google_re2//:re2",
+    ],
+)
+
+cc_test(
+    name = "internal_parser_test",
+    size = "small",
+    srcs = ["internal_parser_test.cc"],
+    deps = [
+        ":internal_parser",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
