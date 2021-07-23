@@ -35,3 +35,28 @@ cc_proto_library(
     name = "parser_result_cc_proto",
     deps = [":parser_result_proto"],
 )
+
+# Parser of "officialwants" files.
+cc_library(
+    name = "math_parser",
+    srcs = ["math_parser.cc"],
+    hdrs = ["math_parser.h"],
+    deps = [
+        ":parser_result_cc_proto",
+        "//mathtrader/parser/internal:internal_parser",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+# Unit tests for MathParser.
+cc_test(
+    name = "math_parser_test",
+    size = "small",
+    srcs = ["math_parser_test.cc"],
+    deps = [
+        ":math_parser",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
