@@ -60,3 +60,17 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# Integration tests with OLWLG data.
+cc_test(
+    name = "math_parser_olwlg_test",
+    size = "medium",
+    srcs = ["math_parser_olwlg_test.cc"],
+    data = ["//mathtrader/parser/test_data:olwlg_test_data"],
+    deps = [
+        ":math_parser",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
