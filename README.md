@@ -1,4 +1,7 @@
-# mathtrader++
+# mathtrader
+
+_Note: `mathtrader` is currently migrating to version `2`, refactoring the code
+base and switching optimization libraries._
 
 Math Trades are trades where multiple people participate at once
 in order to trade items between them.
@@ -64,123 +67,34 @@ The Math Trading problem may be formally stated as:
 > and minimizes the total edge cost among the
 > set of optimal solutions.
 
-## Packages
+## Installing
 
 ### Required Packages
 
 The following packages are required to build the library:
 
-* ``g++`` compiler version ``4.9.2`` or newer
-* ``cmake`` version ``3.0.2`` or newer
-* The [LEMON Graph Library](http://lemon.cs.elte.hu/trac/lemon).
-See <a href=https://github.com/gioannidis/mathtrader/blob/master/doc/LemonInstall.md>Installing the LEMON library</a>.
+* C++ compiler with C++17 support.
+  * ``g++`` compiler: version ``8`` or newer. Recommended: ``10.2.1`` or newer.
+* [``bazel``](https://bazel.build) version ``4`` or newer. Recommended:
+  ``4.1.0`` or newer.
 
-### Optional Packages
+### External Dependencies:
 
-#### Documentation
+`mathtrader` uses the following external libraries, which should be
+automatically integrated by the build system.
 
-To generate the Doxygen-supported documentation, the following optional packages are required:
-
-* ``doxygen``
-* ``graphviz``
-
-#### Unit Testing
-
-The following package is required
-to run the library unit tests under the Google Test framework:
-
-* ``libgtest-dev``
+* [Abseil](https://abseil.io) common libraries.
+  libraries, used to solve the math trade problem.
+* [Google Logging](https://github.com/google/glog) Library.
+* [GoogleTest](http://google.github.io/googletest/) testing and mocking
+  framework.
+* [OR-Tools](https://developers.google.com/optimization/) optimization
+* [RE2](https://github.com/google/re2) regular expression library.
 
 ## Compiling
 
-* On Linux systems, execute from the top directory:
-
-		mkdir build
-		cd build
-		cmake ..
-		make
-
-This creates the ``mathtrader++`` executable under ``build/app/mathtrader++``.
-
-* Optionally, you may also run `make doc` to create the documentation
-if ``doxygen`` has been installed.
+To be added.
 
 ## Running
 
-_Note that this guide applies mostly on Linux systems._
-
-Testcases from past trades may be found online
-at the [Online Want List Generator (OLWLG)](http://bgg.activityclub.org/olwlg/).
-The official wantslists of previous Math Trades are linked
-under the respective `[WANT]` tag.
-
-The ``mathtrader++`` executable is found under ``build/app/mathtrader++``.
-You may see the full option list of `mathtrader++` by running `./mathtrader++ -h`.
-
-### Using a remote want-list file
-
-To run `mathtrader++` directly on a want-list file from OLWLG, run:
-
-    ./mathtrader++ --input-url http://bgg.activityclub.org/olwlg/207635-officialwants.txt
-
-### Using a local want-list file
-
-Alternatively, you may download a want-list file using `wget` or `curl`, e.g.:
-
-    wget http://bgg.activityclub.org/olwlg/207635-officialwants.txt
-
-The testcase file may be provided either from the standard input
-or as a file:
-
-    ./mathtrader++ < 207635-officialwants.txt
-    ./mathtrader++ --input-file 207635-officialwants.txt
-
-### Saving results to local file.
-
-The results will be printed by default to the standard output.
-You may redirect the output to a file or use the `--output-file` option:
-
-    ./mathtrader++ --input-url http://bgg.activityclub.org/olwlg/207635-officialwants.txt > 207635-results-official.txt
-    ./mathtrader++ --input-url http://bgg.activityclub.org/olwlg/207635-officialwants.txt --output-file 207635-results-official.txt
-
-## Documentation
-
-This library has been documented using ``Doxygen``.
-To build it, type ``make doc`` within the ``build/`` directory.
-
-### ``html`` documentation
-
-Open in a web browser the ``build/html/index.html`` file.
-
-### ``LaTeX`` documentation
-
-A ``refman.pdf`` file may be compiled with the entire documentation.
-Execute the following steps from the ``build/`` directory:
-
-1. ``cd latex``
-2. ``make``
-3. Open the ``refman.pdf`` file.
-
-## Unit Testing
-
-Unit tests under the Google Test framework are provided.
-The Google Test framework package is required to build them.
-The following testing executables are compiled:
-
-* ``build/lib/iograph/testiograph`` : test the library that parses the want-list files
-* ``build/lib/solver/testsolver`` : test the library that solves the math trades
-
-Simply run the executables to test the libraries.
-
-## Future Tasks
-
-- [ ] Implement scaled priority schemes.
-- [ ] Add _users-trading_ as a metric.
-- [ ] Handle corner cases where there are no want lists at all.
-- [ ] Parse EXPLICIT priorities; parse want lists formatted as ITEM=VALUE
-- [ ] Add I/O checksums.
-- [ ] Write own method in WantParser::parseLine to handle directives.
-- [ ] If an OPTION fails to parse, do not skip the entire line, if multiple options are given in a single line.
-- [ ] Report unknown items, i.e., items that appear in want lists but have not been previously defined.
-- [ ] Add qt-based GUI.
-- [ ] Implement ``make install``
+To be added.

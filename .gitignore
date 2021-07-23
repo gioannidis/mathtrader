@@ -1,4 +1,2 @@
 .*.swp
-build
-mathtrader++
-routechecker
+bazel-*
