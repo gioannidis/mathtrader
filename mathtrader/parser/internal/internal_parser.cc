@@ -119,6 +119,9 @@ absl::Status InternalParser::ParseLine(
     parser_result_.set_user_count(users_.size());
   }
 
+  // Sets the final item count.
+  parser_result_.set_item_count(items_.size());
+
   return absl::OkStatus();
 }
 

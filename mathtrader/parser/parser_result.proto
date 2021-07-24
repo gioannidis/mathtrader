@@ -30,9 +30,14 @@ message ParserResult {
   repeated Wantlist wantlist = 1;
 
   // The number of users with trading items.
-  optional int64 user_count = 2;
+  optional int32 user_count = 2;
+
+  // The number of items with an official name. This treats copies of individual
+  // items as unique items. If no official names have been given, it corresponds
+  // to the number of wantlists.
+  optional int32 item_count = 3;
 
   // Tracks the items that have been declared as wanted items but have no
   // official name. Each item maps to its occurence across all wantlists.
-  map<string, int32> missing_items = 3;
+  map<string, int32> missing_items = 4;
 }

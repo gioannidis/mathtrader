@@ -73,6 +73,9 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
   // Verifies the number of users with items.
   EXPECT_EQ(parser_result->user_count(), user_count);
 
+  // Verifies the number of items.
+  EXPECT_EQ(parser_result->item_count(), item_count);
+
   const auto& wantlists = parser_result->wantlist();
 
   // Verifies the number of wantlists.
@@ -97,7 +100,7 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
 
 TEST(MathParserOlwlgTest, TestJune2021US) {
   ExpectWantlist("mathtrader/parser/test_data/286101-officialwants.txt",
-                 /*user_count=*/335, /*item_count=*/0,
+                 /*user_count=*/335, /*item_count=*/5896,
                  /*wantlist_count=*/14860, /*longest_wantlist=*/695);
 }
 
