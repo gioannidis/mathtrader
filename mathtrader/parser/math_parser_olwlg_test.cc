@@ -63,19 +63,20 @@ MATCHER(IsValidItemId, "") {
       arg, result_listener);
 }
 
-TEST(MathParserOlwlgTest, TestJune2021US) {
+void ExpectWantlist(absl::string_view filename, int32_t user_count,
+                    int32_t item_count, int32_t wantlist_count,
+                    int32_t longest_wantlist) {
   MathParser parser;
-  const auto parser_result =
-      parser.ParseFile("mathtrader/parser/test_data/286101-officialwants.txt");
+  const auto parser_result = parser.ParseFile(filename);
   ASSERT_TRUE(parser_result.ok()) << parser_result.status().message();
 
   // Verifies the number of users with items.
-  EXPECT_EQ(parser_result->user_count(), 335);
+  EXPECT_EQ(parser_result->user_count(), user_count);
 
   const auto& wantlists = parser_result->wantlist();
 
   // Verifies the number of wantlists.
-  EXPECT_THAT(wantlists, SizeIs(14860));
+  EXPECT_THAT(wantlists, SizeIs(wantlist_count));
 
   // Verifies the id format of offered items.
   EXPECT_THAT(wantlists,
@@ -84,12 +85,20 @@ TEST(MathParserOlwlgTest, TestJune2021US) {
   // Verifies the longest wantlist:
   //   line 19783: "(jgoyes) 1109-3GIFT ..."
   EXPECT_THAT(wantlists,
-              Contains(Property(&Wantlist::wanted_item, SizeIs(695))));
+              Contains(Property(&Wantlist::wanted_item,
+                       SizeIs(longest_wantlist))));
+
 
   // Verifies the id format of wanted items.
   EXPECT_THAT(
       wantlists,
       Each(Property(&Wantlist::wanted_item, Each(IsValidItemId()))));
+}
+
+TEST(MathParserOlwlgTest, TestJune2021US) {
+  ExpectWantlist("mathtrader/parser/test_data/286101-officialwants.txt",
+                 /*user_count=*/335, /*item_count=*/0,
+                 /*wantlist_count=*/14860, /*longest_wantlist=*/695);
 }
 
 }  // namespace
