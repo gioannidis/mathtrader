@@ -114,11 +114,6 @@ absl::Status InternalParser::ParseLine(
         absl::StrFormat("(line %d) %s", line_count_, status.message()));
   }
 
-  // Sets the final user count, if available.
-  if (!users_.empty()) {
-    parser_result_.set_user_count(users_.size());
-  }
-
   // Sets the final item count.
   parser_result_.set_item_count(items_.size());
 
@@ -284,6 +279,15 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
 
   (*parser_result_.add_wantlist()) = std::move(*wantlist);
   return absl::OkStatus();
+}
+
+// Finalizes the parser_result.
+void InternalParser::FinalizeParserResult() {
+  // Moves the usernames to parser_result.
+  while (!users_.empty()) {
+    auto internal_node = users_.extract(users_.begin());
+    parser_result_.add_users(std::move(internal_node.value()));
+  }
 }
 
 }  // namespace mathtrader::internal_parser

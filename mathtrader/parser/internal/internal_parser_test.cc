@@ -104,7 +104,7 @@ TEST(InternalParserItemsTest, TestOfficialItems) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_item_count(), 7);
-  EXPECT_EQ(parser.get_user_count(), 5);
+  EXPECT_THAT(parser.get_parser_result().users(), SizeIs(5));
 }
 
 // Includes empty lines with all spaces. Note that although the ItemParser
@@ -126,7 +126,7 @@ TEST(InternalParserItemsTest, TestColonsSpaces) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_item_count(), 5);
-  EXPECT_EQ(parser.get_user_count(), 4);
+  EXPECT_THAT(parser.get_parser_result().users(), SizeIs(4));
 }
 
 // One of the items is a dummy item and should be ignored.
@@ -144,7 +144,7 @@ TEST(InternalParserItemsTest, DISABLED_TestDummyNames) {
   InternalParser parser;
   EXPECT_OK(parser.ParseText(input_data));
   EXPECT_EQ(parser.get_item_count(), 4);
-  EXPECT_EQ(parser.get_user_count(), 4);
+  EXPECT_THAT(parser.get_parser_result().users(), SizeIs(4));
 }
 
 // Tests that we can specify new usernames in wantlists, even if they have not
@@ -168,7 +168,7 @@ TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_item_count(), 6);
-  EXPECT_EQ(parser.get_user_count(), 5);
+  EXPECT_THAT(parser.get_parser_result().users(), SizeIs(5));
 }
 
 // Test suite: negative tests
@@ -192,7 +192,7 @@ TEST(InternalParserNegativeTest, TestMissingOfficialOfferedItemName) {
 
   // Verifies that 3 official items were read.
   EXPECT_EQ(parser.get_item_count(), 3);
-  EXPECT_EQ(parser.get_user_count(), 0);
+  EXPECT_THAT(parser.get_parser_result().users(), IsEmpty());
   EXPECT_THAT(status,
               AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("0004-D"))));
@@ -229,7 +229,6 @@ TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
 
   InternalParser parser;
   absl::Status status = parser.ParseText(input_data);
-  EXPECT_EQ(parser.get_user_count(), 1);
   EXPECT_THAT(status,
               AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("%003-C"))));

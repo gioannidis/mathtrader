@@ -67,9 +67,6 @@ class InternalParser {
   // wanted items.
   const int64_t get_item_count() const { return items_.size(); }
 
-  // Returns the number of users with trading items.
-  const int64_t get_user_count() const { return users_.size(); }
-
  private:
   // Defines the state of the parser and the context it should expect to parse.
   enum class ParserState {
@@ -109,6 +106,9 @@ class InternalParser {
   //
   //    ParseWantlist("0001-MKBG : 0002-PANDE 0003-TTAANSOC 0004-SCYTHE");
   ABSL_MUST_USE_RESULT absl::Status ParseWantlist(absl::string_view line);
+
+  // Finalizes the parser_result.
+  void FinalizeParserResult();
 
 
   // Defines the lines that the parser ignores.

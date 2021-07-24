@@ -55,6 +55,7 @@ absl::Status InternalParser::ParseFile(absl::string_view filename) {
         "Could not open input file or file is empty: %s",
         filename));
   }
+  FinalizeParserResult();
   return absl::OkStatus();
 }
 
@@ -72,6 +73,7 @@ absl::Status InternalParser::ParseText(absl::string_view data) {
       return status;
     }
   }
+  FinalizeParserResult();
   return absl::OkStatus();
 }
 
