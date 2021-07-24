@@ -158,6 +158,12 @@ TEST(ItemParserTest, TestWithWhitespacesAndColon) {
   ExpectPandemic(text);
 }
 
+// Tests an item with additional number before official name.
+TEST(ItemParserTest, TestWithExtraId) {
+  static constexpr absl::string_view text = R"(0012-PANDE ==> 42. "Pandemic")";
+  ExpectPandemicWithName(text);
+}
+
 // Test suite: non-strict item ids. These do not conform to the format
 // <numeric>-<alphanumeric> or <numeric>-<alphanumeric>-COPY<numeric>, but are
 // still accepted.

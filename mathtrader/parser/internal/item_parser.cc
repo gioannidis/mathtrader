@@ -50,6 +50,9 @@ constexpr char kOfficialItemRegexStr[]
       // Optional arrow pointing at official name and/or username.
       R"regex((?:==>)?\s*)regex"
 
+      // Optional: item number on some wantlists, e.g., "42.".
+      R"regex((?:\d+\.)?\s*)regex"
+
       // Captures optional official name within quotation marks. The quotation
       // marks are not captured. The official name itself is allowed to contain
       // quotation marks or whitespaces, which are captured.
