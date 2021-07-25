@@ -111,6 +111,13 @@ TEST(MathParserOlwlgTest, TestJune2021US) {
                  /*wantlist_count=*/14860, /*longest_wantlist=*/695);
 }
 
+TEST(MathParserOlwlgTest, TestJune2021Norway) {
+  // Longest wantlist: line 517: "(nils777) 8339221 ..."
+  ExpectWantlist("mathtrader/parser/test_data/286103-officialwants.txt",
+                 /*user_count=*/18, /*item_count=*/143,
+                 /*wantlist_count=*/142, /*longest_wantlist=*/35);
+}
+
 TEST(MathParserOlwlgTest, TestJune2021UK) {
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
   ExpectWantlist("mathtrader/parser/test_data/286149-officialwants.txt",

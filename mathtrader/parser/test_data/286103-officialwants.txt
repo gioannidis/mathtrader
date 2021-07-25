@@ -1,0 +1,701 @@
+# These WANTS loaded directly by the OLWLG
+# Fri Jun 25 22:08:39 2021
+#+ Geeklist: Norsk Byttesirkel - juni 2021 (Norwegian MathTrade)
+#+ ... https://www.boardgamegeek.com/geeklist/286103
+#+ Owner: Gawain
+#+ Item count: 134
+#+ Users with items: 18
+
+#! ALLOW-DUMMIES
+#! REQUIRE-COLONS
+#! REQUIRE-USERNAMES
+#! HIDE-NONTRADES
+#! SHOW-ELAPSED-TIME
+#! SEED=123456
+#! LINEAR-PRIORITIES
+#! METRIC=Users-Trading
+
+# MISSING 15 WANTS (11.1%) FROM 3 USER(s) (16.6%):
+# Akashi_12 (6)
+# Catzy (5)
+# Vooshvazool (4)
+
+!BEGIN-OFFICIAL-NAMES
+8307820 ==> 1. "The Ark of the Covenant" (from Rune)
+8307822 ==> 2. "String Railway" (from Rune)
+8307823 ==> 3. "Wallenstein" (from Rune)
+8308619 ==> 4. "Oh My Goods!" (from Vooshvazool)
+8308621 ==> 5. "Oh My Goods!: Longsdale in Revolt" (from Vooshvazool)
+8308623 ==> 6. "Gaia Project" (from Vooshvazool)
+8308628 ==> 7. "Kepler-3042" (from Vooshvazool)
+8308854 ==> 8. "Battle Line" (from aslaksen)
+8308878 ==> 9. "Hellas" (from aslaksen)
+8308880 ==> 10. "Herbalism" (from aslaksen)
+8308893 ==> 11. "King's Kilt" (from aslaksen)
+8308896 ==> 12. "Level X" (from aslaksen)
+8308902 ==> 13. "Loot" (from aslaksen)
+8308925 ==> 14. "Pandemic: Rising Tide" (from aslaksen)
+8308931 ==> 15. "Pizza Theory" (from aslaksen)
+8308934 ==> 16. "Shadow Master" (from aslaksen)
+8308944 ==> 17. "Star Realms: Frontiers" (from aslaksen)
+8308946 ==> 18. "Zen Master" (from aslaksen)
+8309728 ==> 19. "Rum & Bones: Second Tide" (from gardi)
+8310430 ==> 20. "Bastion" (from Gawain)
+8310431 ==> 21. "Beowulf: The Legend" (from Gawain)
+8310435 ==> 22. "Doodle City" (from Gawain)
+8310521 ==> 23. "Jeg har aldri" (from Gawain)
+8310539 ==> 24. "Race Through Space" (from Gawain)
+8310554 ==> 25. "Rush n' Crush" (from Gawain)
+8310563 ==> 26. "Space Beans" (from Gawain)
+8310564 ==> 27. "WWE Superstar Showdown" (from Gawain)
+8310569 ==> 28. "Super Smash Bros. for Nintendo 3DS and Wii U" (from Gawain)
+8310577 ==> 29. "Alt Name: Velg 5 promos/utvidelser" (from Gawain)
+8318075-COPY1 ==> 30. "Alt Name: 200 kroner" (from Gawain) [copy 1 of 5]
+8318075-COPY2 ==> 30. "Alt Name: 200 kroner" (from Gawain) [copy 2 of 5]
+8318075-COPY3 ==> 30. "Alt Name: 200 kroner" (from Gawain) [copy 3 of 5]
+8318075-COPY4 ==> 30. "Alt Name: 200 kroner" (from Gawain) [copy 4 of 5]
+8318075-COPY5 ==> 30. "Alt Name: 200 kroner" (from Gawain) [copy 5 of 5]
+8320436 ==> 31. "The Castles of Burgundy" (from trilb)
+8320439 ==> 32. "Black Angel" (from trilb)
+8320464 ==> 33. "Concordia" (from trilb)
+8325050 ==> 34. "Gem Rush" (from Akashi_12)
+8325057 ==> 35. "Summoner Wars: Master Set" (from Akashi_12)
+8325060 ==> 36. "Marvel Heroes" (from Akashi_12)
+8325063 ==> 37. "King of Tokyo" (from Akashi_12)
+8325067 ==> 38. "Machi Koro" (from Akashi_12)
+8325076 ==> 39. "Cadwallon: City of Thieves" (from Akashi_12)
+8326648 ==> 40. "Legendary Encounters: An Alien Deck Building Game" (from Gnl_Zod)
+8326649 ==> 41. "Maximum Apocalypse" (from Gnl_Zod)
+8326652 ==> 42. "The Captain Is Dead" (from Gnl_Zod)
+8326657 ==> 43. "Assault on Doomrock" (from Gnl_Zod)
+8326667 ==> 44. "D-Day Dice (Second Edition)" (from Gnl_Zod)
+8326676 ==> 45. "Alt Name: 500 kroner" (from Gnl_Zod)
+8327673 ==> 46. "Eiyo" (from aslaksen)
+8327674 ==> 47. "Space Lunch" (from aslaksen)
+8327676 ==> 48. "Rebis" (from aslaksen)
+8327832 ==> 49. "Defenders of the Realm" (from aslaksen)
+8327861 ==> 50. "The King Is Dead" (from aslaksen)
+8328941 ==> 51. "Detective: A Modern Crime Board Game – Season One" (from postbb)
+8328943 ==> 52. "Hera and Zeus" (from postbb)
+8328944 ==> 53. "Unlock!: Timeless Adventures" (from postbb)
+8328947 ==> 54. "Detective: A Modern Crime Board Game" (from postbb)
+8331367 ==> 55. "Kingdom Rush: Rift in Time" (from makkochan)
+8331374 ==> 56. "Hero Realms" (from aslaksen)
+8331380 ==> 57. "Brass: Birmingham" (from makkochan)
+8331548 ==> 58. "Perfect Alibi" (from Sound of NewSick)
+8331551 ==> 59. "Unlock!: Secret Adventures" (from Sound of NewSick)
+8331552 ==> 60. "Aqua Romana" (from Sound of NewSick)
+8331593 ==> 61. "Sid Meier's Civilization: The Board Game" (from Sound of NewSick)
+8331597 ==> 62. "Africana" (from Sound of NewSick)
+8331616 ==> 63. "The Voyages of Marco Polo" (from DasLoot)
+8331626 ==> 64. "13 Dead End Drive" (from Conservator)
+8331631 ==> 65. "Alchemists" (from Conservator)
+8331632 ==> 66. "Antidote" (from Conservator)
+8331633 ==> 67. "Bunny Bunny Moose Moose" (from Conservator)
+8331635 ==> 68. "Diamant" (from Conservator)
+8331637 ==> 69. "Colt Express" (from Conservator)
+8331639 ==> 70. "Don't Get Got!" (from Conservator)
+8331640 ==> 71. "For Sale" (from Conservator)
+8331641 ==> 72. "Kerala: The Way of the Elephant" (from Conservator)
+8331642 ==> 73. "Lifeboat" (from Conservator)
+8331643 ==> 74. "No Thanks!" (from Conservator)
+8331644 ==> 75. "Paris Connection" (from Conservator)
+8331645 ==> 76. "Red November" (from Conservator)
+8331647 ==> 77. "Santorini" (from Conservator)
+8331656 ==> 78. "Secret Hitler" (from Conservator)
+8331695 ==> 79. "Stephenson's Rocket" (from Conservator)
+8331710 ==> 80. "String Railway" (from Conservator)
+8331761 ==> 81. "Through the Desert" (from Conservator)
+8332163 ==> 82. "Everdell" (from trilb)
+8332625-COPY1 ==> 83. "Alt Name: 200 kroner" (from aslaksen) [copy 1 of 5]
+8332625-COPY2 ==> 83. "Alt Name: 200 kroner" (from aslaksen) [copy 2 of 5]
+8332625-COPY3 ==> 83. "Alt Name: 200 kroner" (from aslaksen) [copy 3 of 5]
+8332625-COPY4 ==> 83. "Alt Name: 200 kroner" (from aslaksen) [copy 4 of 5]
+8332625-COPY5 ==> 83. "Alt Name: 200 kroner" (from aslaksen) [copy 5 of 5]
+8332687 ==> 84. "Clash of Cultures" (from takras)
+8332688 ==> 85. "Loot Island" (from takras)
+8332690 ==> 86. "UBOOT: The Board Game" (from takras)
+8332691 ==> 87. "Age of Thieves" (from takras)
+8332692 ==> 88. "Orbit Battle" (from takras)
+8332693 ==> 89. "Space Freaks" (from takras)
+8333632 ==> 90. "Alt Name: 400 kroner" (from misskitten)
+8333658 ==> 91. "Star Wars: Dark Side Rising" (from takras)
+8333666 ==> 92. "10 Days in the Americas" (from trilb)
+8333667 ==> 93. "Catan Junior" (from trilb)
+8333669 ==> 94. "Dungeon Petz" (from trilb)
+8335024 ==> 95. "The Empire Strikes Back: Star Wars Customizable Card Game" (from Sound of NewSick)
+8335682 ==> 96. "Choose Your Own Adventure: House of Danger" (from Sound of NewSick)
+8335684 ==> 97. "Adventure Games: The Dungeon" (from Sound of NewSick)
+8336463 ==> 98. "Fabled Fruit" (from Catzy)
+8336464 ==> 99. "Politisk ukorrekt" (from Catzy)
+8336465 ==> 100. "Green Box of Games" (from Catzy)
+8336826 ==> 101. "Escape from the Aliens in Outer Space" (from Conservator)
+8337443 ==> 102. "Catan: Seafarers" (from Catzy)
+8337449 ==> 103. "Catan: Seafarers – 5-6 Player Extension" (from Catzy)
+8337604-COPY1 ==> 104. "Alt Name: 400 kroner" (from Gawain) [copy 1 of 2]
+8337604-COPY2 ==> 104. "Alt Name: 400 kroner" (from Gawain) [copy 2 of 2]
+8337654 ==> 105. "Alt Name: 5 RPG Token Set" (from Gawain)
+8337671 ==> 106. "Hanabi" (from Gawain)
+8337770 ==> 107. "Impulse" (from Gawain)
+8338054 ==> 108. "A Feast for Odin: The Norwegians" (from DasLoot)
+8338890 ==> 109. "Player's Handbook (D&D 3e)" (from postbb)
+8338992 ==> 110. "Alt Name: 200 kroner" (from Rune)
+8339006 ==> 111. "Augsburg 1520" (from Chowdah)
+8339007 ==> 112. "Junta" (from Chowdah)
+8339134 ==> 113. "Clank! Expeditions: Gold and Silk" (from Gawain)
+8339200 ==> 114. "La Città" (from nils777)
+8339204 ==> 115. "Giants" (from nils777)
+8339206 ==> 116. "Onward to Venus" (from nils777)
+8339209 ==> 117. "Power Grid" (from nils777)
+8339211 ==> 118. "A Game of Thrones: The Card Game" (from nils777)
+8339212 ==> 119. "Kingdomino" (from nils777)
+8339213 ==> 120. "Rattus" (from nils777)
+8339217 ==> 121. "Reef Encounter" (from nils777)
+8339218 ==> 122. "Sultaniya" (from nils777)
+8339221 ==> 123. "Ticket to Ride: The Card Game" (from nils777)
+8339222 ==> 124. "Valdora" (from nils777)
+8339237 ==> 125. "Eminent Domain" (from nils777)
+8339239 ==> 126. "Batavia" (from nils777)
+8339242 ==> 127. "Arkham Ritual" (from nils777)
+8339247 ==> 128. "Eight-Minute Empire" (from nils777)
+8339260 ==> 129. "Catan: Traders & Barbarians – 5-6 Player Extension" (from nils777)
+8339266 ==> 130. "Alien Frontiers: Faction Pack No. 1" (from Gawain)
+8339273 ==> 131. "AquaSphere" (from nils777)
+8339366 ==> 132. "Endless Pass: A Viking Saga" (from gardi)
+8339608 ==> 133. "Escape Room: The Game" (from postbb)
+8339618 ==> 134. "Chez Geek" (from postbb)
+!END-OFFICIAL-NAMES
+
+
+#pragma user "aslaksen"
+# Confirmation code: nUYQgE9PfPuEjoUDQgjo8A
+# Mon Jun 21 17:46:22 2021
+
+
+# Battle Line
+(aslaksen) 8308854 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Hellas
+(aslaksen) 8308878 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Herbalism
+(aslaksen) 8308880 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# King's Kilt
+(aslaksen) 8308893 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Level X
+(aslaksen) 8308896 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Loot
+(aslaksen) 8308902 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Pandemic: Rising Tide
+(aslaksen) 8308925 : 8332163 8331380 8326676 8333632 %8337604
+
+# Pizza Theory
+(aslaksen) 8308931 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Shadow Master
+(aslaksen) 8308934 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Star Realms: Frontiers
+(aslaksen) 8308944 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Zen Master
+(aslaksen) 8308946 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Eiyo
+(aslaksen) 8327673 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Space Lunch
+(aslaksen) 8327674 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Rebis
+(aslaksen) 8327676 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Defenders of the Realm
+(aslaksen) 8327832 : 8332163 8331380 8326676 8333632 %8337604
+
+# The King Is Dead
+(aslaksen) 8327861 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Hero Realms
+(aslaksen) 8331374 : 8332163 8331380 8326676 8333632 %8337604 8331656 8325067 %8318075 8338992
+
+# Alt Name: 200 kroner
+(aslaksen) 8332625-COPY1 : 8332163 8331380 8331656
+
+# Alt Name: 200 kroner
+(aslaksen) 8332625-COPY2 : 8332163 8331380 8331656
+
+# Alt Name: 200 kroner
+(aslaksen) 8332625-COPY3 : 8332163 8331380 8331656
+
+# Alt Name: 200 kroner
+(aslaksen) 8332625-COPY4 : 8332163 8331380 8331656
+
+# Alt Name: 200 kroner
+(aslaksen) 8332625-COPY5 : 8332163 8331380 8331656
+
+# Note: The following 2 dummy items have been auto generated
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(aslaksen) %8318075 : 8318075-COPY1 8318075-COPY2 8318075-COPY3 8318075-COPY4 8318075-COPY5
+
+# Automatic duplicate protection for your want Alt Name: 400 kroner
+(aslaksen) %8337604 : 8337604-COPY1 8337604-COPY2
+
+
+#pragma user "chowdah"
+# Confirmation code: 9YmOR4/9iPlnMe-9LHn0fQ
+# Fri Jun 25 10:23:04 2021
+
+
+# Augsburg 1520
+(chowdah) 8339006 : 8339217 8331695 8339200 8327861 8308878 8310431
+
+# Junta
+(chowdah) 8339007 : 8339217 8331695 8339200 8327861 8308878 8310431
+
+
+#pragma user "Conservator"
+# Confirmation code: it5a2ujz1Ts4ap37ME9pug
+# Fri Jun 25 05:36:27 2021
+
+
+# 13 Dead End Drive
+(Conservator) 8331626 : 8308623 8331380 8333669
+
+# Alchemists
+(Conservator) 8331631 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Antidote
+(Conservator) 8331632 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Bunny Bunny Moose Moose
+(Conservator) 8331633 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Diamant
+(Conservator) 8331635 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Colt Express
+(Conservator) 8331637 : 8308623 8331380 8333669
+
+# Don't Get Got!
+(Conservator) 8331639 : 8308623 8331380 8333669 8336463 8327861
+
+# For Sale
+(Conservator) 8331640 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Kerala: The Way of the Elephant
+(Conservator) 8331641 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Lifeboat
+(Conservator) 8331642 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# No Thanks!
+(Conservator) 8331643 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Paris Connection
+(Conservator) 8331644 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Red November
+(Conservator) 8331645 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Santorini
+(Conservator) 8331647 : 8308623 8331380 8333669
+
+# Secret Hitler
+(Conservator) 8331656 : 8308623 8331380 8333669
+
+# Stephenson's Rocket
+(Conservator) 8331695 :
+
+# String Railway
+(Conservator) 8331710 : 8308623 8331380 8333669 8336463 8327861 8310554
+
+# Through the Desert
+(Conservator) 8331761 : 8308623 8331380 8333669
+
+# Escape from the Aliens in Outer Space
+(Conservator) 8336826 : 8308623 8331380 8333669
+
+
+#pragma user "DasLoot"
+# Confirmation code: ojwMy1v7Ck1H5Jt-PNhT4w
+# Mon Jun 21 15:57:23 2021
+
+
+# The Voyages of Marco Polo
+(DasLoot) 8331616 : 8320464 8308925 8326676 8333632 %8337604 8326649 8326667
+
+# A Feast for Odin: The Norwegians
+(DasLoot) 8338054 : 8320464 8308925 8326676 8333632 %8337604 8326649 8326667
+
+# Note: The following 1 dummy items have been auto generated
+
+# Automatic duplicate protection for your want Alt Name: 400 kroner
+(DasLoot) %8337604 : 8337604-COPY1 8337604-COPY2
+
+
+#pragma user "gardi"
+# Confirmation code: k8YedOXz4LUh2ehyuxsY7A
+# Tue Jun 22 01:26:01 2021
+
+
+# Rum & Bones: Second Tide
+(gardi) 8309728 : 8332687 8332690
+
+# Endless Pass: A Viking Saga
+(gardi) 8339366 : %8318075 %8332625 8338992 8339007
+
+# Note: The following 2 dummy items have been auto generated
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(gardi) %8318075 : 8318075-COPY1 8318075-COPY2 8318075-COPY3 8318075-COPY4 8318075-COPY5
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(gardi) %8332625 : 8332625-COPY1 8332625-COPY2 8332625-COPY3 8332625-COPY4 8332625-COPY5
+
+
+#pragma user "Gawain"
+# Confirmation code: yXcaxsurIoXgMMsoX1xO/Q
+# Tue Jun 22 06:40:20 2021
+
+
+# Bastion
+(Gawain) 8310430 : 8326676 8333632 8331380
+
+# Beowulf: The Legend
+(Gawain) 8310431 : 8326676 8333632 8331380
+
+# Doodle City
+(Gawain) 8310435 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992 8328944 8331551
+
+# Jeg har aldri
+(Gawain) 8310521 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992 8328944 8331551
+
+# Race Through Space
+(Gawain) 8310539 : 8326676 8333632 8331380
+
+# Rush n' Crush
+(Gawain) 8310554 : 8326676 8333632
+
+# Space Beans
+(Gawain) 8310563 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992 8328944 8331551 8331640
+
+# WWE Superstar Showdown
+(Gawain) 8310564 : 8326676 8333632 8331380
+
+# Super Smash Bros. for Nintendo 3DS and Wii U
+(Gawain) 8310569 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992
+
+# Alt Name: Velg 5 promos/utvidelser
+(Gawain) 8310577 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992 8328944 8331551 8331640
+
+# Alt Name: 200 kroner
+(Gawain) 8318075-COPY1 : 8331380 8320464 8332163
+
+# Alt Name: 200 kroner
+(Gawain) 8318075-COPY2 : 8331380 8320464 8332163
+
+# Alt Name: 200 kroner
+(Gawain) 8318075-COPY3 : 8331380 8320464 8332163
+
+# Alt Name: 200 kroner
+(Gawain) 8318075-COPY4 : 8331380 8320464 8332163
+
+# Alt Name: 200 kroner
+(Gawain) 8318075-COPY5 : 8331380 8320464 8332163
+
+# Alt Name: 400 kroner
+(Gawain) 8337604-COPY1 :
+
+# Alt Name: 400 kroner
+(Gawain) 8337604-COPY2 :
+
+# Alt Name: 5 RPG Token Set
+(Gawain) 8337654 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992 8328944 8331551
+
+# Hanabi
+(Gawain) 8337671 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992
+
+# Impulse
+(Gawain) 8337770 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992
+
+# Clank! Expeditions: Gold and Silk
+(Gawain) 8339134 : 8326676 8333632 8331380
+
+# Alien Frontiers: Faction Pack #1
+(Gawain) 8339266 : 8326676 8333632 8331380 8320464 8332163 8308623 8333669 8327832 8328947 %8332625 8338992
+
+# Note: The following 1 dummy items have been auto generated
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(Gawain) %8332625 : 8332625-COPY1 8332625-COPY2 8332625-COPY3 8332625-COPY4 8332625-COPY5
+
+
+#pragma user "Gnl_Zod"
+# Confirmation code: SHkl8Qz2z8j70u4-Fx6DeQ
+# Tue Jun 22 15:59:21 2021
+
+
+# Legendary Encounters: An Alien Deck Building Game
+(Gnl_Zod) 8326648 : 8332690 8309728 8331367 8332163 8333632
+
+# Maximum Apocalypse
+(Gnl_Zod) 8326649 : 8332690 8309728 8331367 8332163 8320439 8333632
+
+# The Captain Is Dead
+(Gnl_Zod) 8326652 : 8332690 8309728 8331367 8332163 8320439 8333632
+
+# Assault on Doomrock
+(Gnl_Zod) 8326657 : 8332690 8309728 8331367 8332163 8320439 8333632
+
+# D-Day Dice (Second Edition)
+(Gnl_Zod) 8326667 : 8332690 8309728 8331367 8320439
+
+# Alt Name: 500 kroner
+(Gnl_Zod) 8326676 : 8332690
+
+
+#pragma user "makkochan"
+# Confirmation code: 6I1-yHuh6g6tWQ7PiZb7eg
+# Mon Jun 21 18:41:44 2021
+
+
+# Kingdom Rush: Rift in Time
+(makkochan) 8331367 : 8332163 8308623
+
+# Brass: Birmingham
+(makkochan) 8331380 : 8332163 8308623
+
+
+#pragma user "misskitten"
+# Confirmation code: sGkElvDp63F/ImI6l-kegw
+# Tue Jun 22 05:10:00 2021
+
+
+# Alt Name: 400 kroner
+(misskitten) 8333632 : 8331380
+
+
+#pragma user "nils777"
+# Confirmation code: Bu4f0Tb/AkJJofoWVgLtYg
+# Fri Jun 25 15:08:40 2021
+
+
+# La Città
+(nils777) 8339200 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676
+
+# Giants
+(nils777) 8339204 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676
+
+# Onward to Venus
+(nils777) 8339206 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688
+
+# Power Grid
+(nils777) 8339209 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687
+
+# A Game of Thrones: The Card Game
+(nils777) 8339211 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608
+
+# Kingdomino
+(nils777) 8339212 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608 8325067 8328944 8331551 8331635 8308854 %8318075 %8332625 8338992 8339007 8308902 8331548 8325050 8339006
+
+# Rattus
+(nils777) 8339213 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608 8325067 8328944 8331551 8331635 8308854 %8318075 %8332625 8338992 8339007 8308902 8331548 8325050 8339006 8331637
+
+# Reef Encounter
+(nils777) 8339217 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604
+
+# Sultaniya
+(nils777) 8339218 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688
+
+# Ticket to Ride: The Card Game
+(nils777) 8339221 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608 8325067 8328944 8331551 8331635 8308854 %8318075 %8332625 8338992 8339007 8308902 8331548 8325050 8339006 8331637 8308878 8327673 8327676
+
+# Valdora
+(nils777) 8339222 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608
+
+# Eminent Domain
+(nils777) 8339237 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608 8325067 8328944 8331551 8331635 8308854 %8318075 %8332625 8338992 8339007 8308902 8331548 8325050 8339006 8331637 8308878 8327673 8327676
+
+# Batavia
+(nils777) 8339239 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608 8325067 8328944 8331551
+
+# Arkham Ritual
+(nils777) 8339242 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608 8325067 8328944 8331551 8331635 8308854 %8318075 %8332625 8338992 8339007 8308902 8331548 8325050 8339006 8331637 8308878 8327673 8327676
+
+# Eight-Minute Empire
+(nils777) 8339247 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608 8325067 8328944 8331551 8331635 8308854 %8318075 %8332625 8338992 8339007 8308902 8331548 8325050 8339006 8331637 8308878
+
+# Catan: Traders & Barbarians – 5-6 Player Extension
+(nils777) 8339260 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687 8331656 8308619 8326676 8331761 8331593 8333632 %8337604 8328947 8332688 8339134 8339608 8325067 8328944 8331551 8331635 8308854 %8318075 %8332625 8338992 8339007 8308902 8331548 8325050 8339006 8331637 8308878
+
+# AquaSphere
+(nils777) 8339273 : 8320464 8332163 8308623 8331380 8320436 8331631 8332687
+
+# Note: The following 3 dummy items have been auto generated
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(nils777) %8318075 : 8318075-COPY1 8318075-COPY2 8318075-COPY3 8318075-COPY4 8318075-COPY5
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(nils777) %8332625 : 8332625-COPY1 8332625-COPY2 8332625-COPY3 8332625-COPY4 8332625-COPY5
+
+# Automatic duplicate protection for your want Alt Name: 400 kroner
+(nils777) %8337604 : 8337604-COPY1 8337604-COPY2
+
+
+#pragma user "Postbb"
+# Confirmation code: 6W-N2d7CJ9lPmJjGKgl7jA
+# Fri Jun 25 09:08:37 2021
+
+
+# Detective: A Modern Crime Board Game – Season One
+(Postbb) 8328941 : 8332163 8308623 8331380 8332690 8331367 8326648 8320439 8331551 8326649
+
+# Hera and Zeus
+(Postbb) 8328943 : 8332163 8308623 8331380 8332690 8331367 8326648 8320439 8331551 8326649 8333669 8331631 8325057 8326652 8331374 8326657 8335682 8333658
+
+# Unlock!: Timeless Adventures
+(Postbb) 8328944 : 8332163 8308623 8331380 8332690 8331367 8326648 8320439 8331551 8326649
+
+# Detective: A Modern Crime Board Game
+(Postbb) 8328947 : 8332163 8308623 8331380 8332690 8331367
+
+# Player's Handbook (D&D 3e)
+(Postbb) 8338890 : 8332163 8308623 8331380 8332690 8331367 8326648 8320439 8331551 8326649 8333669 8331631 8325057 8326652 8331374 8326657 8335682 8333658
+
+# Escape Room: The Game
+(Postbb) 8339608 : 8332163 8308623 8331380 8332690 8331367 8326648 8320439 8331551 8326649 8333669 8331631 8325057 8326652 8331374 8326657 8335682 8333658
+
+# Chez Geek
+(Postbb) 8339618 : 8332163 8308623 8331380 8332690 8331367 8326648 8320439 8331551 8326649 8333669 8331631 8325057 8326652 8331374 8326657 8335682 8333658 8308902
+
+
+#pragma user "Rune"
+# Confirmation code: YcumRROuo9Hwopc8qbZPKQ
+# Thu Jun 24 06:41:47 2021
+
+
+# The Ark of the Covenant
+(Rune) 8307820 : 8326648 8326676 8333632 %8337604
+
+# String Railway
+(Rune) 8307822 : 8326648 8326676 8333632 %8337604 8332163 8308623 8331631 8320439 8336826 8338054 8308619 %8318075 %8332625 8339134 8308628 8333658 8310430
+
+# Wallenstein
+(Rune) 8307823 : 8326648 8326676 8333632 %8337604
+
+# Alt Name: 200 kroner
+(Rune) 8338992 : 8326648
+
+# Note: The following 3 dummy items have been auto generated
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(Rune) %8318075 : 8318075-COPY1 8318075-COPY2 8318075-COPY3 8318075-COPY4 8318075-COPY5
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(Rune) %8332625 : 8332625-COPY1 8332625-COPY2 8332625-COPY3 8332625-COPY4 8332625-COPY5
+
+# Automatic duplicate protection for your want Alt Name: 400 kroner
+(Rune) %8337604 : 8337604-COPY1 8337604-COPY2
+
+
+#pragma user "Sound of NewSick"
+# Confirmation code: 34tHEFNC8AX2yZIeMBclXA
+# Fri Jun 25 11:57:24 2021
+
+
+# Perfect Alibi
+(Sound of NewSick) 8331548 : 8308623 8331631 8328947 8331616 8331761 8327832 8336826 8331367 8326667 8333658 8336463
+
+# Unlock!: Secret Adventures
+(Sound of NewSick) 8331551 : 8308623 8331631 8328947
+
+# Aqua Romana
+(Sound of NewSick) 8331552 : 8308623 8331631 8328947 8331616 8331761 8327832 8336826 8331367 8326667 8333658 8331380
+
+# Sid Meier's Civilization: The Board Game
+(Sound of NewSick) 8331593 : 8308623 8331631 8328947
+
+# Africana
+(Sound of NewSick) 8331597 : 8308623 8331631 8328947
+
+# The Empire Strikes Back: Star Wars Customizable Card Game
+(Sound of NewSick) 8335024 : 8308623 8331631 8328947 8331616 8331761 8327832 8336826 8331367 8326667 8333658 8331380 8336463 8331643 8325067 8328944
+
+# Choose Your Own Adventure: House of Danger
+(Sound of NewSick) 8335682 : 8308623 8331631 8328947 8331616 8331761 8327832 8336826 8331367 8326667 8333658 8331380 8336463 8331643 8325067 8328944 8331640 8339213 8339273 8337770
+
+# Adventure Games: The Dungeon
+(Sound of NewSick) 8335684 : 8308623 8331631 8328947 8331616 8331761 8327832 8336826 8331367 8326667 8333658 8331380
+
+
+#pragma user "takras"
+# Confirmation code: Aq7izr6KUEsrQLIuDfiaHw
+# Tue Jun 22 07:17:19 2021
+
+
+# Clash of Cultures
+(takras) 8332687 : 8332163 8327832 8326676 8333632 %8337604 8339204 8333669 8331593
+
+# Loot Island
+(takras) 8332688 : 8332163 8327832 8326676 8333632 %8337604 8339204 8326667 8331616 8333669 8339213
+
+# UBOOT: The Board Game
+(takras) 8332690 :
+
+# Age of Thieves
+(takras) 8332691 : 8332163 8327832 8326676 8333632 %8337604 8339204 8326667 8331616 8339213
+
+# Orbit Battle
+(takras) 8332692 : 8332163 8327832 8326676 8333632 %8337604 8339204 8326667 8331616 8333669 8339213
+
+# Space Freaks
+(takras) 8332693 : 8332163 8327832 8326676 8333632 %8337604 8339204 8326667 8331616 8333669 8339213
+
+# Star Wars: Dark Side Rising
+(takras) 8333658 : 8332163 8327832 8326676 8333632 %8337604 8326667
+
+# Note: The following 2 dummy items have been auto generated
+
+# Automatic duplicate protection for your want Alt Name: 200 kroner
+(takras) %8332625 : 8332625-COPY1 8332625-COPY2 8332625-COPY3 8332625-COPY4 8332625-COPY5
+
+# Automatic duplicate protection for your want Alt Name: 400 kroner
+(takras) %8337604 : 8337604-COPY1 8337604-COPY2
+
+
+#pragma user "trilb"
+# Confirmation code: k2toBpIuZMXR4sldRi7iDw
+# Tue Jun 22 18:46:20 2021
+
+
+# The Castles of Burgundy
+(trilb) 8320436 : 8331380
+
+# Black Angel
+(trilb) 8320439 : 8331380
+
+# Concordia
+(trilb) 8320464 : 8331380
+
+# Everdell
+(trilb) 8332163 :
+
+# 10 Days in the Americas
+(trilb) 8333666 : 8331380 8331656
+
+# Catan Junior
+(trilb) 8333667 : 8331380 8331656
+
+# Dungeon Petz
+(trilb) 8333669 : 8331380
+
+# End of wants. If you don't see this line then this file may have
+# been truncated.  IMPORTANT: this comment block is also required to be
+# in the wants file when you upload the WANTS into the OLWLG.
