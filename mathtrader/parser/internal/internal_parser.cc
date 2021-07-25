@@ -68,8 +68,10 @@ absl::string_view StripPrefix(absl::string_view line) {
 
 absl::Status InternalParser::ParseLine(
     absl::string_view line) {
-  // Skips lines that should be ignored.
-  if (re2::RE2::FullMatch(line, kIgnoreLineRegex)) {
+  // Skips lines that should be ignored. Use of PartialMatch is recommended over
+  // FullMatch as it deals better with unicode characters in comment lines, such
+  // as the pound (GBP) character.
+  if (re2::RE2::PartialMatch(line, kIgnoreLineRegex)) {
     return absl::OkStatus();
   }
 

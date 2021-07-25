@@ -31,9 +31,8 @@ namespace mathtrader::internal_parser {
 
 namespace {
 // Regex defining the lines to ignore: empty lines, lines with all whitespaces,
-// or comment lines beginning with "#" but not "#!". It is a non-capturing
-// group.
-constexpr char kIgnoreLineRegexStr[] = R"((?:#[^!].*|\s*))";
+// or comment lines beginning with "#" but not "#!".
+constexpr char kIgnoreLineRegexStr[] = R"(^#[^!]|^\s*$)";
 }  // namespace
 
 // Initializes the constant members.
