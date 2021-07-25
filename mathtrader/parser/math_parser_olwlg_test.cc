@@ -15,7 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Tests the OLWLG on real OLWLG testcases.
+// Tests the MathParser on real OLWLG testcases. Note that worldwide tests tend
+// to be longer than country-specfic tests, so you may want to use the following
+// filters:
+//  --test_filter=*WorldTest.* --> for worldwide tests
+//  --test_filter=*CountryTest.* --> for country-specific tests
 
 #include "mathtrader/parser/math_parser.h"
 
@@ -104,35 +108,42 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
       Each(Property(&Wantlist::wanted_item, Each(IsValidItemId()))));
 }
 
-TEST(MathParserOlwlgTest, TestJune2021US) {
+TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
+  // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
+  ExpectWantlist("mathtrader/parser/test_data/283180-officialwants.txt",
+                 /*user_count=*/139, /*item_count=*/9056,
+                 /*wantlist_count=*/13035, /*longest_wantlist=*/1000);
+}
+
+TEST(MathParserOlwlgCountryTest, TestJune2021US) {
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
   ExpectWantlist("mathtrader/parser/test_data/286101-officialwants.txt",
                  /*user_count=*/335, /*item_count=*/5896,
                  /*wantlist_count=*/14860, /*longest_wantlist=*/695);
 }
 
-TEST(MathParserOlwlgTest, TestJune2021Norway) {
+TEST(MathParserOlwlgCountryTest, TestJune2021Norway) {
   // Longest wantlist: line 517: "(nils777) 8339221 ..."
   ExpectWantlist("mathtrader/parser/test_data/286103-officialwants.txt",
                  /*user_count=*/18, /*item_count=*/143,
                  /*wantlist_count=*/142, /*longest_wantlist=*/35);
 }
 
-TEST(MathParserOlwlgTest, TestJune2021UK) {
+TEST(MathParserOlwlgCountryTest, TestJune2021UK) {
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
   ExpectWantlist("mathtrader/parser/test_data/286149-officialwants.txt",
                  /*user_count=*/223, /*item_count=*/2990,
                  /*wantlist_count=*/9549, /*longest_wantlist=*/785);
 }
 
-TEST(MathParserOlwlgTest, TestJune2021Canada) {
+TEST(MathParserOlwlgCountryTest, TestJune2021Canada) {
   // Longest wantlist: line 2149: "(Dragoon6542) 8351711 ..."
   ExpectWantlist("mathtrader/parser/test_data/286870-officialwants.txt",
                  /*user_count=*/121, /*item_count=*/1147,
                  /*wantlist_count=*/1266, /*longest_wantlist=*/289);
 }
 
-TEST(MathParserOlwlgTest, TestJuly2021Greece) {
+TEST(MathParserOlwlgCountryTest, TestJuly2021Greece) {
   // Longest wantlist: line 3417: "(Rico13mpatsoni) 8366279 ..."
   ExpectWantlist("mathtrader/parser/test_data/286928-officialwants.txt",
                  /*user_count=*/66, /*item_count=*/687,
