@@ -46,9 +46,14 @@ using ::testing::StartsWith;
 // Examples:
 //    "0001-MKGB", "0002-20GIFT"
 static constexpr char kItemRegex[] =
-    R"([[:digit:]]{4}-[[:alnum:]]*)"  // exactly 4 leading digits
-                                      // separating '-"
-                                      // any alphanumeric, including zero.
+    R"(()"  // opens item id group
+      // Item id format 1: exactly 4 leading digits, separating '-",
+      // followed by any alphanumeric, including zero.
+      R"(([[:digit:]]{4}-[[:alnum:]]*))"
+      R"(|)"
+      // Item id format 2: digits only.
+      R"(([[:digit:]]+))"
+    R"())"  // closes item id group
     R"((-COPY[[:digit:]]+)?)";  // e.g., "-COPY42"; optional
 
 // Matches an item that:
@@ -71,7 +76,10 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
   ASSERT_TRUE(parser_result.ok()) << parser_result.status().message();
 
   // Verifies the number of users with items.
-  EXPECT_EQ(parser_result->user_count(), user_count);
+  for (const auto& user : parser_result->users()) {
+    std::cout << user << std::endl;
+  }
+  EXPECT_THAT(parser_result->users(), SizeIs(user_count));
 
   // Verifies the number of items.
   EXPECT_EQ(parser_result->item_count(), item_count);
@@ -79,18 +87,16 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
   const auto& wantlists = parser_result->wantlist();
 
   // Verifies the number of wantlists.
-  EXPECT_THAT(wantlists, SizeIs(wantlist_count));
+  EXPECT_EQ(wantlists.size(), wantlist_count);
 
   // Verifies the id format of offered items.
   EXPECT_THAT(wantlists,
               Each(Property(&Wantlist::offered_item, IsValidItemId())));
 
-  // Verifies the longest wantlist:
-  //   line 19783: "(jgoyes) 1109-3GIFT ..."
+  // Verifies the longest wantlist.
   EXPECT_THAT(wantlists,
               Contains(Property(&Wantlist::wanted_item,
                        SizeIs(longest_wantlist))));
-
 
   // Verifies the id format of wanted items.
   EXPECT_THAT(
@@ -99,9 +105,17 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
 }
 
 TEST(MathParserOlwlgTest, TestJune2021US) {
+  // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
   ExpectWantlist("mathtrader/parser/test_data/286101-officialwants.txt",
                  /*user_count=*/335, /*item_count=*/5896,
                  /*wantlist_count=*/14860, /*longest_wantlist=*/695);
+}
+
+TEST(MathParserOlwlgTest, TestJune2021Canada) {
+  // Longest wantlist: line 2149: "(Dragoon6542) 8351711 ..."
+  ExpectWantlist("mathtrader/parser/test_data/286870-officialwants.txt",
+                 /*user_count=*/121, /*item_count=*/1147,
+                 /*wantlist_count=*/1266, /*longest_wantlist=*/289);
 }
 
 }  // namespace
