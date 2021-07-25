@@ -17,11 +17,14 @@
 
 # Defines filegroup for OLWLG test files.
 
-package(
-    default_visibility = ["//mathtrader/parser:__pkg__"],
-)
-
 filegroup(
     name = "olwlg_test_data",
     srcs = glob(["*-officialwants.txt"]),
+    visibility = ["//mathtrader/parser:__pkg__"],
+)
+
+sh_binary(
+    name = "stats_officialwants",
+    srcs = ["stats_officialwants.sh"],
+    data = [":olwlg_test_data"],
 )
