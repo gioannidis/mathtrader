@@ -118,4 +118,11 @@ TEST(MathParserOlwlgTest, TestJune2021Canada) {
                  /*wantlist_count=*/1266, /*longest_wantlist=*/289);
 }
 
+TEST(MathParserOlwlgTest, TestJuly2021Greece) {
+  // Longest wantlist: line 3417: "(Rico13mpatsoni) 8366279 ..."
+  ExpectWantlist("mathtrader/parser/test_data/286928-officialwants.txt",
+                 /*user_count=*/66, /*item_count=*/687,
+                 /*wantlist_count=*/1003, /*longest_wantlist=*/235);
+}
+
 }  // namespace
