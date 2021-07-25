@@ -80,9 +80,6 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
   ASSERT_TRUE(parser_result.ok()) << parser_result.status().message();
 
   // Verifies the number of users with items.
-  for (const auto& user : parser_result->users()) {
-    std::cout << user << std::endl;
-  }
   EXPECT_THAT(parser_result->users(), SizeIs(user_count));
 
   // Verifies the number of items.
