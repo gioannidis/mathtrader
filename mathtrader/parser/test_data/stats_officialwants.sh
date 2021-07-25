@@ -21,6 +21,9 @@
 # "officialwants" file. It is not meant to be deployed for accurate parsing, but
 # merely as a straightforward way to retrieve statistics for test development.
 # Therefore, it is intended to be run in a Linux environment
+# Run as:
+#
+#   bazel run //mathtrader/parser/test_data:stats_officialwants
 
 # Retrieves statistics from a given official wants file.
 function GetStatsFromOfficialwantsFile {
@@ -49,11 +52,19 @@ function GetStatsFromOfficialwantsFile {
   # Retrieves the longest line. This is a candidate for the longest wantlist.
   echo "Longest line(s):"
   egrep -n "^.{$(wc -L < $1)}$" $1 | cut -d ':' -f 1
+
+  # Retrieves the number of items named "missing-official". "sed" adds a line
+  # break after each occurence, because "grep" cannot count multiple matches
+  # within a single line. Finally, filters out comment lines beginning with '#'.
+  missing="missing-official"
+  echo -n "'${missing} items: "
+  sed "s/${missing}/${missing}\\n/gi" $1 | egrep -i "missing-official" \
+      | egrep -c "^[^#]"
 }
 
 ### Main script
 
-required_binaries="egrep pcregrep"
+required_binaries="egrep pcregrep sed"
 
 # Checks if required binaries have been installed.
 for required_binary in ${required_binaries[@]}; do

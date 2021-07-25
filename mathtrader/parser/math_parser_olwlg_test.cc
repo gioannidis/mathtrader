@@ -18,8 +18,8 @@
 // Tests the MathParser on real OLWLG testcases. Note that worldwide tests tend
 // to be longer than country-specfic tests, so you may want to use the following
 // filters:
-//  --test_filter=*WorldTest.* --> for worldwide tests
 //  --test_filter=*CountryTest.* --> for country-specific tests
+//  --test_filter=*WorldTest.* --> for worldwide tests
 
 #include "mathtrader/parser/math_parser.h"
 
@@ -38,7 +38,9 @@ using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Contains;
 using ::testing::Each;
+using ::testing::ElementsAre;
 using ::testing::ExplainMatchResult;
+using ::testing::FieldsAre;
 using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::MatchesRegex;
@@ -74,7 +76,7 @@ MATCHER(IsValidItemId, "") {
 
 void ExpectWantlist(absl::string_view filename, int32_t user_count,
                     int32_t item_count, int32_t wantlist_count,
-                    int32_t longest_wantlist) {
+                    int32_t longest_wantlist, int32_t missing_item_count = 0) {
   MathParser parser;
   const auto parser_result = parser.ParseFile(filename);
   ASSERT_TRUE(parser_result.ok()) << parser_result.status().message();
@@ -103,20 +105,29 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
   EXPECT_THAT(
       wantlists,
       Each(Property(&Wantlist::wanted_item, Each(IsValidItemId()))));
+
+  // Verifies the number of missing items.
+  if (missing_item_count) {
+    EXPECT_THAT(
+        parser_result->missing_items(),
+        ElementsAre(FieldsAre("MISSING-OFFICIAL", missing_item_count)));
+  }
 }
 
 TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
   ExpectWantlist("mathtrader/parser/test_data/283180-officialwants.txt",
                  /*user_count=*/139, /*item_count=*/9056,
-                 /*wantlist_count=*/13035, /*longest_wantlist=*/1000);
+                 /*wantlist_count=*/13035, /*longest_wantlist=*/1000,
+                 /*missing_item_count=*/184);
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021US) {
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
   ExpectWantlist("mathtrader/parser/test_data/286101-officialwants.txt",
                  /*user_count=*/335, /*item_count=*/5896,
-                 /*wantlist_count=*/14860, /*longest_wantlist=*/695);
+                 /*wantlist_count=*/14860, /*longest_wantlist=*/695,
+                 /*missing_item_count=*/134);
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021Norway) {
@@ -130,14 +141,16 @@ TEST(MathParserOlwlgCountryTest, TestJune2021UK) {
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
   ExpectWantlist("mathtrader/parser/test_data/286149-officialwants.txt",
                  /*user_count=*/223, /*item_count=*/2990,
-                 /*wantlist_count=*/9549, /*longest_wantlist=*/785);
+                 /*wantlist_count=*/9549, /*longest_wantlist=*/785,
+                 /*missing_item_count=*/150);
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021Canada) {
   // Longest wantlist: line 2149: "(Dragoon6542) 8351711 ..."
   ExpectWantlist("mathtrader/parser/test_data/286870-officialwants.txt",
                  /*user_count=*/121, /*item_count=*/1147,
-                 /*wantlist_count=*/1266, /*longest_wantlist=*/289);
+                 /*wantlist_count=*/1266, /*longest_wantlist=*/289,
+                 /*missing_item_count=*/87);
 }
 
 TEST(MathParserOlwlgCountryTest, TestJuly2021Greece) {
