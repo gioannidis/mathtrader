@@ -24,6 +24,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
@@ -33,6 +34,7 @@
 
 #include "mathtrader/common/item_attributes.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::internal_parser {
 
@@ -179,6 +181,63 @@ std::string GetProperItemId(const Item& item, const std::string& user) {
   }
   return id;
 }
+
+// Identifies and removes duplicate items from a wantlist, reporting them in
+// parser_result.
+void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
+  CHECK_NOTNULL(wantlist);
+  CHECK_NOTNULL(parser_result);
+  auto* const wanted_items = wantlist->mutable_wanted_item();
+
+  // Original count of wanted items. Optimization to determine whether any
+  // wanted items were eventually deleted or not.
+  const int32_t initial_item_count = wanted_items->size();
+
+  // Tracks the frequency of each wanted item in the wantlist. Used to identify
+  // repeated items. The frequency is subsequently appended to the results on
+  // duplicate items.
+  absl::flat_hash_map<std::string, int32_t> item_frequency;
+
+  // Erases items that occur 2+ times in the wantlist. Updates `item_frequency`.
+  wanted_items->erase(
+      std::remove_if(
+          wanted_items->begin(), wanted_items->end(),
+
+          // Lambda: decides whether an item should be erased.
+          [&item_frequency](const Item& wanted_item) {
+            // Retrieves the item's frequency, if previously defined, otherwise
+            // initializes the item's frequency.
+            int32_t& frequency = gtl::LookupOrInsert(
+                &item_frequency, wanted_item.id(), /*frequency=*/0);
+            ++frequency;
+
+            // Removes item if we have already encountered it.
+            return (frequency > 1);
+          }),
+      wanted_items->end());  // 2nd argument of `erase()`.
+
+  // Returns if no items were removed.
+  if (wanted_items->size() == initial_item_count) {
+    return;
+  }
+
+  // Extracts the map nodes to avoid copying the item ids.
+  while (!item_frequency.empty()) {
+    auto internal_node = item_frequency.extract(item_frequency.begin());
+    std::string& wanted_item_id = internal_node.key();
+    int32_t frequency = internal_node.mapped();
+
+    // Creates report for duplicate items only.
+    if (frequency > 1) {
+      auto* const duplicate_item = parser_result->add_duplicate_wanted_items();
+      duplicate_item->set_wanted_item_id(std::move(wanted_item_id));
+      duplicate_item->set_offered_item_id(wantlist->offered_item().id());
+      duplicate_item->set_username(
+          wantlist->offered_item().official_data().username());
+      duplicate_item->set_frequency(frequency);
+    }
+  }
+}
 }  // namespace
 
 // Parses a wantlist, generates a Wantlist message and adds it to the
@@ -278,6 +337,13 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
             }),
         wanted_items->end());
   }
+
+  // Identifies and removes duplicate items that have an official name. This
+  // should be done after items without an official named have been removed, so
+  // as to reduce redundant errors.
+  // Note: `wantlist` is StatusOr, so we dereference the union first and then
+  // pass by pointer.
+  RemoveDuplicateItems(&(*wantlist), &parser_result_);
 
   (*parser_result_.add_wantlist()) = std::move(*wantlist);
   return absl::OkStatus();
