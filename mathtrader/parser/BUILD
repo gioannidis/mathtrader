@@ -17,7 +17,7 @@
 
 # Defines internal BUILD rules for the "officialwants" file parser.
 
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 package(
@@ -69,8 +69,10 @@ cc_test(
     data = ["//mathtrader/parser/test_data:olwlg_test_data"],
     deps = [
         ":math_parser",
+        ":parser_result_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
+        "@com_google_absl//absl/status:statusor",
         "@com_google_googletest//:gtest_main",
     ],
 )

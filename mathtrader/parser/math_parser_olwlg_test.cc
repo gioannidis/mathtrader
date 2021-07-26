@@ -23,22 +23,26 @@
 
 #include "mathtrader/parser/math_parser.h"
 
+#include "absl/status/statusor.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
 
 using ::mathtrader::Item;
 using ::mathtrader::MathParser;
+using ::mathtrader::ParserResult;
 using ::mathtrader::Wantlist;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Contains;
 using ::testing::Each;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::ExplainMatchResult;
 using ::testing::FieldsAre;
 using ::testing::IsFalse;
@@ -47,6 +51,10 @@ using ::testing::MatchesRegex;
 using ::testing::Property;
 using ::testing::SizeIs;
 using ::testing::StartsWith;
+using ::testing::StrCaseEq;
+using ::testing::StrEq;
+
+using DuplicateItem = mathtrader::ParserResult::DuplicateWantedItem;
 
 // ID of non-dummy items: NNNN-AAAA or NNNN-AAAA-COPYNN.
 // Examples:
@@ -74,11 +82,11 @@ MATCHER(IsValidItemId, "") {
       arg, result_listener);
 }
 
-void ExpectWantlist(absl::string_view filename, int32_t user_count,
-                    int32_t item_count, int32_t wantlist_count,
-                    int32_t longest_wantlist, int32_t missing_item_count = 0) {
-  MathParser parser;
-  const auto parser_result = parser.ParseFile(filename);
+// Runs a number of checks against the given ParserResult.
+void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
+                    int32_t user_count, int32_t item_count,
+                    int32_t wantlist_count, int32_t longest_wantlist,
+                    int32_t missing_item_count = 0) {
   ASSERT_TRUE(parser_result.ok()) << parser_result.status().message();
 
   // Verifies the number of users with items.
@@ -114,12 +122,50 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
   }
 }
 
+// Parses `filename` and runs a number of checks against the result.
+void ExpectWantlist(absl::string_view filename, int32_t user_count,
+                    int32_t item_count, int32_t wantlist_count,
+                    int32_t longest_wantlist, int32_t missing_item_count = 0) {
+  MathParser parser;
+  const auto result = parser.ParseFile(filename);
+  ExpectWantlist(result, user_count, item_count, wantlist_count,
+                 longest_wantlist, missing_item_count);
+
+  // Verifies that there are no repeated items. If a file does so, use the
+  // overloaded ExpectWantlist(const absl::StatusOr<...> ...) and manually
+  // check the repeated items afterwards.
+  EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
+}
+
+
+// Test suites: OLWLG trades.
+
 TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
+  MathParser parser;
+  const auto result =
+      parser.ParseFile("mathtrader/parser/test_data/283180-officialwants.txt");
+
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
-  ExpectWantlist("mathtrader/parser/test_data/283180-officialwants.txt",
-                 /*user_count=*/139, /*item_count=*/9056,
+  ExpectWantlist(result, /*user_count=*/139, /*item_count=*/9056,
                  /*wantlist_count=*/13035, /*longest_wantlist=*/1000,
                  /*missing_item_count=*/184);
+
+  // Number of duplicate items can be retrieved from the result file
+  // "https://bgg.activityclub.org/olwlg/283180-results-official.txt"
+  // as follows:
+  //    grep "is repeated" ${result_file} | uniq | wc -l
+  EXPECT_EQ(result->duplicate_wanted_items_size(), 28247);
+
+  // Verifies that all duplicate items originate from the same user.
+  const auto& duplicates = result->duplicate_wanted_items();
+  EXPECT_THAT(duplicates, Each(Property(
+      &DuplicateItem::username, StrCaseEq("tigersareawesome"))));
+
+  // Checks one duplicate item.
+  EXPECT_THAT(duplicates, Contains(AllOf(
+      Property(&DuplicateItem::wanted_item_id, StrEq("%8153405")),
+      Property(&DuplicateItem::offered_item_id, StrEq("8177732")),
+      Property(&DuplicateItem::frequency, Eq(3)))));
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021US) {
