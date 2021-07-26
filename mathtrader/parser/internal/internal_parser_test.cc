@@ -22,6 +22,7 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/parser/parser_result.pb.h"
 
 #ifndef EXPECT_OK
 #define EXPECT_OK(status) \
@@ -35,13 +36,18 @@ using ::mathtrader::Item;
 using ::mathtrader::Wantlist;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::IsTrue;
 using ::testing::Property;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
+using ::testing::StrCaseEq;
 using ::testing::StrEq;
+using ::testing::UnorderedElementsAre;
+
+using DuplicateItem = mathtrader::ParserResult::DuplicateWantedItem;
 
 // Tests a basic use-case.
 TEST(InternalParser, TestOnlyComments) {
@@ -169,6 +175,46 @@ TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_item_count(), 6);
   EXPECT_THAT(parser.get_parser_result().users(), SizeIs(5));
+}
+
+TEST(InternalParser, TestDuplicateItems) {
+  const std::string input_data = R"(
+      (user1) A : B C D E F G Z
+      (user2) B : A F Q F R A Z F C
+      (user3) C : O F K Z E K K P F I K X K
+  )";
+
+  InternalParser parser;
+  EXPECT_TRUE(parser.ParseText(input_data).ok());
+
+  EXPECT_THAT(parser.get_parser_result().wantlist(), ElementsAre(
+      Property("wanted items", &Wantlist::wanted_item, SizeIs(7)),
+      Property("wanted items", &Wantlist::wanted_item, SizeIs(6)),
+      Property("wanted items", &Wantlist::wanted_item, SizeIs(8))));
+
+  // Verifies all missing items and their frequencies.
+  // Note that the order of duplicate items is irrelevant.
+  const auto& duplicates = parser.get_parser_result().duplicate_wanted_items();
+  EXPECT_THAT(duplicates, UnorderedElementsAre(
+      AllOf(Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
+            Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
+            Property("owner", &DuplicateItem::username, StrCaseEq("user2")),
+            Property("frequency", &DuplicateItem::frequency, Eq(3))),
+
+      AllOf(Property("wanted", &DuplicateItem::wanted_item_id, StrEq("A")),
+            Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
+            Property("owner", &DuplicateItem::username, StrCaseEq("user2")),
+            Property("frequency", &DuplicateItem::frequency, Eq(2))),
+
+      AllOf(Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
+            Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
+            Property("owner", &DuplicateItem::username, StrCaseEq("user3")),
+            Property("frequency", &DuplicateItem::frequency, Eq(2))),
+
+      AllOf(Property("wanted", &DuplicateItem::wanted_item_id, StrEq("K")),
+            Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
+            Property("owner", &DuplicateItem::username, StrCaseEq("user3")),
+            Property("frequency", &DuplicateItem::frequency, Eq(5)))));
 }
 
 // Test suite: negative tests
