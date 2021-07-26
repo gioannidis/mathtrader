@@ -79,8 +79,9 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
                AllOf(SizeIs(3),
                      Each(Property(&Item::is_dummy, IsFalse())))))));
 
-  // Checks that there are no missing items.
+  // Checks that there are no missing or duplicate items.
   EXPECT_EQ(result->missing_items_size(), 0);
+  EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
 }
 
 // Wantlists define some missing items. They should be removed.
@@ -114,6 +115,10 @@ TEST(MathParserTest, TestMissingItems) {
   // Checks that there is a 'missing-item' that has appeared 4 times.
   EXPECT_THAT(result->missing_items(), ElementsAre(
         FieldsAre("MISSING-ITEM", 4)));
+
+  // Checks that there are no duplicate items. 'missing-item' should be deleted
+  // first, so no errors are generated, even if it appears 2+ times in a list.
+  EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
 }
 
 }  // namespace
