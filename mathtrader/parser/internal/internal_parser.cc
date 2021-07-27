@@ -182,7 +182,7 @@ std::string GetProperItemId(const Item& item, const std::string& user) {
   return id;
 }
 
-// Identifies and removes duplicate items from a wantlist, reporting them in
+// Identifies and removes duplicate items from a wantlist, reporting them to
 // parser_result.
 void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
   CHECK_NOTNULL(wantlist);
@@ -237,6 +237,43 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
       duplicate_item->set_frequency(frequency);
     }
   }
+}
+
+// Identifies and removes missing items from a wantlist, reporting them to
+// `missing_items`.
+void RemoveMissingItems(
+    const absl::flat_hash_map<std::string, Item>& official_items,
+    Wantlist* wantlist,
+    absl::flat_hash_map<std::string, int32_t>* missing_items) {
+  CHECK_NOTNULL(wantlist);
+  CHECK_NOTNULL(missing_items);
+  auto* const wanted_items = wantlist->mutable_wanted_item();
+
+  // Checks if a wanted item is missing and, if so, records it as a missing
+  // item in `parser_result_`.
+  wanted_items->erase(
+      std::remove_if(
+          wanted_items->begin(), wanted_items->end(),
+          [&official_items, missing_items](const Item& wanted_item) {
+              const std::string& id = wanted_item.id();
+
+              if (IsDummyItem(id)) {
+                // Does not erase the item, because it is dummy.
+                return false;
+
+              // Checks whether the item has an official name.
+              } else if (gtl::FindOrNull(official_items, id)) {
+                // Does not erase the item, because it has been found.
+                return false;
+              }
+              // Initializes the frequency of the missing item to zero or
+              // retrieves it if present.
+              int32_t& frequency =
+                  gtl::LookupOrInsert(missing_items, id, /*frequency=*/0);
+              ++frequency;
+              return true;
+          }),
+      wanted_items->end());  // 2nd argument of `erase()`.
 }
 }  // namespace
 
@@ -308,34 +345,7 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
 
   // Removes all non-dummy wanted items without official name.
   if (has_official_names_) {
-    auto* const wanted_items = wantlist->mutable_wanted_item();
-
-    // Checks if a wanted item is missing and, if so, records it as a missing
-    // item in `parser_result_`.
-    wanted_items->erase(
-        std::remove_if(
-            wanted_items->begin(), wanted_items->end(),
-            [this](const Item& wanted_item) {
-                const std::string& id = wanted_item.id();
-
-                if (IsDummyItem(id)) {
-                  // Does not erase the item, because it is dummy.
-                  return false;
-
-                // Checks whether the item has an official name.
-                } else if (gtl::FindOrNull(items_, id)) {
-                  // Does not erase the item, because it has been found.
-                  return false;
-                }
-                // Initializes the frequency of the missing item to zero or
-                // retrieves it if present.
-                int32_t& frequency =
-                    gtl::LookupOrInsert(parser_result_.mutable_missing_items(),
-                                        id, /*frequency=*/0);
-                ++frequency;
-                return true;
-            }),
-        wanted_items->end());
+    RemoveMissingItems(items_, &(*wantlist), &missing_items_);
   }
 
   // Identifies and removes duplicate items that have an official name. This
@@ -349,12 +359,23 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
   return absl::OkStatus();
 }
 
-// Finalizes the parser_result.
+// Propagates data from the data members to the parser_result.
 void InternalParser::FinalizeParserResult() {
   // Moves the usernames to parser_result.
   while (!users_.empty()) {
     auto internal_node = users_.extract(users_.begin());
     parser_result_.add_users(std::move(internal_node.value()));
+  }
+
+  // Moves the missing items to parser_result.
+  while (!missing_items_.empty()) {
+    ParserResult_MissingItem* missing_item =
+        parser_result_.add_missing_items();
+
+    // Internal node: maps item_id -> frequency.
+    auto internal_node = missing_items_.extract(missing_items_.begin());
+    missing_item->set_item_id(std::move(internal_node.key()));
+    missing_item->set_frequency(internal_node.mapped());
   }
 }
 

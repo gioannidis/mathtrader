@@ -44,7 +44,6 @@ using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ExplainMatchResult;
-using ::testing::FieldsAre;
 using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::MatchesRegex;
@@ -55,6 +54,7 @@ using ::testing::StrCaseEq;
 using ::testing::StrEq;
 
 using DuplicateItem = mathtrader::ParserResult::DuplicateWantedItem;
+using MissingItem = mathtrader::ParserResult::MissingItem;
 
 // ID of non-dummy items: NNNN-AAAA or NNNN-AAAA-COPYNN.
 // Examples:
@@ -116,9 +116,9 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
 
   // Verifies the number of missing items.
   if (missing_item_count) {
-    EXPECT_THAT(
-        parser_result->missing_items(),
-        ElementsAre(FieldsAre("MISSING-OFFICIAL", missing_item_count)));
+    EXPECT_THAT(parser_result->missing_items(), ElementsAre(AllOf(
+        Property(&MissingItem::item_id, StrCaseEq("missing-official")),
+        Property(&MissingItem::frequency, missing_item_count))));
   }
 }
 

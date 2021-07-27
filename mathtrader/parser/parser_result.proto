@@ -38,9 +38,14 @@ message ParserResult {
   // to the number of wantlists.
   optional int32 item_count = 3;
 
-  // Tracks the items that have been declared as wanted items but have no
-  // official name. Each item maps to its occurence across all wantlists.
-  map<string, int32> missing_items = 4;
+  // Encapsulates a missing item: a wanted item with no official name.
+  message MissingItem {
+    optional string item_id = 1;
+    optional int32 frequency = 2;  // occurences across the entire input
+  }
+
+  // Tracks the missing items across the entire parser input.
+  repeated MissingItem missing_items = 4;
 
   // Encapsulates an that has been repeated multiple times in a given wantlist.
   // Each wantlist is identified by the offered item id. The username is also

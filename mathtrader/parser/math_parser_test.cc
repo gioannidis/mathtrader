@@ -25,6 +25,7 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
 
@@ -34,11 +35,14 @@ using ::mathtrader::OfficialItemData;
 using ::mathtrader::Wantlist;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
-using ::testing::FieldsAre;
+using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::IsFalse;
 using ::testing::Property;
 using ::testing::SizeIs;
+using ::testing::StrCaseEq;
+
+using MissingItem = mathtrader::ParserResult::MissingItem;
 
 // Base test case with official item names and wantlists. Each wantlist defines
 // three (3) non-dummy items.
@@ -113,8 +117,9 @@ TEST(MathParserTest, TestMissingItems) {
               Each(Property(&Wantlist::wanted_item, SizeIs(3))));
 
   // Checks that there is a 'missing-item' that has appeared 4 times.
-  EXPECT_THAT(result->missing_items(), ElementsAre(
-        FieldsAre("MISSING-ITEM", 4)));
+  EXPECT_THAT(result->missing_items(), ElementsAre(AllOf(
+      Property(&MissingItem::item_id, StrCaseEq("missing-item")),
+      Property(&MissingItem::frequency, Eq(4)))));
 
   // Checks that there are no duplicate items. 'missing-item' should be deleted
   // first, so no errors are generated, even if it appears 2+ times in a list.

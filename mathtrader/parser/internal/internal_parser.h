@@ -107,7 +107,7 @@ class InternalParser {
   //    ParseWantlist("0001-MKBG : 0002-PANDE 0003-TTAANSOC 0004-SCYTHE");
   ABSL_MUST_USE_RESULT absl::Status ParseWantlist(absl::string_view line);
 
-  // Finalizes the parser_result.
+  // Propagates data from the data members to the parser_result.
   void FinalizeParserResult();
 
 
@@ -146,6 +146,10 @@ class InternalParser {
   // Tracks the line number of each offered item's wantlist. Used to check
   // against double wantlists.
   absl::flat_hash_map<std::string, int32_t> wantlist_of_item_;
+
+  // Tracks the missing items, defined as the wanted items without an official
+  // name. Each item maps to its occurence across the entire parser input.
+  absl::flat_hash_map<std::string, int32_t> missing_items_;
 
 
   // The trade input to return.
