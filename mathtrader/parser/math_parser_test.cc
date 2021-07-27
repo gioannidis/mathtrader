@@ -73,7 +73,7 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
   // * The offered items' usernames have "SomeUsername" as a substring.
   // * Have 3 wanted items.
   // * Have no dummy wanted items.
-  EXPECT_THAT(result->wantlist(), Each(AllOf(
+  EXPECT_THAT(result->wantlists(), Each(AllOf(
       Property(&Wantlist::offered_item,
                AllOf(Property(&Item::is_dummy, IsFalse()),
                      Property(&Item::official_data,
@@ -113,7 +113,7 @@ TEST(MathParserTest, TestMissingItems) {
 
   // Verifies that all wantlists have 3 wanted items. The 'missing-item' should
   // have been removed.
-  EXPECT_THAT(result->wantlist(),
+  EXPECT_THAT(result->wantlists(),
               Each(Property(&Wantlist::wanted_item, SizeIs(3))));
 
   // Checks that there is a 'missing-item' that has appeared 4 times.

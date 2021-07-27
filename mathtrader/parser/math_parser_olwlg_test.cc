@@ -95,7 +95,7 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
   // Verifies the number of items.
   EXPECT_EQ(parser_result->item_count(), item_count);
 
-  const auto& wantlists = parser_result->wantlist();
+  const auto& wantlists = parser_result->wantlists();
 
   // Verifies the number of wantlists.
   EXPECT_EQ(wantlists.size(), wantlist_count);

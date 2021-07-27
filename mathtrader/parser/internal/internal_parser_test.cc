@@ -60,7 +60,7 @@ TEST(InternalParser, TestOnlyComments) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 5);
-  EXPECT_THAT(parser.get_parser_result().wantlist(), IsEmpty());
+  EXPECT_THAT(parser.get_parser_result().wantlists(), IsEmpty());
 }
 
 TEST(InternalParser, TestSingleWantlist) {
@@ -69,7 +69,7 @@ TEST(InternalParser, TestSingleWantlist) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 1);
-  EXPECT_THAT(parser.get_parser_result().wantlist(),
+  EXPECT_THAT(parser.get_parser_result().wantlists(),
               ElementsAre(AllOf(Property(&Wantlist::offered_item,
                                          Property(&Item::id, StrEq("1-A"))),
                                 Property(&Wantlist::wanted_item,
@@ -87,10 +87,10 @@ TEST(InternalParser, TestMultipleWantlists) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_GE(parser.get_line_count(), 4);
-  EXPECT_THAT(parser.get_parser_result().wantlist(), SizeIs(4));
+  EXPECT_THAT(parser.get_parser_result().wantlists(), SizeIs(4));
 
   // Tests the mutable interface.
-  EXPECT_THAT(parser.mutable_parser_result()->wantlist(), SizeIs(4));
+  EXPECT_THAT(parser.mutable_parser_result()->wantlists(), SizeIs(4));
 }
 
 // Test suite: official items
@@ -187,7 +187,7 @@ TEST(InternalParser, TestDuplicateItems) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
 
-  EXPECT_THAT(parser.get_parser_result().wantlist(), ElementsAre(
+  EXPECT_THAT(parser.get_parser_result().wantlists(), ElementsAre(
       Property("wanted items", &Wantlist::wanted_item, SizeIs(7)),
       Property("wanted items", &Wantlist::wanted_item, SizeIs(6)),
       Property("wanted items", &Wantlist::wanted_item, SizeIs(8))));

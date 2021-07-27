@@ -254,6 +254,8 @@ void RemoveMissingItems(
   wanted_items->erase(
       std::remove_if(
           wanted_items->begin(), wanted_items->end(),
+
+          // Lambda: decides whether an item should be erased.
           [&official_items, missing_items](const Item& wanted_item) {
               const std::string& id = wanted_item.id();
 
@@ -345,6 +347,8 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
 
   // Removes all non-dummy wanted items without official name.
   if (has_official_names_) {
+    // Note: `wantlist` is StatusOr, so we dereference the union first and then
+    // pass by pointer.
     RemoveMissingItems(items_, &(*wantlist), &missing_items_);
   }
 
@@ -355,7 +359,7 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
   // pass by pointer.
   RemoveDuplicateItems(&(*wantlist), &parser_result_);
 
-  (*parser_result_.add_wantlist()) = std::move(*wantlist);
+  (*parser_result_.add_wantlists()) = std::move(*wantlist);
   return absl::OkStatus();
 }
 
