@@ -153,6 +153,25 @@ absl::StatusOr<Item> ItemParser::ParseItem(absl::string_view text) const {
       (*item.mutable_official_data()) = std::move(item_data);
     }
   }
+
+  // Sets any available official data.
+  if (!username.empty()) {
+    // Makes the username case-insensitive.
+    item.SetExtension(OfferedItem::username, util::StrToUpper(username));
+  }
+  if (!official_name.empty()) {
+    item.SetExtension(OfferedItem::official_name, official_name);
+  }
+  if (!copy_id_str.empty()) {
+    int64_t copy_id;
+    CHECK(absl::SimpleAtoi(copy_id_str, &copy_id));
+    item.SetExtension(OfferedItem::copy_id, copy_id);
+  }
+  if (!num_copies_str.empty()) {
+    int64_t num_copies;
+    CHECK(absl::SimpleAtoi(num_copies_str, &num_copies));
+    item.SetExtension(OfferedItem::num_copies, num_copies);
+  }
   return item;
 }
 
