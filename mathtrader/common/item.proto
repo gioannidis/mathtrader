@@ -51,10 +51,10 @@ message Item {
   oneof offered_or_wanted {
     // Expresses user preference in a given wantlist: lower priority indicates
     // a more preferred item. This is expressed only for wanted items.
-    int32 priority = 3;
+    int32 priority = 3 [deprecated=true];
 
     // Official fields need to be specified only for offered items.
-    OfficialItemData official_data = 4;
+    OfficialItemData official_data = 4 [deprecated=true];
   }
 
   extensions 100 to 199;
