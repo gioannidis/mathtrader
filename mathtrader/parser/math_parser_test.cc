@@ -23,6 +23,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
@@ -31,18 +32,26 @@ namespace {
 
 using ::mathtrader::Item;
 using ::mathtrader::MathParser;
-using ::mathtrader::OfficialItemData;
+using ::mathtrader::OfferedItem;
 using ::mathtrader::Wantlist;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::HasSubstr;
 using ::testing::IsFalse;
+using ::testing::MatchesRegex;
 using ::testing::Property;
 using ::testing::SizeIs;
 using ::testing::StrCaseEq;
 
 using MissingItem = mathtrader::ParserResult::MissingItem;
+
+// Matches the username extension of the `arg` Item, ignoring case.
+MATCHER_P(UsernameMatchesRegex, username_regex, "") {
+  return ExplainMatchResult(
+      MatchesRegex(username_regex),
+      arg.GetExtension(mathtrader::OfferedItem::username),
+      result_listener);
+}
 
 // Base test case with official item names and wantlists. Each wantlist defines
 // three (3) non-dummy items.
@@ -58,11 +67,11 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
 0007-AN6P-COPY2 ==> "Alt Name: $62 PayPal/Zelle/Amazon" (from SomeUsername5) [copy 2 of 3]
 !END-OFFICIAL-NAMES
 
-(SomeUsername1) 0001-20GIFT : 0002-SOC 0003-AGMI 0004-AN7WCS
-(SomeUsername2) 0002-SOC : 0001-20GIFT 0006-AN6P-COPY1 0003-AGMI
-(SomeUsername3) 0003-AGMI : 0001-20GIFT 0005-TIMSTO 0002-SOC
-(SomeUsername3) 0004-AN7WCS : 0006-AN6P-COPY1 0007-AN6P-COPY2 0001-20GIFT
-(SomeUsername4) 0005-TIMSTO : 0001-20GIFT 0003-AGMI 0002-SOC
+(Abcd1) 0001-20GIFT : 0002-SOC 0003-AGMI 0004-AN7WCS
+(Abcd2) 0002-SOC : 0001-20GIFT 0006-AN6P-COPY1 0003-AGMI
+(Abcd3) 0003-AGMI : 0001-20GIFT 0005-TIMSTO 0002-SOC
+(Abcd3) 0004-AN7WCS : 0006-AN6P-COPY1 0007-AN6P-COPY2 0001-20GIFT
+(Abcd4) 0005-TIMSTO : 0001-20GIFT 0003-AGMI 0002-SOC
 )";
 
   const auto result = MathParser::ParseText(kInputData);
@@ -70,18 +79,16 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
 
   // Verifies for all wantlists:
   // * No offered items are dummies.
-  // * The offered items' usernames have "SomeUsername" as a substring.
+  // * The offered items' usernames match "Abcd[0-9]", ignoring case.
   // * Have 3 wanted items.
   // * Have no dummy wanted items.
   EXPECT_THAT(result->wantlists(), Each(AllOf(
-      Property(&Wantlist::offered_item,
-               AllOf(Property(&Item::is_dummy, IsFalse()),
-                     Property(&Item::official_data,
-                              Property(&OfficialItemData::username,
-                                       HasSubstr("SOMEUSERNAME"))))),
-      Property(&Wantlist::wanted_item,
+      Property("offered item", &Wantlist::offered_item,
+               AllOf(Property("dummy", &Item::is_dummy, IsFalse()),
+                     UsernameMatchesRegex(R"([Aa][Bb][Cc][Dd][0-9])"))),
+      Property("wanted items", &Wantlist::wanted_item,
                AllOf(SizeIs(3),
-                     Each(Property(&Item::is_dummy, IsFalse())))))));
+                     Each(Property("dummy", &Item::is_dummy, IsFalse())))))));
 
   // Checks that there are no missing or duplicate items.
   EXPECT_EQ(result->missing_items_size(), 0);

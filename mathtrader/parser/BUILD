@@ -56,6 +56,7 @@ cc_test(
     deps = [
         ":math_parser",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "@com_google_googletest//:gtest_main",
     ],
