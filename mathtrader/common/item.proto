@@ -21,23 +21,6 @@ syntax = "proto2";
 
 package mathtrader;
 
-// Message encapsulating data extracted from the official item description. This
-// message is optional; official item names may not contain this information.
-message OfficialItemData {
-  // The username of the item's owner.
-  optional string username = 1;
-
-  // The official name of the item, e.g., "Pandemic".
-  optional string official_name = 2;
-
-  // The copy id for this particular item. When num_copies > 1, the particular
-  // copy_id of this item is expected to be also reflected in its id.
-  optional int32 copy_id = 3 [default = 1];
-
-  // Number of total item copies that the user has submitted.
-  optional int32 num_copies = 4 [default = 1];
-}
-
 // Message encapsulating an exchangeable item. Usually a board game, but can
 // also be, e.g., a dummy item.
 message Item {
@@ -46,16 +29,6 @@ message Item {
 
   // Indicates whether the item is dummy or not.
   optional bool is_dummy = 2;
-
-  // Defines fields that are used exclusively by wanted or offered items.
-  oneof offered_or_wanted {
-    // Expresses user preference in a given wantlist: lower priority indicates
-    // a more preferred item. This is expressed only for wanted items.
-    int32 priority = 3 [deprecated=true];
-
-    // Official fields need to be specified only for offered items.
-    OfficialItemData official_data = 4 [deprecated=true];
-  }
 
   extensions 100 to 199;
 }
