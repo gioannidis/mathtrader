@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
+#include "mathtrader/common/item.pb.h"
 #include "mathtrader/parser/internal/item_parser.h"
 
 #include <utility>
@@ -25,6 +26,7 @@
 namespace {
 
 using ::mathtrader::internal_parser::ItemParser;
+using ::mathtrader::OfferedItem;
 
 constexpr char kPandemicId[] = "0012-PANDE";  // case-insensitive
 constexpr char kPandemicName[] = "Pandemic";
@@ -42,33 +44,30 @@ void ExpectItem(absl::string_view text, absl::string_view id,
   ASSERT_TRUE(item.ok()) << item.status().message();
   EXPECT_EQ(item->id(), id);
   EXPECT_FALSE(item->is_dummy());
-  EXPECT_FALSE(item->has_priority());
 
   // Checks whether at least one official field has been given.
   bool has_official_data = !username.empty() || !official_name.empty()
                            || copy_id || num_copies;
 
-  EXPECT_EQ(item->has_official_data(), has_official_data);
-
   if (!username.empty()) {
-    EXPECT_EQ(item->official_data().username(), username);
+    EXPECT_EQ(item->GetExtension(OfferedItem::username), username);
   } else if (has_official_data) {
-    EXPECT_FALSE(item->official_data().has_username());
+    EXPECT_FALSE(item->HasExtension(OfferedItem::username));
   }
   if (!official_name.empty()) {
-    EXPECT_EQ(item->official_data().official_name(), official_name);
+    EXPECT_EQ(item->GetExtension(OfferedItem::official_name), official_name);
   } else if (has_official_data) {
-    EXPECT_FALSE(item->official_data().has_official_name());
+    EXPECT_FALSE(item->HasExtension(OfferedItem::official_name));
   }
   if (copy_id) {
-    EXPECT_EQ(item->official_data().copy_id(), copy_id);
+    EXPECT_EQ(item->GetExtension(OfferedItem::copy_id), copy_id);
   } else if (has_official_data) {
-    EXPECT_FALSE(item->official_data().has_copy_id());
+    EXPECT_FALSE(item->HasExtension(OfferedItem::copy_id));
   }
   if (num_copies) {
-    EXPECT_EQ(item->official_data().num_copies(), num_copies);
+    EXPECT_EQ(item->GetExtension(OfferedItem::num_copies), num_copies);
   } else if (has_official_data) {
-    EXPECT_FALSE(item->official_data().has_num_copies());
+    EXPECT_FALSE(item->HasExtension(OfferedItem::num_copies));
   }
 }
 
