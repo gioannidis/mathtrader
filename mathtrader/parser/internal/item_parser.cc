@@ -123,38 +123,6 @@ absl::StatusOr<Item> ItemParser::ParseItem(absl::string_view text) const {
   // Sets the item-id, case-insensitive.
   item.set_id(util::StrToUpper(item_id));
 
-  // Sets the official item data, if any relevant data has been captured.
-  {
-    OfficialItemData item_data;
-    bool has_any_data = false;
-    if (!username.empty()) {
-      // Makes the username case-insensitive.
-      item_data.set_username(util::StrToUpper(username));
-      has_any_data = true;
-    }
-    if (!official_name.empty()) {
-      item_data.set_official_name(official_name);
-      has_any_data = true;
-    }
-    if (!copy_id_str.empty()) {
-      int64_t copy_id;
-      CHECK(absl::SimpleAtoi(copy_id_str, &copy_id));
-      item_data.set_copy_id(copy_id);
-      has_any_data = true;
-    }
-    if (!num_copies_str.empty()) {
-      int64_t num_copies;
-      CHECK(absl::SimpleAtoi(num_copies_str, &num_copies));
-      item_data.set_num_copies(num_copies);
-      has_any_data = true;
-    }
-
-    // Finally, sets the official_data field if any one field has been set.
-    if (has_any_data) {
-      (*item.mutable_official_data()) = std::move(item_data);
-    }
-  }
-
   // Sets any available official data.
   if (!username.empty()) {
     // Makes the username case-insensitive.
