@@ -25,6 +25,7 @@ cc_library(
     srcs = ["item_parser.cc"],
     hdrs = ["item_parser.h"],
     deps = [
+        "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/common:item_attributes",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/util:strings",
@@ -42,6 +43,7 @@ cc_test(
     srcs = ["item_parser_test.cc"],
     deps = [
         ":item_parser",
+        "//mathtrader/common:offered_item_cc_proto",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-# Build rules for common types: item, wantlist.
+# Build rules for common types.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
@@ -24,6 +24,7 @@ package(
     default_visibility = ["//mathtrader:__subpackages__"],
 )
 
+# Build rules for generic items.
 proto_library(
     name = "item_proto",
     srcs = ["item.proto"],
@@ -55,6 +56,31 @@ cc_test(
     ],
 )
 
+# Build rules for offered items.
+proto_library(
+    name = "offered_item_proto",
+    srcs = ["offered_item.proto"],
+    deps = [":item_proto"],
+)
+
+cc_proto_library(
+    name = "offered_item_cc_proto",
+    deps = [":offered_item_proto"],
+)
+
+# Build rules for wanted items.
+proto_library(
+    name = "wanted_item_proto",
+    srcs = ["wanted_item.proto"],
+    deps = [":item_proto"],
+)
+
+cc_proto_library(
+    name = "wanted_item_cc_proto",
+    deps = [":wanted_item_proto"],
+)
+
+# Build rules for wantlists.
 proto_library(
     name = "wantlist_proto",
     srcs = ["wantlist.proto"],

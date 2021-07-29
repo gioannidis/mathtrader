@@ -59,29 +59,3 @@ message Item {
 
   extensions 100 to 199;
 }
-
-// Extends Item with fields relevant to offered items.
-message OfferedItem {
-  extend Item {
-    // The username of the item's owner.
-    optional string username = 100;
-
-    // The official name of the item, e.g., "Pandemic".
-    optional string official_name = 101;
-
-    // The copy id for this particular item.
-    optional int32 copy_id = 102 [default = 1];
-
-    // Number of total item copies that the user has submitted.
-    optional int32 num_copies = 103 [default = 1];
-  }
-}
-
-// Extends Item with fields relevant to wanted items.
-message WantedItem {
-  extend Item {
-    // Expresses user preference in a given wantlist: lower priority indicates
-    // a more preferred item.
-    optional int32 priority = 150;
-  }
-}

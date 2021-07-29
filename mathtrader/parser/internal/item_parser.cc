@@ -27,6 +27,7 @@
 #include "absl/strings/string_view.h"
 #include "glog/logging.h"
 
+#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/item_attributes.h"
 #include "mathtrader/util/str_toupper.h"

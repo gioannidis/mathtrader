@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-#include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/parser/internal/item_parser.h"
 
 #include <utility>

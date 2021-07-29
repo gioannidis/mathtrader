@@ -1,0 +1,41 @@
+// This file is part of mathtrader.
+//
+// Copyright (C) 2021 George Ioannidis
+//
+// mathtrader is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// mathtrader is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
+
+// Proto definition for an offered item.
+
+syntax = "proto2";
+
+package mathtrader;
+
+import "mathtrader/common/item.proto";
+
+// Extends Item with fields relevant to offered items.
+message OfferedItem {
+  extend Item {
+    // The username of the item's owner.
+    optional string username = 100;
+
+    // The official name of the item, e.g., "Pandemic".
+    optional string official_name = 101;
+
+    // The copy id for this particular item.
+    optional int32 copy_id = 102 [default = 1];
+
+    // Number of total item copies that the user has submitted.
+    optional int32 num_copies = 103 [default = 1];
+  }
+}
