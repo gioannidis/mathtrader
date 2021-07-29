@@ -28,14 +28,17 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 
 namespace {
 
 using ::mathtrader::internal_parser::WantlistParser;
+using ::mathtrader::OfferedItem;
 using ::mathtrader::Item;
-using ::mathtrader::OfficialItemData;
+using ::mathtrader::WantedItem;
 using ::mathtrader::Wantlist;
 using ::testing::AllOf;
 using ::testing::Each;
@@ -47,7 +50,30 @@ using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::Property;
 using ::testing::SizeIs;
+using ::testing::StrCaseEq;
 using ::testing::StrEq;
+
+// Matches the username extension of the `arg` Item, ignoring case.
+MATCHER_P(UsernameStrCaseEq, username, "") {
+  return ExplainMatchResult(
+      StrCaseEq(username), arg.GetExtension(OfferedItem::username),
+      result_listener);
+}
+
+// Matches the priority extension of the `arg` Item.
+MATCHER_P(PriorityEq, priority, "") {
+  return ExplainMatchResult(
+      Eq(priority), arg.GetExtension(WantedItem::priority), result_listener);
+}
+
+// Matches an item with no offered/wanted item extensions.
+MATCHER(HasNoItemExtension, "") {
+  return (!arg.HasExtension(OfferedItem::username)
+          && !arg.HasExtension(OfferedItem::copy_id)
+          && !arg.HasExtension(OfferedItem::num_copies)
+          && !arg.HasExtension(WantedItem::priority));
+}
+
 
 // Tests an empty wantlist without username. Verifies that we ignore spaces.
 TEST(WantlistParserTest, TestNoItems) {
@@ -71,8 +97,7 @@ TEST(WantlistParserTest, TestNoItems) {
     EXPECT_THAT(*wantlist, AllOf(
         Property(&Wantlist::offered_item,
                  AllOf(Property(&Item::id, StrEq("0001-PANDE")),
-                       Property(&Item::offered_or_wanted_case,
-                                Eq(Item::OFFERED_OR_WANTED_NOT_SET)))),
+                       HasNoItemExtension())),
         Property(&Wantlist::wanted_item, IsEmpty())));
   }
 }
@@ -101,9 +126,7 @@ TEST(WantlistParserTest, TestNoItemsWithUsername) {
     EXPECT_THAT(*wantlist, AllOf(
         Property(&Wantlist::offered_item,
                  AllOf(Property(&Item::id, StrEq("0001-PANDE")),
-                       Property(&Item::official_data,
-                                Property(&OfficialItemData::username,
-                                         StrEq("USER"))))),
+                       UsernameStrCaseEq("user"))),
         Property(&Wantlist::wanted_item, IsEmpty())));
   }
 }
@@ -126,8 +149,7 @@ TEST(WantlistParserTest, TestWantlist) {
   EXPECT_THAT(wantlist->offered_item(),
               AllOf(Property(&Item::id, StrEq(items[0])),
                     Property(&Item::is_dummy, IsFalse()),
-                    Property(&Item::offered_or_wanted_case,
-                             Eq(Item::OFFERED_OR_WANTED_NOT_SET))));
+                    HasNoItemExtension()));
 
   // Verifies wantlist size and that all items are non-dummies.
   EXPECT_THAT(wantlist->wanted_item(), AllOf(
@@ -136,14 +158,10 @@ TEST(WantlistParserTest, TestWantlist) {
 
   // Verifies priorities and item names.
   EXPECT_THAT(wantlist->wanted_item(), ElementsAre(
-      AllOf(Property(&Item::priority, Eq(1)),
-            Property(&Item::id, StrEq(items[1]))),
-      AllOf(Property(&Item::priority, Eq(2)),
-            Property(&Item::id, StrEq(items[2]))),
-      AllOf(Property(&Item::priority, Eq(3)),
-            Property(&Item::id, StrEq(items[3]))),
-      AllOf(Property(&Item::priority, Eq(4)),
-            Property(&Item::id, StrEq(items[4])))));
+      AllOf(PriorityEq(1), Property(&Item::id, StrEq(items[1]))),
+      AllOf(PriorityEq(2), Property(&Item::id, StrEq(items[2]))),
+      AllOf(PriorityEq(3), Property(&Item::id, StrEq(items[3]))),
+      AllOf(PriorityEq(4), Property(&Item::id, StrEq(items[4])))));
 }
 
 // Tests a small wantlist with username and colon.
@@ -166,9 +184,7 @@ TEST(WantlistParserTest, TestWantlistWithUsernameAndColon) {
   EXPECT_THAT(wantlist->offered_item(),
               AllOf(Property(&Item::id, StrEq(items[1])),
                     Property(&Item::is_dummy, IsFalse()),
-                    Property(&Item::official_data,
-                             Property(&OfficialItemData::username,
-                                      StrEq("USERNAME")))));
+                    UsernameStrCaseEq("username")));
 
   // Verifies wantlist size and that all items are non-dummies.
   EXPECT_THAT(wantlist->wanted_item(), AllOf(
@@ -177,14 +193,10 @@ TEST(WantlistParserTest, TestWantlistWithUsernameAndColon) {
 
   // Verifies priorities and item names.
   EXPECT_THAT(wantlist->wanted_item(), ElementsAre(
-      AllOf(Property(&Item::priority, Eq(1)),
-            Property(&Item::id, StrEq(items[3]))),
-      AllOf(Property(&Item::priority, Eq(2)),
-            Property(&Item::id, StrEq(items[4]))),
-      AllOf(Property(&Item::priority, Eq(3)),
-            Property(&Item::id, StrEq(items[5]))),
-      AllOf(Property(&Item::priority, Eq(4)),
-            Property(&Item::id, StrEq(items[6])))));
+      AllOf(PriorityEq(1), Property(&Item::id, StrEq(items[3]))),
+      AllOf(PriorityEq(2), Property(&Item::id, StrEq(items[4]))),
+      AllOf(PriorityEq(3), Property(&Item::id, StrEq(items[5]))),
+      AllOf(PriorityEq(4), Property(&Item::id, StrEq(items[6])))));
 }
 
 // Test suite: dummy items

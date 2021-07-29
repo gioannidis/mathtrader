@@ -25,9 +25,9 @@ cc_library(
     srcs = ["item_parser.cc"],
     hdrs = ["item_parser.h"],
     deps = [
-        "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/common:item_attributes",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/util:strings",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status:statusor",
@@ -57,6 +57,8 @@ cc_library(
     deps = [
         "//mathtrader/common:item_attributes",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:offered_item_cc_proto",
+        "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/util:strings",
         "@com_google_absl//absl/status",
@@ -73,8 +75,8 @@ cc_test(
     srcs = ["wantlist_parser_test.cc"],
     deps = [
         ":wantlist_parser",
-        "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "@com_google_absl//absl/strings",
@@ -97,6 +99,8 @@ cc_library(
         ":wantlist_parser",
         "//mathtrader/common:item_attributes",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:offered_item_cc_proto",
+        "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser:parser_result_cc_proto",
         "@com_google_absl//absl/base",
