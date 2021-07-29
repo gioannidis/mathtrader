@@ -15,13 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/parser/internal/item_parser.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
 #include "gtest/gtest.h"
+
+#include "mathtrader/common/offered_item.pb.h"
 
 namespace {
 
