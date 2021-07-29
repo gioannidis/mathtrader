@@ -73,7 +73,9 @@ cc_test(
     srcs = ["wantlist_parser_test.cc"],
     deps = [
         ":wantlist_parser",
+        "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",

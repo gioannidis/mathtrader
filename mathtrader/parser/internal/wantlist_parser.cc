@@ -31,7 +31,9 @@
 #include "glog/logging.h"
 
 #include "mathtrader/common/item_attributes.h"
+#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/util/str_toupper.h"
 
@@ -203,6 +205,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
     // Sets the wantlist username, if specified.
     if (!username.empty()) {
+      offered_item->SetExtension(OfferedItem::username, username);
       OfficialItemData* const item_data = offered_item->mutable_official_data();
       item_data->set_username(username);
     } else {
@@ -246,7 +249,9 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
         wanted_item->set_is_dummy(true);
 
         // Usernames must be specified for dummy items.
-        if (!offered_item->official_data().has_username()) {
+        if (!offered_item->official_data().has_username()  // deprecated; to
+                                                           // be removed.
+            ||!offered_item->HasExtension(OfferedItem::username)) {
           return absl::InvalidArgumentError(absl::StrFormat(
               kDummyItemWithoutUsername, token));
         }
@@ -254,6 +259,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
       const int32_t priority = ComputePriority(rank);
       wanted_item->set_priority(priority);
+      wanted_item->SetExtension(WantedItem::priority, priority);
       rank += kSmallStep;
     }
   }
