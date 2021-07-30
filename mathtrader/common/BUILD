@@ -91,3 +91,14 @@ cc_proto_library(
     name = "wantlist_cc_proto",
     deps = [":wantlist_proto"],
 )
+
+# Build rules for FlowNetwork.
+proto_library(
+    name = "node_proto",
+    srcs = ["node.proto"],
+)
+
+cc_proto_library(
+    name = "node_cc_proto",
+    deps = [":node_proto"],
+)
