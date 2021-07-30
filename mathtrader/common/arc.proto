@@ -1,0 +1,31 @@
+// This file is part of mathtrader.
+//
+// Copyright (C) 2021 George Ioannidis
+//
+// mathtrader is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// mathtrader is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
+
+// Proto definition for an Arc within a Flow Network.
+
+syntax = "proto2";
+
+package mathtrader;
+
+// Message encapsulating a directed Arc within a FlowNetwork, with a direction
+// "x -> y".
+message Arc {
+  optional string head = 1;  // inbound node, e.g., "y"
+  optional string tail = 2;  // outbound node, e.g., "x"
+  optional int32 capacity = 3 [default = 1];  // max supported flow capacity
+  optional int32 cost = 4;  // associated cost if used
+}

@@ -94,6 +94,16 @@ cc_proto_library(
 
 # Build rules for FlowNetwork.
 proto_library(
+    name = "arc_proto",
+    srcs = ["arc.proto"],
+)
+
+cc_proto_library(
+    name = "arc_cc_proto",
+    deps = [":arc_proto"],
+)
+
+proto_library(
     name = "node_proto",
     srcs = ["node.proto"],
 )
