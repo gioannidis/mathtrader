@@ -35,7 +35,7 @@ message Node {
   optional string id = 1;
 
   // Flow units the node produces. Node represents a source if positive, or a
-  // sink if negative.
+  // sink if negative, or an item if zero.
   optional int64 production = 2;
 
   // Specifies the item type the Node represents, if applicable.
@@ -45,6 +45,9 @@ message Node {
   // item, specifies the respective wanted item and vice-versa.
   optional string symmetric_node = 4;
 
-  // The username associated with this Node, if it represents an item.
-  optional string username = 5;
+  // The original item id, if applicable.
+  optional string item_id = 5;
+
+  // The username associated with the item id, if applicable.
+  optional string username = 6;
 }

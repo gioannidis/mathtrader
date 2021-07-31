@@ -43,18 +43,18 @@ NodeBuilder::NodeContainer NodeBuilder::BuildNodes(
   // Processes the offered item from each wantlist.
   for (const Wantlist& wantlist : parser_result.wantlists()) {
     const Item& item = wantlist.offered_item();
-    const std::string& id = item.id();
+    const std::string& item_id = item.id();
 
     // Verifies that the offered item is unique.
-    gtl::InsertOrDie(&offered_items, id);
+    gtl::InsertOrDie(&offered_items, item_id);
 
     // Creates the offered/wanted nodes.
     Node* const offered_node = nodes.Add();
     Node* const wanted_node = nodes.Add();
 
     // Creates unique ids.
-    offered_node->set_id(absl::StrCat(id, "+"));
-    wanted_node->set_id(absl::StrCat(id, "-"));
+    offered_node->set_id(absl::StrCat(item_id, "+"));
+    wanted_node->set_id(absl::StrCat(item_id, "-"));
 
     // Sets the item type.
     offered_node->set_item_type(Node::kOffered);
@@ -63,6 +63,10 @@ NodeBuilder::NodeContainer NodeBuilder::BuildNodes(
     // Sets the symmetric nodes.
     offered_node->set_symmetric_node(wanted_node->id());
     wanted_node->set_symmetric_node(offered_node->id());
+
+    // Sets the original item_id.
+    offered_node->set_item_id(item_id);
+    wanted_node->set_item_id(item_id);
 
     // Sets the username.
     {
