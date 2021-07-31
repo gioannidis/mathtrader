@@ -112,3 +112,17 @@ cc_proto_library(
     name = "node_cc_proto",
     deps = [":node_proto"],
 )
+
+proto_library(
+    name = "flow_network_proto",
+    srcs = ["flow_network.proto"],
+    deps = [
+        ":arc_proto",
+        ":node_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "flow_network_cc_proto",
+    deps = [":flow_network_proto"],
+)
