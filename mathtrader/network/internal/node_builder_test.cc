@@ -101,4 +101,16 @@ TEST(NodeBuilderTest, Base) {
       Contains(Property(&Node::username, StrCaseEq("qwertzUser"))).Times(2)));
 }
 
+// Test suite: Death Tests
+
+// Verifies that NodeBuilder dies if duplicate items are given.
+TEST(NodeBuilderDeathTest, DuplicateItems) {
+  static constexpr char item_id[] = "AnItemId";
+  ParserResult input;
+  for (int i = 0; i < 2; ++i) {
+    input.add_wantlists()->mutable_offered_item()->set_id(item_id);
+  }
+  EXPECT_DEATH(NodeBuilder::BuildNodes(input), item_id);
+}
+
 }  // namespace
