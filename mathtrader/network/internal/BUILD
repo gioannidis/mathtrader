@@ -17,7 +17,7 @@
 
 # Build rules for graphs.
 
-load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
 package(
     default_visibility = ["//mathtrader/network:__pkg__"],
@@ -37,5 +37,20 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
         "@com_google_or_tools//ortools/base:map_util",
+    ],
+)
+
+cc_test(
+    name = "node_builder_test",
+    size = "small",
+    srcs = ["node_builder_test.cc"],
+    deps = [
+        ":node_builder",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:node_cc_proto",
+        "//mathtrader/common:offered_item_cc_proto",
+        "//mathtrader/parser:parser_result_cc_proto",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
     ],
 )
