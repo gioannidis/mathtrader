@@ -26,9 +26,7 @@
 namespace mathtrader::network::internal {
 
 // Generates Nodes from the wantlists' offered items. Each item generates two
-// nodes, representing an "offered" and a wanted item. The offered/wanted items
-// are identified by appending a '+' and '-' suffix, respectively, to the
-// original item id.
+// nodes, representing an "offered" and a wanted item.
 //
 // As an example, consider an offered item with id "0001-ITEM". It generates two
 // nodes: "0001-ITEM+" (offered) and "0001-ITEM-" (wanted).

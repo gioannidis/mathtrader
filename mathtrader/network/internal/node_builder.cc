@@ -21,12 +21,12 @@
 #include <string_view>
 
 #include "absl/container/flat_hash_set.h"
-#include "absl/strings/str_cat.h"
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/network/internal/node_util.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::network::internal {
@@ -53,8 +53,8 @@ NodeBuilder::NodeContainer NodeBuilder::BuildNodes(
     Node* const wanted_node = nodes.Add();
 
     // Creates unique ids.
-    offered_node->set_id(absl::StrCat(item_id, "+"));
-    wanted_node->set_id(absl::StrCat(item_id, "-"));
+    offered_node->set_id(GetOfferedNodeId(item_id));
+    wanted_node->set_id(GetWantedNodeId(item_id));
 
     // Sets the item type.
     offered_node->set_item_type(Node::kOffered);

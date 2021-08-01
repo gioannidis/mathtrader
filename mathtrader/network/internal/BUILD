@@ -23,19 +23,26 @@ package(
     default_visibility = ["//mathtrader/network:__pkg__"],
 )
 
+# Utility library
+cc_library(
+    name = "node_util",
+    hdrs = ["node_util.h"],
+    visibility = ["//visibility:private"],
+)
+
 # Build rules for the NodeBuilder.
 cc_library(
     name = "node_builder",
     srcs = ["node_builder.cc"],
     hdrs = ["node_builder.h"],
     deps = [
+        ":node_util",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:node_cc_proto",
         "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser:parser_result_cc_proto",
         "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/strings",
         "@com_google_or_tools//ortools/base:map_util",
     ],
 )
