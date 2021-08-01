@@ -24,7 +24,6 @@
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::network::internal {
-
 // Generates Nodes from the wantlists' offered items. Each item generates two
 // nodes, representing an "offered" and a wanted item.
 //
@@ -34,7 +33,7 @@ namespace mathtrader::network::internal {
 //
 //     ParserResult parser_result;
 //     // ... populates parser_result
-//     auto node = NodeBuilder::BuildNodeContainer(parser_result);
+//     auto node = NodeBuilder::BuildNodes(parser_result);
 class NodeBuilder {
  public:
   // Map type that indexes Nodes by Node::id.
@@ -49,7 +48,5 @@ class NodeBuilder {
   // Generates Nodes from the parser result.
   static NodeContainer BuildNodes(const ParserResult& parser_result);
 };
-
 }  // namespace mathtrader::network::internal
-
 #endif  // MATHTRADER_NETWORK_INTERNAL_NODE_BUILDER_H_
