@@ -61,3 +61,22 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+# Build rules for the ArcBuilder.
+cc_library(
+    name = "arc_builder",
+    srcs = ["arc_builder.cc"],
+    hdrs = ["arc_builder.h"],
+    deps = [
+        ":node_util",
+        "//mathtrader/common:arc_cc_proto",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wanted_item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "//mathtrader/parser:parser_result_cc_proto",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
+        "@com_google_or_tools//ortools/base",
+        "@com_google_or_tools//ortools/base:map_util",
+    ],
+)
