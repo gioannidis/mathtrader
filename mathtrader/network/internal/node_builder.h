@@ -29,6 +29,12 @@ namespace mathtrader::network::internal {
 //
 // As an example, consider an offered item with id "0001-ITEM". It generates two
 // nodes: "0001-ITEM+" (offered) and "0001-ITEM-" (wanted).
+//
+// Note that NodeBuilder aggressively prunes any wanted items that do not have
+// their own wantlist, i.e., that are never offered. No Nodes are generated for
+// these items. This reduces the size of the resulting FlowNetwork by removing
+// the items that will never be traded.
+//
 // Usage:
 //
 //     ParserResult parser_result;
