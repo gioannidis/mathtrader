@@ -74,6 +74,7 @@ cc_library(
         "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser:parser_result_cc_proto",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
         "@com_google_or_tools//ortools/base",

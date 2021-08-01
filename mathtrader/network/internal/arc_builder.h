@@ -38,6 +38,25 @@ namespace mathtrader::network::internal {
 //    A+ -> %C- (cost = 2)
 //    A+ ->  D- (cost = 3)
 //
+// Note that ArcBuilder aggressively prunes:
+// * Wanted items that do not have their own wantlist, i.e., that are never
+//   offered.
+// * Offered items with empty wantlists.
+// * Offered items that are never wanted.
+//
+// No Arcs are generated when an offered or wanted item is pruned.
+// As a pruning example, consider the wantlists:
+//
+//    A : B C E
+//    B : D E
+//    C :
+//    F : B C
+//
+// Items D and E are pruned because they have no respective wantlist, so they
+// are never traded. Item C is pruned because its wantlist is empty. Item F is
+// not wanted by anyone, so it is also pruned. The arcs that are generated are:
+// A->A, A-B, B->B
+//
 // Usage:
 //
 //     ParserResult parser_result;
@@ -54,7 +73,11 @@ class ArcBuilder {
   ArcBuilder(const ArcBuilder&) = delete;
   ArcBuilder& operator=(const ArcBuilder&) = delete;
 
-  // Generates Arcs from the parser result.
+  // Generates Arcs from the parser result. Prunes items as follows:
+  // 1. Detects all items that have a valid wantlist, i.e., being offered.
+  // 2. Detects all items that are valid trade candidates. These are all items
+  //    that have a valid wantlist as an offered item and appear in at least one
+  //    other wantlist.
   static ArcContainer BuildArcs(const ParserResult& parser_result);
 };
 }  // namespace mathtrader::network::internal

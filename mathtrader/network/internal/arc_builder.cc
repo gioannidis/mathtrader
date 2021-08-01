@@ -23,6 +23,7 @@
 #include <utility>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "ortools/base/logging.h"
 #include "ortools/base/map_util.h"
@@ -36,6 +37,9 @@
 
 namespace mathtrader::network::internal {
 namespace {
+// Generic set of item ids.
+using ItemSet = absl::flat_hash_set<std::string>;
+
 // Map of arcs indexed by "arc_id", defined as StrCat(tail_id, head_id).
 using ArcMap = absl::flat_hash_map<std::string, Arc>;
 
@@ -92,24 +96,76 @@ void AddArc(const Item& offered, const Item& wanted, ArcMap* arcs) {
 void AddArc(const Item& item, ArcMap* arcs) {
   AddArc(/*offered=*/item, /*wanted=*/item, /*cost=*/kSelfTradingArcCost, arcs);
 }
+
+// Generates an ItemSet with all offered items that have a non-empty wantlist.
+// Dies if any duplicate offered items are detected.
+ItemSet GetOfferedItems(const ParserResult& input) {
+  ItemSet item_set;
+  for (const Wantlist& wantlist : input.wantlists()) {
+    if (wantlist.wanted_item_size()) {
+      const Item& offered_item = wantlist.offered_item();
+      gtl::InsertOrDie(&item_set, offered_item.id());
+    }
+  }
+  return item_set;
+}
+
+// Generates an ItemSet with all trading candidate items. These are defined as
+// items that appear both as an offered item in a wantlist and as a wanted item
+// in a different wantlist.
+ItemSet GetCandidateItems(const ParserResult& input) {
+  // The item set to return.
+  ItemSet candidate_items;
+
+  // First, gets the set of offered items.
+  const ItemSet offered_items = GetOfferedItems(input);
+
+  // Then, finds the intersection between offered and wanted items.
+  for (const Wantlist& wantlist : input.wantlists()) {
+    for (const Item& wanted_item : wantlist.wanted_item()) {
+      const std::string_view id = wanted_item.id();
+      if (offered_items.contains(id)) {
+        // This is a valid candidate item, i.e., is an offered and wanted item
+        // (in different wantlists).
+        gtl::InsertIfNotPresent(&candidate_items, std::string(id));
+      }
+    }
+  }
+  return candidate_items;
+}
 }  // namespace
 
-// Generates Arcs from the parser result.
-// TODO(gioannidis) add self-trading arc for offered items without a wantlist.
+// Generates Arcs from the parser result. Prunes items as follows:
+// 1. Detects all items that have a valid wantlist, i.e., being offered.
+// 2. Detects all items that are valid trade candidates. These are all items
+//    that have a valid wantlist as an offered item and appear in at least one
+//    other wantlist.
 ArcBuilder::ArcContainer ArcBuilder::BuildArcs(
     const ParserResult& parser_result) {
   // Tracks duplicate arcs.
   ArcMap arc_map;
 
+  // Builds a set of candidate items that are both wanted and offered.
+  const ItemSet candidate_items = GetCandidateItems(parser_result);
+
+  // Generates self-trading arcs for each offered item and trading arcs between
+  // the offered item and every wanted item.
   for (const Wantlist& wantlist : parser_result.wantlists()) {
-    // Adds a self-trading arc on the offered item, representing the item not
-    // getting traded.
     const Item& offered_item = wantlist.offered_item();
+
+    // Skips offered items that are never wanted or with an empty wantlist.
+    if (!candidate_items.contains(offered_item.id())) {
+      continue;
+    }
+
+    // Adds a self-trading arc.
     AddArc(offered_item, &arc_map);
 
-    // Adds an arc between the offered item and all wanted items.
+    // Adds an Arc for wanted items that are also being offered.
     for (const Item& wanted_item : wantlist.wanted_item()) {
-      AddArc(offered_item, wanted_item, &arc_map);
+      if (candidate_items.contains(wanted_item.id())) {
+        AddArc(offered_item, wanted_item, &arc_map);
+      }
     }
   }
 
