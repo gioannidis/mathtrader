@@ -26,6 +26,6 @@ package mathtrader;
 message Arc {
   optional string head = 1;  // inbound node, e.g., "y"
   optional string tail = 2;  // outbound node, e.g., "x"
-  optional int32 capacity = 3 [default = 1];  // max supported flow capacity
-  optional int32 cost = 4;  // associated cost if used
+  optional int64 capacity = 3 [default = 1];  // max supported flow capacity
+  optional int64 cost = 4;  // associated cost if used
 }
