@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-# Build rules for graphs.
+# Build rules for internal modules that build a FlowNetwork.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
@@ -79,5 +79,20 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_or_tools//ortools/base",
         "@com_google_or_tools//ortools/base:map_util",
+    ],
+)
+
+cc_test(
+    name = "arc_builder_test",
+    size = "small",
+    srcs = ["arc_builder_test.cc"],
+    deps = [
+        ":arc_builder",
+        "//mathtrader/common:arc_cc_proto",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wanted_item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "//mathtrader/parser:parser_result_cc_proto",
+        "@com_google_googletest//:gtest_main",
     ],
 )
