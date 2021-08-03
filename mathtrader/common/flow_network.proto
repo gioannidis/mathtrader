@@ -69,9 +69,9 @@ message FlowNetwork {
   // All Arcs of the network, including arcs connecting source and/or sinks.
   repeated Arc arcs = 2;
 
-  // The only source of the network.
+  // The single source of the network.
   optional Node source = 3;
 
-  // The only sink of the network.
+  // The single sink of the network.
   optional Node sink = 4;
 }
