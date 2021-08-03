@@ -76,6 +76,10 @@ class ArcBuilder {
   // 2. Detects all items that are valid trade candidates. These are all items
   //    that have a valid wantlist as an offered item and appear in at least one
   //    other wantlist.
+  //
+  // If both source and sink have been defined in `flow_network`, also adds an
+  // arc betwen the source/sink and each item, updating the source and sink
+  // production fields.
   static void BuildArcs(const ParserResult& parser_result,
                         FlowNetwork* flow_network);
 };

@@ -141,6 +141,10 @@ ItemSet GetCandidateItems(const ParserResult& input) {
 // 2. Detects all items that are valid trade candidates. These are all items
 //    that have a valid wantlist as an offered item and appear in at least one
 //    other wantlist.
+//
+// If both source and sink have been defined in `flow_network`, also adds an
+// arc betwen the source/sink and each item, updating the source and sink
+// production fields.
 void ArcBuilder::BuildArcs(const ParserResult& parser_result,
                            FlowNetwork* flow_network) {
   // Tracks duplicate arcs.
@@ -169,6 +173,28 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
       }
     }
   }
+
+  // Applies source/sink operations, if both have been defined.
+  if (flow_network->has_source() && flow_network->has_sink()) {
+    CHECK_NE(flow_network->source().id(), "") << "Empty source id not allowed";
+    CHECK_NE(flow_network->sink().id(), "") << "Empty sink id not allowed";
+
+    // Updates the source/sink productions equal to the actual number o
+    // candidate items, as some items may have been pruned.
+    // TODO(gioannidis) also erase the corresponding nodes.
+    flow_network->mutable_source()->set_production(candidate_items.size());
+    flow_network->mutable_sink()->set_production(-1 * candidate_items.size());
+
+    // Adds an arc between the source/sink and each candidate item with unit
+    // capacity and zero cost.
+    for (const std::string_view item_id : candidate_items) {
+      AddArc(/*tail=*/flow_network->source().id(), /*head=*/item_id,
+             /*capacity=*/1, /*cost=*/0, &arc_map);
+      AddArc(/*tail=*/item_id, /*head=*/flow_network->sink().id(),
+             /*capacity=*/1, /*cost=*/0, &arc_map);
+    }
+  }
+
   // Moves the arcs to the FlowNetwork.
   while (!arc_map.empty()) {
     auto internal_node = arc_map.extract(arc_map.begin());
