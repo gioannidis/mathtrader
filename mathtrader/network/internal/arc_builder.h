@@ -21,7 +21,7 @@
 #ifndef MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_
 #define MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_
 
-#include "mathtrader/common/arc.pb.h"
+#include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::network::internal {
@@ -64,21 +64,20 @@ namespace mathtrader::network::internal {
 //     auto arcs = ArcBuilder::BuildArcs(parser_result);
 class ArcBuilder {
  public:
-  // Map type that indexes Arcs by Arc::id.
-  using ArcContainer = google::protobuf::RepeatedField<Arc>;
-
   ArcBuilder() = default;
 
   // Disables copy constructor and move assignment.
   ArcBuilder(const ArcBuilder&) = delete;
   ArcBuilder& operator=(const ArcBuilder&) = delete;
 
-  // Generates Arcs from the parser result. Prunes items as follows:
+  // Generates Arcs from the parser result, adding them to `flow_network`.
+  // Prunes items as follows:
   // 1. Detects all items that have a valid wantlist, i.e., being offered.
   // 2. Detects all items that are valid trade candidates. These are all items
   //    that have a valid wantlist as an offered item and appear in at least one
   //    other wantlist.
-  static ArcContainer BuildArcs(const ParserResult& parser_result);
+  static void BuildArcs(const ParserResult& parser_result,
+                        FlowNetwork* flow_network);
 };
 }  // namespace mathtrader::network::internal
 #endif  // MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_

@@ -29,6 +29,7 @@
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/common/arc.pb.h"
+#include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
@@ -135,13 +136,14 @@ ItemSet GetCandidateItems(const ParserResult& input) {
 }
 }  // namespace
 
-// Generates Arcs from the parser result. Prunes items as follows:
+// Generates Arcs from the parser result, adding them to `flow_network`.
+// Prunes items as follows:
 // 1. Detects all items that have a valid wantlist, i.e., being offered.
 // 2. Detects all items that are valid trade candidates. These are all items
 //    that have a valid wantlist as an offered item and appear in at least one
 //    other wantlist.
-ArcBuilder::ArcContainer ArcBuilder::BuildArcs(
-    const ParserResult& parser_result) {
+void ArcBuilder::BuildArcs(const ParserResult& parser_result,
+                           FlowNetwork* flow_network) {
   // Tracks duplicate arcs.
   ArcMap arc_map;
 
@@ -168,15 +170,10 @@ ArcBuilder::ArcContainer ArcBuilder::BuildArcs(
       }
     }
   }
-
-  // The Arc Container to return.
-  ArcContainer arcs;
-
-  // Moves the arcs to the Arc Container.
+  // Moves the arcs to the FlowNetwork.
   while (!arc_map.empty()) {
     auto internal_node = arc_map.extract(arc_map.begin());
-    *arcs.Add() = std::move(internal_node.mapped());
+    *flow_network->add_arcs() = std::move(internal_node.mapped());
   }
-  return arcs;
 }
 }  // namespace mathtrader::network::internal

@@ -71,6 +71,7 @@ cc_library(
     deps = [
         ":node_util",
         "//mathtrader/common:arc_cc_proto",
+        "//mathtrader/common:flow_network_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
@@ -90,6 +91,7 @@ cc_test(
     deps = [
         ":arc_builder",
         "//mathtrader/common:arc_cc_proto",
+        "//mathtrader/common:flow_network_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
