@@ -20,7 +20,7 @@
 #ifndef MATHTRADER_NETWORK_INTERNAL_NODE_BUILDER_H_
 #define MATHTRADER_NETWORK_INTERNAL_NODE_BUILDER_H_
 
-#include "mathtrader/common/node.pb.h"
+#include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::network::internal {
@@ -39,20 +39,19 @@ namespace mathtrader::network::internal {
 //
 //     ParserResult parser_result;
 //     // ... populates parser_result
-//     auto node = NodeBuilder::BuildNodes(parser_result);
+//     FlowNetwork flow_network;
+//     NodeBuilder::BuildNodes(parser_result, &flow_network);
 class NodeBuilder {
  public:
-  // Map type that indexes Nodes by Node::id.
-  using NodeContainer = google::protobuf::RepeatedField<Node>;
-
   NodeBuilder() = default;
 
   // Disables copy constructor and move assignment.
   NodeBuilder(const NodeBuilder&) = delete;
   NodeBuilder& operator=(const NodeBuilder&) = delete;
 
-  // Generates Nodes from the parser result.
-  static NodeContainer BuildNodes(const ParserResult& parser_result);
+  // Generates Nodes from the parser result, adding them to the `flow_network`.
+  static void BuildNodes(const ParserResult& parser_result,
+                         FlowNetwork* flow_network);
 };
 }  // namespace mathtrader::network::internal
 #endif  // MATHTRADER_NETWORK_INTERNAL_NODE_BUILDER_H_

@@ -37,6 +37,7 @@ cc_library(
     hdrs = ["node_builder.h"],
     deps = [
         ":node_util",
+        "//mathtrader/common:flow_network_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:node_cc_proto",
         "//mathtrader/common:offered_item_cc_proto",
@@ -53,11 +54,11 @@ cc_test(
     srcs = ["node_builder_test.cc"],
     deps = [
         ":node_builder",
+        "//mathtrader/common:flow_network_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:node_cc_proto",
         "//mathtrader/common:offered_item_cc_proto",
         "//mathtrader/parser:parser_result_cc_proto",
-        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
 )

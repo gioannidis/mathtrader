@@ -23,7 +23,9 @@
 #include "absl/container/flat_hash_set.h"
 #include "ortools/base/map_util.h"
 
+#include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/node.pb.h"
 #include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/network/internal/node_util.h"
@@ -31,12 +33,9 @@
 
 namespace mathtrader::network::internal {
 
-// Generates Nodes from the parser result.
-NodeBuilder::NodeContainer NodeBuilder::BuildNodes(
-    const ParserResult& parser_result) {
-  // The node container to return.
-  NodeContainer nodes;
-
+// Generates Nodes from the parser result, adding them to the `flow_network`.
+void NodeBuilder::BuildNodes(const ParserResult& parser_result,
+                             FlowNetwork* flow_network) {
   // Verifies that no duplicate offered items are encountered.
   absl::flat_hash_set<std::string> offered_items;
 
@@ -49,8 +48,8 @@ NodeBuilder::NodeContainer NodeBuilder::BuildNodes(
     gtl::InsertOrDie(&offered_items, item_id);
 
     // Creates the offered/wanted nodes.
-    Node* const offered_node = nodes.Add();
-    Node* const wanted_node = nodes.Add();
+    Node* const offered_node = flow_network->add_nodes();
+    Node* const wanted_node = flow_network->add_nodes();
 
     // Creates unique ids.
     offered_node->set_id(GetOfferedNodeId(item_id));
@@ -75,7 +74,6 @@ NodeBuilder::NodeContainer NodeBuilder::BuildNodes(
       wanted_node->set_username(username);
     }
   }
-  return nodes;
 }
 
 }  // namespace mathtrader::network::internal

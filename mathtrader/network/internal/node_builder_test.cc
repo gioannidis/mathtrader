@@ -24,18 +24,19 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/node.pb.h"
 #include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
-
 using ::mathtrader::network::internal::NodeBuilder;
+using ::mathtrader::FlowNetwork;
 using ::mathtrader::Item;
+using ::mathtrader::Node;
 using ::mathtrader::OfferedItem;
 using ::mathtrader::ParserResult;
-using ::mathtrader::Node;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::Eq;
@@ -69,32 +70,34 @@ TEST(NodeBuilderTest, Base) {
     item->SetExtension(OfferedItem::username, pair.second);
   }
 
-  const NodeBuilder::NodeContainer nodes = NodeBuilder::BuildNodes(input);
+  FlowNetwork flow_network;
+  NodeBuilder::BuildNodes(input, &flow_network);
 
   // Two nodes were generated for each item.
-  EXPECT_EQ(nodes.size(), 2 * items_users.size());
+  EXPECT_EQ(flow_network.nodes_size(), 2 * items_users.size());
 
   // Verifies that each item id is contained twice in the Nodes.
-  EXPECT_THAT(nodes, AllOf(
+  EXPECT_THAT(flow_network.nodes(), AllOf(
       Contains(Property(&Node::id, StartsWith("abcd"))).Times(2),
       Contains(Property(&Node::id, StartsWith("0001-"))).Times(2),
       Contains(Property(&Node::id, StartsWith("0042-MKBG"))).Times(2),
       Contains(Property(&Node::id, StartsWith("Qwerty0123"))).Times(2)));
 
   // Verifies that no node is a source or sink.
-  EXPECT_THAT(nodes, Each(Property(&Node::has_production, IsFalse())));
+  EXPECT_THAT(flow_network.nodes(),
+              Each(Property(&Node::has_production, IsFalse())));
 
   // Verifies that half the nodes are offered and half are wanted items.
-  EXPECT_THAT(nodes, AllOf(
+  EXPECT_THAT(flow_network.nodes(), AllOf(
       Contains(Property(&Node::item_type, Eq(Node::kOffered))).Times(4),
       Contains(Property(&Node::item_type, Eq(Node::kWanted))).Times(4)));
 
   // Verifies that the item id is a prefix of both the node id and the symmetric
   // node id.
-  EXPECT_THAT(nodes, Each(NodeIdsStartWithItemId()));
+  EXPECT_THAT(flow_network.nodes(), Each(NodeIdsStartWithItemId()));
 
   // Verifies that there are two nodes with each username.
-  EXPECT_THAT(nodes, AllOf(
+  EXPECT_THAT(flow_network.nodes(), AllOf(
       Contains(Property(&Node::username, StrCaseEq("User1"))).Times(2),
       Contains(Property(&Node::username, StrCaseEq("fooBarUser"))).Times(2),
       Contains(Property(&Node::username, StrCaseEq("owner42"))).Times(2),
@@ -110,7 +113,8 @@ TEST(NodeBuilderDeathTest, DuplicateItems) {
   for (int i = 0; i < 2; ++i) {
     input.add_wantlists()->mutable_offered_item()->set_id(item_id);
   }
-  EXPECT_DEATH(NodeBuilder::BuildNodes(input), item_id);
+  FlowNetwork flow_network;
+  EXPECT_DEATH(NodeBuilder::BuildNodes(input, &flow_network), item_id);
 }
 
 }  // namespace
