@@ -25,7 +25,7 @@ import "mathtrader/common/arc.proto";
 import "mathtrader/common/node.proto";
 
 // Message encapsulating a Flow Network, representing the math trade.
-message Graph {
+message FlowNetwork {
   repeated Node nodes = 1;
   repeated Arc arcs = 2;
 }
