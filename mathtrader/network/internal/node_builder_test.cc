@@ -101,6 +101,14 @@ TEST(NodeBuilderTest, Base) {
       Contains(Property(&Node::username, StrCaseEq("fooBarUser"))).Times(2),
       Contains(Property(&Node::username, StrCaseEq("owner42"))).Times(2),
       Contains(Property(&Node::username, StrCaseEq("qwertzUser"))).Times(2)));
+
+  // Verifies the source properties.
+  ASSERT_TRUE(flow_network.has_source());
+  EXPECT_EQ(flow_network.source().production(), 4);
+
+  // Verifies the sink properties.
+  ASSERT_TRUE(flow_network.has_source());
+  EXPECT_EQ(flow_network.sink().production(), -4);
 }
 
 // Test suite: Death Tests

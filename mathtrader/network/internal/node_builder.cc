@@ -31,13 +31,32 @@
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::network::internal {
+namespace {
+// Defines a set of node ids.
+using NodeSet = absl::flat_hash_set<std::string>;
+
+// The canonical name of the source node.
+static constexpr std::string_view kSourceName = "_SOURCE_";
+
+// The canonical name of the sink node.
+static constexpr std::string_view kSinkName = "_SINK_";
+
+// Generates a unique id from `base_id` that is not contained in `nodes`.
+std::string GenerateUniqueId(std::string_view base_id, const NodeSet& nodes) {
+  auto id = std::string(base_id);
+  while (nodes.contains(id)) {
+    id.push_back('_');
+  }
+  return id;
+}
+}  // namespace
 
 // Generates Nodes from the parser result, adding them to the `flow_network`.
 // Adds two nodes for each item, a source and a sink.
 void NodeBuilder::BuildNodes(const ParserResult& parser_result,
                              FlowNetwork* flow_network) {
   // Verifies that no duplicate offered items are encountered.
-  absl::flat_hash_set<std::string> offered_items;
+  NodeSet offered_items;
 
   // Processes the offered item from each wantlist.
   for (const Wantlist& wantlist : parser_result.wantlists()) {
@@ -75,6 +94,22 @@ void NodeBuilder::BuildNodes(const ParserResult& parser_result,
     }
   }
 
-}
+  // Number of items: half the number of nodes, because two nodes are generated
+  // per item.
+  const int64_t item_count = flow_network->nodes_size() / 2;
 
+  // Generates a source with a production equal to the number of items.
+  {
+    Node* const source = flow_network->mutable_source();
+    source->set_id(GenerateUniqueId(kSourceName, offered_items));
+    source->set_production(item_count);
+  }
+
+  // Generates a sink with a negative production equal to the number of items.
+  {
+    Node* const sink = flow_network->mutable_sink();
+    sink->set_id(GenerateUniqueId(kSinkName, offered_items));
+    sink->set_production(-1 * item_count);
+  }
+}
 }  // namespace mathtrader::network::internal
