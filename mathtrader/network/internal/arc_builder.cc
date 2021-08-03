@@ -28,7 +28,6 @@
 #include "ortools/base/logging.h"
 #include "ortools/base/map_util.h"
 
-#include "mathtrader/common/arc.pb.h"
 #include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wanted_item.pb.h"

@@ -26,7 +26,6 @@
 
 #include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/node.pb.h"
 #include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 

@@ -15,14 +15,51 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Proto definition for a Flow Network.
+// Proto definition for a Flow Network and its components.
 
 syntax = "proto2";
 
 package mathtrader;
 
-import "mathtrader/common/arc.proto";
-import "mathtrader/common/node.proto";
+// Message encapsulating a Node on the Flow Graph that models the math trade.
+// Generally, represents an item.
+message Node {
+  // Item types that the Node may represent.
+  enum ItemType {
+    kNull = 0;
+    kOffered = 1;  // An offered item.
+    kWanted = 2;  // A wanted item.
+  }
+
+  // The identifying id of the Node.
+  optional string id = 1;
+
+  // Flow units the node produces. Node represents a source if positive, or a
+  // sink if negative, or an item if zero.
+  optional int64 production = 2;
+
+  // Specifies the item type the Node represents, if applicable.
+  optional ItemType item_type = 3;
+
+  // Specifies the "symmetric" item Node id. If the Node represents an offered
+  // item, specifies the respective wanted item and vice-versa.
+  optional string symmetric_node = 4;
+
+  // The original item id, if applicable.
+  optional string item_id = 5;
+
+  // The username associated with the item id, if applicable.
+  optional string username = 6;
+}
+
+// Message encapsulating a directed Arc within a FlowNetwork, with a direction
+// "x -> y".
+message Arc {
+  optional string head = 1;  // inbound node, e.g., "y"
+  optional string tail = 2;  // outbound node, e.g., "x"
+  optional int64 capacity = 3 [default = 1];  // max supported flow capacity
+  optional int64 cost = 4;  // associated cost if used
+}
 
 // Message encapsulating a Flow Network, representing the math trade.
 message FlowNetwork {

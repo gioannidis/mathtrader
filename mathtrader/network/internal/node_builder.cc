@@ -25,7 +25,6 @@
 
 #include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/node.pb.h"
 #include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/network/internal/node_util.h"
