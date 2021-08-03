@@ -33,6 +33,7 @@
 namespace mathtrader::network::internal {
 
 // Generates Nodes from the parser result, adding them to the `flow_network`.
+// Adds two nodes for each item, a source and a sink.
 void NodeBuilder::BuildNodes(const ParserResult& parser_result,
                              FlowNetwork* flow_network) {
   // Verifies that no duplicate offered items are encountered.
@@ -73,6 +74,7 @@ void NodeBuilder::BuildNodes(const ParserResult& parser_result,
       wanted_node->set_username(username);
     }
   }
+
 }
 
 }  // namespace mathtrader::network::internal

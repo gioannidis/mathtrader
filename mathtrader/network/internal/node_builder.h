@@ -50,6 +50,7 @@ class NodeBuilder {
   NodeBuilder& operator=(const NodeBuilder&) = delete;
 
   // Generates Nodes from the parser result, adding them to the `flow_network`.
+  // Adds two nodes for each item, a source and a sink.
   static void BuildNodes(const ParserResult& parser_result,
                          FlowNetwork* flow_network);
 };
