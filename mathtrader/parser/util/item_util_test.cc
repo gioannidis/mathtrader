@@ -15,15 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
+#include "mathtrader/parser/util/item_util.h"
+
 #include "gtest/gtest.h"
 
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/item_attributes.h"
 
+namespace {
+using ::mathtrader::parser::util::IsDummyItem;
 using ::mathtrader::Item;
-using ::mathtrader::IsDummyItem;
 
-TEST(ItemAttributesTest, TestStrings) {
+TEST(ItemUtilTest, TestStrings) {
   EXPECT_FALSE(IsDummyItem("0012-PANDE"));
   EXPECT_TRUE(IsDummyItem("%0012-PANDE"));
 
@@ -31,7 +33,7 @@ TEST(ItemAttributesTest, TestStrings) {
   EXPECT_TRUE(IsDummyItem("  \t  \t %0012-PANDE"));
 }
 
-TEST(ItemAttributesTest, TestItems) {
+TEST(ItemUtilTest, TestItems) {
   {
     Item non_dummy;
     non_dummy.set_id("0001-MKBG");
@@ -46,3 +48,4 @@ TEST(ItemAttributesTest, TestItems) {
     EXPECT_TRUE(IsDummyItem(&dummy));
   }
 }
+}  // namespace

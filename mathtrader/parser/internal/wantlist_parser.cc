@@ -30,11 +30,11 @@
 #include "absl/strings/str_split.h"
 #include "glog/logging.h"
 
-#include "mathtrader/common/item_attributes.h"
 #include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/parser/util/item_util.h"
 #include "mathtrader/util/str_toupper.h"
 
 namespace mathtrader::internal_parser {
@@ -193,7 +193,9 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     // Sets the offered item.
     offered_item = wantlist.mutable_offered_item();
     offered_item->set_id(item_id);
-    if (IsDummyItem(item_id)) {
+    // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
+    // moved in this namespace.
+    if (parser::util::IsDummyItem(item_id)) {
       offered_item->set_is_dummy(true);
 
       // Usernames must be specified for dummy items.
@@ -243,7 +245,9 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
       }
 
       // Checks whether the wanted item is dummy.
-      if (IsDummyItem(wanted_item)) {
+      // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
+      // moved in this namespace.
+      if (parser::util::IsDummyItem(wanted_item)) {
         wanted_item->set_is_dummy(true);
 
         // Usernames must be specified for dummy items.

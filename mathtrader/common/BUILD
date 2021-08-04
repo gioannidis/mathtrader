@@ -17,7 +17,7 @@
 
 # Build rules for common types.
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 package(
@@ -33,27 +33,6 @@ proto_library(
 cc_proto_library(
     name = "item_cc_proto",
     deps = [":item_proto"],
-)
-
-cc_library(
-    name = "item_attributes",
-    hdrs = ["item_attributes.h"],
-    deps = [
-        ":item_cc_proto",
-        "@com_google_absl//absl/strings",
-    ],
-)
-
-cc_test(
-    name = "item_attributes_test",
-    size = "small",
-    srcs = ["item_attributes_test.cc"],
-    deps = [
-        ":item_attributes",
-        ":item_cc_proto",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest_main",
-    ],
 )
 
 # Build rules for offered items.

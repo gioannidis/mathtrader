@@ -33,10 +33,10 @@
 #include "re2/re2.h"
 
 #include "mathtrader/common/offered_item.pb.h"
-#include "mathtrader/common/item_attributes.h"
 #include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/util/item_util.h"
 
 namespace mathtrader::internal_parser {
 
@@ -171,7 +171,9 @@ namespace {
 std::string GetProperItemId(const Item& item, const std::string& user) {
   // The item id to return.
   std::string id = item.id();
-  if (IsDummyItem(id)) {
+  // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
+  // moved in this namespace.
+  if (parser::util::IsDummyItem(id)) {
     // Retrieves the username and the line id where the username was first
     // defined. At this point, it is guaranteed that these operations succeed.
     const std::string& username = item.GetExtension(OfferedItem::username);
@@ -261,7 +263,9 @@ void RemoveMissingItems(
           [&official_items, missing_items](const Item& wanted_item) {
               const std::string& id = wanted_item.id();
 
-              if (IsDummyItem(id)) {
+              // TODO(gioannidis) remove 'parser' qualifier once InternalParser
+              // has been moved in this namespace.
+              if (parser::util::IsDummyItem(id)) {
                 // Does not erase the item, because it is dummy.
                 return false;
 
@@ -327,7 +331,9 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
 
   // Registers the offered item or retrieves the official data from an already
   // registered official item.
-  if (IsDummyItem(raw_offered_id)) {
+  // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
+  // moved in this namespace.
+  if (parser::util::IsDummyItem(raw_offered_id)) {
     // Registers the offered dummy item id. Must succeed, as this is the first
     // wantlist of the item.
     CHECK(gtl::InsertIfNotPresent(&dummy_items_, offered_id));

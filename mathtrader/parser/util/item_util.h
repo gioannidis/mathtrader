@@ -17,19 +17,19 @@
 
 // Defines common functions defining item attributes.
 
-#ifndef MATHTRADER_COMMON_ITEM_ATTRIBUTES_H_
-#define MATHTRADER_COMMON_ITEM_ATTRIBUTES_H_
+#ifndef MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_
+#define MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_
+
+#include <string_view>
+
+#include "absl/strings/match.h"
 
 #include "mathtrader/common/item.pb.h"
 
-#include "absl/strings/match.h"
-#include "absl/strings/string_view.h"
-
-namespace mathtrader {
-
+namespace mathtrader::parser::util {
 // Determines whether the given item_id represents a dummy item. Filters any
 // leading whitespaces from the item_id before checking.
-inline bool IsDummyItem(absl::string_view item_id) {
+inline bool IsDummyItem(std::string_view item_id) {
   item_id.remove_prefix(item_id.find_first_not_of(" \t\r\n"));
   return absl::StartsWith(item_id, "%");
 }
@@ -43,7 +43,5 @@ inline bool IsDummyItem(const Item& item) {
 inline bool IsDummyItem(const Item* item) {
   return (item && IsDummyItem(item->id()));
 }
-
-}  // namespace mathtrader
-
-#endif  // MATHTRADER_COMMON_ITEM_ATTRIBUTES_H_
+}  // namespace mathtrader::parser::util
+#endif  // MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_
