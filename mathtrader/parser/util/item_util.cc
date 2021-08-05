@@ -15,38 +15,25 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Defines common functions defining item attributes.
-
-#ifndef MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_
-#define MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_
+#include "mathtrader/parser/util/item_util.h"
 
 #include <string_view>
 
-#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
+#include "ortools/base/logging.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/offered_item.pb.h"
 
 namespace mathtrader::parser::util {
-// Determines whether the given item_id represents a dummy item. Filters any
-// leading whitespaces from the item_id before checking.
-inline bool IsDummyItem(std::string_view item_id) {
-  item_id.remove_prefix(item_id.find_first_not_of(" \t\r\n"));
-  return absl::StartsWith(item_id, "%");
-}
-
-// Determines whether the given item is a dummy item.
-inline bool IsDummyItem(const Item& item) {
-  return IsDummyItem(item.id());
-}
-
-// Determines whether the given item is a dummy item. Returns false if null.
-inline bool IsDummyItem(const Item* item) {
-  return (item && IsDummyItem(item->id()));
-}
-
 // Makes the id of the dummy item unique by appending the username of its owner
 // in order to disambiguify it from similarly-named dummy items of other users.
 // Does nothing if the item is non-dummy. Dies if a dummy item has no username.
-void UniquifyDummyItem(Item* item);
+void UniquifyDummyItem(Item* item) {
+  if (IsDummyItem(item)) {
+    const std::string_view username = item->GetExtension(OfferedItem::username);
+    CHECK(!username.empty());
+    absl::StrAppend(item->mutable_id(), "-", username);
+  }
+}
 }  // namespace mathtrader::parser::util
-#endif  // MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_

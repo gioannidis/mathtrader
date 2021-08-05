@@ -25,10 +25,13 @@ package(
 
 cc_library(
     name = "item_util",
+    srcs = ["item_util.cc"],
     hdrs = ["item_util.h"],
     deps = [
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:offered_item_cc_proto",
         "@com_google_absl//absl/strings",
+        "@com_google_or_tools//ortools/base",
     ],
 )
 
@@ -39,6 +42,7 @@ cc_test(
     deps = [
         ":item_util",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:offered_item_cc_proto",
         "@com_google_googletest//:gtest_main",
     ],
 )
