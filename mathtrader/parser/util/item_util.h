@@ -34,14 +34,16 @@ inline bool IsDummyItem(std::string_view item_id) {
   return absl::StartsWith(item_id, "%");
 }
 
-// Determines whether the given item is a dummy item.
+// Determines whether the given item is dummy if any of the following holds:
+// 1. The `id` field represents a dummy item.
+// 2. The `is_dummy` field has been explicitly set.
 inline bool IsDummyItem(const Item& item) {
-  return IsDummyItem(item.id());
+  return item.is_dummy() || IsDummyItem(item.id());
 }
 
 // Determines whether the given item is a dummy item. Returns false if null.
 inline bool IsDummyItem(const Item* item) {
-  return (item && IsDummyItem(item->id()));
+  return (item && IsDummyItem(*item));
 }
 
 // Makes the id of the dummy item unique by appending the username of its owner
