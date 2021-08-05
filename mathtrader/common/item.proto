@@ -24,11 +24,18 @@ package mathtrader;
 // Message encapsulating an exchangeable item. Usually a board game, but can
 // also be, e.g., a dummy item.
 message Item {
-  // The id assigned to the item by the OLWLG, e.g., "0007-PANDE".
+  // The id assigned to the item by the OLWLG. If dummy, it is a modified id
+  // to disambiguate it from potentially other similarly-named dummy items.
+  // Examples: "0007-PANDE", "%MKBG-USERNAME".
   optional string id = 1;
 
   // Indicates whether the item is dummy or not.
   optional bool is_dummy = 2;
+
+  // The original id assigned to the item by the OLWLG, e.g., "0007-PANDE" or
+  // "%MKBG". Provides the original, unmodified id of dummy items. Expected not
+  // to be set for non-dummy items.
+  optional string unmodified_id = 3;
 
   extensions 100 to 199;
 }
