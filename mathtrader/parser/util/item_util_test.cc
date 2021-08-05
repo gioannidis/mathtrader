@@ -81,12 +81,24 @@ TEST(UniquifyDummyItemTest, TestDummy) {
   item.set_id(kItemId);
   item.SetExtension(OfferedItem::username, std::string(kUsername));
 
-  // Copies the item to verify that it will not change.
-  Item item_copy;
-  item_copy.CopyFrom(item);
-
   // Mutates the item id, since it's a dummy.
   UniquifyDummyItem(&item);
   EXPECT_THAT(item.id(), AllOf(StartsWith(kItemId), EndsWith(kUsername)));
+}
+
+TEST(UniquifyDummyItemDeathTest, NullItem) {
+  EXPECT_DEATH(UniquifyDummyItem(nullptr), "Must be non NULL");
+}
+
+TEST(UniquifyDummyItemDeathTest, DummyItemIdWithoutUsername) {
+  Item item;
+  item.set_id(R"(%dummyId)");
+  EXPECT_DEATH(UniquifyDummyItem(&item), "username");
+}
+
+TEST(UniquifyDummyItemDeathTest, DummyItemPropertyWithoutUsername) {
+  Item item;
+  item.set_is_dummy(true);
+  EXPECT_DEATH(UniquifyDummyItem(&item), "username");
 }
 }  // namespace

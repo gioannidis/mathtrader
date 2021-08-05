@@ -30,9 +30,11 @@ namespace mathtrader::parser::util {
 // in order to disambiguify it from similarly-named dummy items of other users.
 // Does nothing if the item is non-dummy. Dies if a dummy item has no username.
 void UniquifyDummyItem(Item* item) {
+  CHECK_NOTNULL(item);
   if (IsDummyItem(item)) {
     const std::string_view username = item->GetExtension(OfferedItem::username);
-    CHECK(!username.empty());
+    CHECK(!username.empty()) << "Empty username for dummy item " << item->id()
+        << " not allowed.";
     absl::StrAppend(item->mutable_id(), "-", username);
   }
 }
