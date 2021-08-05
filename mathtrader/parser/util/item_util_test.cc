@@ -71,6 +71,7 @@ TEST(ProcessIfDummyTest, TestNonDummy) {
   // Does not change the original item, since it's not a dummy.
   ASSERT_TRUE(ProcessIfDummy(&item).ok());
   EXPECT_EQ(item.id(), kItemId);
+  EXPECT_FALSE(item.has_unmodified_id());
 }
 
 TEST(ProcessIfDummyTest, TestDummy) {
@@ -86,6 +87,7 @@ TEST(ProcessIfDummyTest, TestDummy) {
   ASSERT_TRUE(ProcessIfDummy(&item).ok());
   EXPECT_THAT(item.id(), AllOf(StartsWith(kItemId), EndsWith(kUsername)));
   EXPECT_TRUE(item.is_dummy());
+  EXPECT_EQ(item.unmodified_id(), kItemId);
 }
 
 TEST(ProcessIfDummyTest, DummyItemIdWithoutUsername) {

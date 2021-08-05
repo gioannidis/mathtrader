@@ -30,8 +30,8 @@
 namespace mathtrader::parser::util {
 // Processes the item if it is a dummy. Makes the id unique by appending the
 // username of its owner in order to disambiguify it from similarly-named dummy
-// items of other users. Sets the `is_dummy` field.
-// Does nothing if the item is non-dummy.
+// items of other users. Sets the `is_dummy` field and copies the original id
+// to the `unmodified_id` field. Does nothing if the item is non-dummy.
 // Returns `InvalidArgumentError` if a dummy item has no username.
 absl::Status ProcessIfDummy(std::string_view username, Item* item) {
   CHECK_NOTNULL(item);
@@ -45,6 +45,7 @@ absl::Status ProcessIfDummy(std::string_view username, Item* item) {
           "Missing or empty username for item %s. (Tip: this usually indicates "
           "that the username is missing from the wantlist.)", item->id()));
     }
+    item->set_unmodified_id(item->id());
     absl::StrAppend(item->mutable_id(), "-", username);
   }
   return absl::OkStatus();

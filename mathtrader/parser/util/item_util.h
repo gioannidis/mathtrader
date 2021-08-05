@@ -50,8 +50,9 @@ inline bool IsDummyItem(const Item* item) {
 
 // Processes the item if it is a dummy. Makes the id unique by appending the
 // username of its owner in order to disambiguify it from similarly-named dummy
-// items of other users. Sets the `is_dummy` field.
-// Does nothing if the item is non-dummy. Dies if a dummy item has no username.
+// items of other users. Sets the `is_dummy` field and copies the original id
+// to the `original_id` field. Does nothing if the item is non-dummy.
+// Returns `InvalidArgumentError` if a dummy item has no username.
 ABSL_MUST_USE_RESULT absl::Status ProcessIfDummy(std::string_view username,
                                                  Item* item);
 
