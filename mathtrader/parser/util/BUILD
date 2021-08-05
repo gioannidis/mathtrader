@@ -30,6 +30,8 @@ cc_library(
     deps = [
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:offered_item_cc_proto",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
         "@com_google_or_tools//ortools/base",
     ],
@@ -43,6 +45,7 @@ cc_test(
         ":item_util",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:offered_item_cc_proto",
+        "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
     ],
 )

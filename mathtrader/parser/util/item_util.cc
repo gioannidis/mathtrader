@@ -19,23 +19,39 @@
 
 #include <string_view>
 
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "ortools/base/logging.h"
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/offered_item.pb.h"
 
 namespace mathtrader::parser::util {
-// Makes the id of the dummy item unique by appending the username of its owner
-// in order to disambiguify it from similarly-named dummy items of other users.
-// Does nothing if the item is non-dummy. Dies if a dummy item has no username.
-void UniquifyDummyItem(Item* item) {
+// Processes the item if it is a dummy. Makes the id unique by appending the
+// username of its owner in order to disambiguify it from similarly-named dummy
+// items of other users. Sets the `is_dummy` field.
+// Does nothing if the item is non-dummy.
+// Returns `InvalidArgumentError` if a dummy item has no username.
+absl::Status ProcessIfDummy(std::string_view username, Item* item) {
   CHECK_NOTNULL(item);
   if (IsDummyItem(item)) {
-    const std::string_view username = item->GetExtension(OfferedItem::username);
-    CHECK(!username.empty()) << "Empty username for dummy item " << item->id()
-        << " not allowed.";
+    // Sets the field, in case the item has a dummy id, but the field is not yet
+    // set.
+    item->set_is_dummy(true);
+
+    if (username.empty()) {
+      return absl::InvalidArgumentError(absl::StrFormat(
+          "Missing or empty username for item %s. (Tip: this usually indicates "
+          "that the username is missing from the wantlist.)", item->id()));
+    }
     absl::StrAppend(item->mutable_id(), "-", username);
   }
+  return absl::OkStatus();
+}
+
+absl::Status ProcessIfDummy(Item* item) {
+  CHECK_NOTNULL(item);
+  return ProcessIfDummy(item->GetExtension(OfferedItem::username), item);
 }
 }  // namespace mathtrader::parser::util

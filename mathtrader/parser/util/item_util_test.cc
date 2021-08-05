@@ -19,6 +19,7 @@
 
 #include <string>
 
+#include "absl/status/status.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -27,7 +28,7 @@
 
 namespace {
 using ::mathtrader::parser::util::IsDummyItem;
-using ::mathtrader::parser::util::UniquifyDummyItem;
+using ::mathtrader::parser::util::ProcessIfDummy;
 using ::mathtrader::Item;
 using ::mathtrader::OfferedItem;
 using ::testing::AllOf;
@@ -58,7 +59,7 @@ TEST(IsDummyItemTest, TestItems) {
   }
 }
 
-TEST(UniquifyDummyItemTest, TestNonDummy) {
+TEST(ProcessIfDummyTest, TestNonDummy) {
   static constexpr char kItemId[] = R"(someItemId")";
   static constexpr char kUsername[] = "randomUser";
 
@@ -68,11 +69,11 @@ TEST(UniquifyDummyItemTest, TestNonDummy) {
   item.SetExtension(OfferedItem::username, std::string(kUsername));
 
   // Does not change the original item, since it's not a dummy.
-  UniquifyDummyItem(&item);
+  ASSERT_TRUE(ProcessIfDummy(&item).ok());
   EXPECT_EQ(item.id(), kItemId);
 }
 
-TEST(UniquifyDummyItemTest, TestDummy) {
+TEST(ProcessIfDummyTest, TestDummy) {
   static constexpr char kItemId[] = R"(%someItemId")";
   static constexpr char kUsername[] = "randomUser";
 
@@ -82,23 +83,29 @@ TEST(UniquifyDummyItemTest, TestDummy) {
   item.SetExtension(OfferedItem::username, std::string(kUsername));
 
   // Mutates the item id, since it's a dummy.
-  UniquifyDummyItem(&item);
+  ASSERT_TRUE(ProcessIfDummy(&item).ok());
   EXPECT_THAT(item.id(), AllOf(StartsWith(kItemId), EndsWith(kUsername)));
+  EXPECT_TRUE(item.is_dummy());
 }
 
-TEST(UniquifyDummyItemDeathTest, NullItem) {
-  EXPECT_DEATH(UniquifyDummyItem(nullptr), "Must be non NULL");
-}
-
-TEST(UniquifyDummyItemDeathTest, DummyItemIdWithoutUsername) {
+TEST(ProcessIfDummyTest, DummyItemIdWithoutUsername) {
   Item item;
   item.set_id(R"(%dummyId)");
-  EXPECT_DEATH(UniquifyDummyItem(&item), "username");
+  EXPECT_TRUE(absl::IsInvalidArgument(ProcessIfDummy(&item)));
 }
 
-TEST(UniquifyDummyItemDeathTest, DummyItemPropertyWithoutUsername) {
+TEST(ProcessIfDummyTest, DummyItemPropertyWithoutUsername) {
   Item item;
   item.set_is_dummy(true);
-  EXPECT_DEATH(UniquifyDummyItem(&item), "username");
+  EXPECT_TRUE(absl::IsInvalidArgument(ProcessIfDummy(&item)));
+}
+
+TEST(ProcessIfDummyDeathTest, NullItem) {
+  EXPECT_DEATH(ProcessIfDummy(nullptr).IgnoreError(), "Must be non NULL");
+}
+
+TEST(ProcessIfDummyDeathTest, NullItemWithUsername) {
+  EXPECT_DEATH(ProcessIfDummy("someUsername", nullptr).IgnoreError(),
+               "Must be non NULL");
 }
 }  // namespace

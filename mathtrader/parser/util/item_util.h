@@ -22,6 +22,8 @@
 
 #include <string_view>
 
+#include "absl/base/attributes.h"
+#include "absl/status/status.h"
 #include "absl/strings/match.h"
 
 #include "mathtrader/common/item.pb.h"
@@ -46,9 +48,14 @@ inline bool IsDummyItem(const Item* item) {
   return (item && IsDummyItem(*item));
 }
 
-// Makes the id of the dummy item unique by appending the username of its owner
-// in order to disambiguify it from similarly-named dummy items of other users.
+// Processes the item if it is a dummy. Makes the id unique by appending the
+// username of its owner in order to disambiguify it from similarly-named dummy
+// items of other users. Sets the `is_dummy` field.
 // Does nothing if the item is non-dummy. Dies if a dummy item has no username.
-void UniquifyDummyItem(Item* item);
+ABSL_MUST_USE_RESULT absl::Status ProcessIfDummy(std::string_view username,
+                                                 Item* item);
+
+// As above, but retrieves the username from the item.
+ABSL_MUST_USE_RESULT absl::Status ProcessIfDummy(Item* item);
 }  // namespace mathtrader::parser::util
 #endif  // MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_

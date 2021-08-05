@@ -38,9 +38,7 @@
 #include "mathtrader/util/str_toupper.h"
 
 namespace mathtrader::internal_parser {
-
 namespace {
-
 // Internal regex that matches wantlist prefix, capturing offered item id and
 // optionally the username.
 constexpr absl::string_view kWantlistPrefixRegexStr
@@ -57,9 +55,6 @@ constexpr absl::string_view kWantlistPrefixRegexStr
 
       // Captures optional colon character.
       R"regex((:)?\s*)regex";
-
-static constexpr char kDummyItemWithoutUsername[]
-  = "Missing wantlist username for dummy item %s.";
 
 // Conditionally updates a status ok with an error message if the maximum number
 // of characters has been exceeded.
@@ -134,7 +129,6 @@ ABSL_MUST_USE_RESULT absl::Status CheckWantlist(
   }
   return ret;
 }
-
 }  // namespace
 
 // Constructs the parser and dies if the regular expression was not created
@@ -193,23 +187,21 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     // Sets the offered item.
     offered_item = wantlist.mutable_offered_item();
     offered_item->set_id(item_id);
-    // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
-    // moved in this namespace.
-    if (parser::util::IsDummyItem(item_id)) {
-      offered_item->set_is_dummy(true);
 
-      // Usernames must be specified for dummy items.
-      if (username.empty()) {
-        return absl::InvalidArgumentError(absl::StrFormat(
-            kDummyItemWithoutUsername, item_id));
-      }
-    }
-
-    // Sets the wantlist username, if specified.
+    // Sets the wantlist username, if specified. Should be done before
+    // processing a potentially dummy item.
     if (!username.empty()) {
       offered_item->SetExtension(OfferedItem::username, username);
     } else {
       // TODO(gioannidis) return if usernames are required.
+    }
+
+    // Processes the item if dummy, returning on error.
+    // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
+    // moved in this namespace.
+    if (const absl::Status status = parser::util::ProcessIfDummy(offered_item);
+        !status.ok()) {
+      return status;
     }
   }
   CHECK_NOTNULL(offered_item);
@@ -244,17 +236,15 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
         wanted_item->set_id(util::StrToUpper(std::move(wanted_item_id)));
       }
 
-      // Checks whether the wanted item is dummy.
+      // Processes the item if dummy, returning on error.
       // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
       // moved in this namespace.
-      if (parser::util::IsDummyItem(wanted_item)) {
-        wanted_item->set_is_dummy(true);
-
-        // Usernames must be specified for dummy items.
-        if (!offered_item->HasExtension(OfferedItem::username)) {
-          return absl::InvalidArgumentError(absl::StrFormat(
-              kDummyItemWithoutUsername, token));
-        }
+      if (const absl::Status status =
+              parser::util::ProcessIfDummy(
+                  offered_item->GetExtension(OfferedItem::username),
+                  wanted_item);
+          !status.ok()) {
+        return status;
       }
 
       const int32_t priority = ComputePriority(rank);
@@ -274,5 +264,4 @@ int32_t WantlistParser::ComputePriority(int32_t rank) const {
 absl::string_view WantlistParser::get_regex_str() {
   return kWantlistPrefixRegexStr;
 }
-
 }  // namespace mathtrader::internal_parser
