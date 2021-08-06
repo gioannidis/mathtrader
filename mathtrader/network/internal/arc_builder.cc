@@ -133,6 +133,23 @@ ItemSet GetCandidateItems(const ParserResult& input) {
   }
   return candidate_items;
 }
+
+// Removes all nodes from the flow network that are definitely not trading,
+// i.e., not in the `candidate_items` set.
+void RemoveNonTradingNodes(const ItemSet& candidate_items,
+                           FlowNetwork* flow_network) {
+  auto* nodes = flow_network->mutable_nodes();
+  nodes->erase(
+      std::remove_if(
+          nodes->begin(), nodes->end(),
+          // Lambda that erases the node if the item is not a candidate item.
+          // The original item_id is looked up, which is a substring of the
+          // node id.
+          [&candidate_items](const Node& node) {
+            return !candidate_items.contains(node.item_id());
+          }),
+      nodes->end());  // second argument of nodes->erase().
+}
 }  // namespace
 
 // Generates Arcs from the parser result, adding them to `flow_network`.
@@ -181,7 +198,6 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
 
     // Updates the source/sink productions equal to the actual number o
     // candidate items, as some items may have been pruned.
-    // TODO(gioannidis) also erase the corresponding nodes.
     flow_network->mutable_source()->set_production(candidate_items.size());
     flow_network->mutable_sink()->set_production(-1 * candidate_items.size());
 
@@ -194,6 +210,9 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
              /*capacity=*/1, /*cost=*/0, &arc_map);
     }
   }
+
+  // Finally, removes non-trading nodes.
+  RemoveNonTradingNodes(candidate_items, flow_network);
 
   // Moves the arcs to the FlowNetwork.
   while (!arc_map.empty()) {
