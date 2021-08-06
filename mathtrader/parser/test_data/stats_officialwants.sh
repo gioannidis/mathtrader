@@ -49,15 +49,26 @@ function GetStatsFromOfficialwantsFile {
   echo -n "Wantlists: "
   egrep -c "^\(" $1
 
-  # Retrieves the longest line. This is a candidate for the longest wantlist.
-  echo "Longest line(s):"
-  egrep -n "^.{$(wc -L < $1)}$" $1 | cut -d ':' -f 1
+  # Retrieves the number of dummy wantlists.
+  echo -n "Dummy wantlists: "
+  egrep -c "^\(.*\)\s*%" $1
+
+  # Retrieves the number of items in all wantlists, including the offered items.
+  # This is indicative of the number of arcs that will be generated. Subtracts
+  # the username and the colon from the number of fields.
+  echo -n "Total items in all wantlists: "
+  grep "^(" $1 | awk 'BEGIN{sum = 0}{sum += NF-2}END{print sum}'
+
+  # As above, but retrieves the longest wantlist.
+  echo -n "Longest wantlist (#wanted items): "
+  grep "^(" $1 \
+      | awk 'BEGIN{max = 0}{n = NF-3; if(n > max){max = n}}END{print max}'
 
   # Retrieves the number of items named "missing-official". "sed" adds a line
   # break after each occurence, because "grep" cannot count multiple matches
   # within a single line. Finally, filters out comment lines beginning with '#'.
   missing="missing-official"
-  echo -n "'${missing} items: "
+  echo -n "${missing} items: "
   sed "s/${missing}/${missing}\\n/gi" $1 | egrep -i "missing-official" \
       | egrep -c "^[^#]"
 }
