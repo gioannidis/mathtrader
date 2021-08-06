@@ -43,7 +43,8 @@ absl::Status ProcessIfDummy(std::string_view username, Item* item) {
     if (username.empty()) {
       return absl::InvalidArgumentError(absl::StrFormat(
           "Missing or empty username for item %s. (Tip: this usually indicates "
-          "that the username is missing from the wantlist.)", item->id()));
+          "that the username is missing from the wantlist.)",
+          item->id()));
     }
     item->set_unmodified_id(item->id());
     absl::StrAppend(item->mutable_id(), "-", username);

@@ -71,10 +71,9 @@ class InternalParser {
   // Defines the state of the parser and the context it should expect to parse.
   enum class ParserState {
     kOptionParsing = 0,  // parses options
-    kItemParsing,  // parses official item names
-    kWantlistParsing,  // parses wantlists
+    kItemParsing,        // parses official item names
+    kWantlistParsing,    // parses wantlists
   };
-
 
   // Defines the result of a line parsing: a wantlist or an official item.
   ABSL_MUST_USE_RESULT absl::Status ParseLine(absl::string_view line);
@@ -110,7 +109,6 @@ class InternalParser {
   // Propagates data from the data members to the parser_result.
   void FinalizeParserResult();
 
-
   // Defines the lines that the parser ignores.
   const re2::RE2 kIgnoreLineRegex;
 
@@ -125,7 +123,6 @@ class InternalParser {
 
   // Indicates whether official item names have been given.
   bool has_official_names_ = false;
-
 
   // Tracks the given directives and the line number where the directives were
   // first defined.
@@ -150,7 +147,6 @@ class InternalParser {
   // Tracks the missing items, defined as the wanted items without an official
   // name. Each item maps to its occurence across the entire parser input.
   absl::flat_hash_map<std::string, int32_t> missing_items_;
-
 
   // The trade input to return.
   ParserResult parser_result_;

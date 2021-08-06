@@ -42,7 +42,7 @@ namespace {
 // Internal regex that matches wantlist prefix, capturing offered item id and
 // optionally the username.
 constexpr absl::string_view kWantlistPrefixRegexStr
-      // Prefix matching at the beginning of the text.
+    // Prefix matching at the beginning of the text.
     = "^"
 
       // Captures optional username. Expected format:
@@ -62,9 +62,7 @@ void UpdateOnError(char c, int count, int max_count, absl::Status* status) {
   CHECK_NOTNULL(status);
   if (count > max_count) {
     status->Update(absl::InvalidArgumentError(absl::StrFormat(
-        "Found %d '%c' characters in wantlist. Maximum allowed: %d",
-        count,
-        c,
+        "Found %d '%c' characters in wantlist. Maximum allowed: %d", count, c,
         max_count)));
   }
 }
@@ -72,21 +70,20 @@ void UpdateOnError(char c, int count, int max_count, absl::Status* status) {
 // Checks a wantlist text for integrity errors and forbidden characters.
 // @text  Entire wantlist, including username.
 // @wantlist  Suffix of @text, which excludes the username.
-ABSL_MUST_USE_RESULT absl::Status CheckWantlist(
-    absl::string_view text, absl::string_view wantlist) {
+ABSL_MUST_USE_RESULT absl::Status CheckWantlist(absl::string_view text,
+                                                absl::string_view wantlist) {
   static constexpr int kMaxColonCount = 1;
   static constexpr int kMaxParenthesisCount = 1;
-  static constexpr absl::string_view kForbiddenChars
-    = R"tag(`~!@#$^&*=+(){}[]\|;'",.<>/?)tag";
+  static constexpr absl::string_view kForbiddenChars =
+      R"tag(`~!@#$^&*=+(){}[]\|;'",.<>/?)tag";
 
   {
     auto pos = wantlist.find_first_of(kForbiddenChars);
     if (pos != std::string::npos) {
-      return absl::InvalidArgumentError(absl::StrFormat(
-            "Character '%c' is not allowed in wantlists. "
-            "List of forbidden characters: %s",
-            text[pos],
-            kForbiddenChars));
+      return absl::InvalidArgumentError(
+          absl::StrFormat("Character '%c' is not allowed in wantlists. "
+                          "List of forbidden characters: %s",
+                          text[pos], kForbiddenChars));
     }
   }
 
@@ -124,8 +121,7 @@ ABSL_MUST_USE_RESULT absl::Status CheckWantlist(
   if (left_parenthesis_count != right_parenthesis_count) {
     ret.Update(absl::InvalidArgumentError(absl::StrFormat(
         "Number of '(' (%d) and ')' (%d) characters in wantlist must match.",
-        left_parenthesis_count,
-        right_parenthesis_count)));
+        left_parenthesis_count, right_parenthesis_count)));
   }
   return ret;
 }
@@ -134,10 +130,11 @@ ABSL_MUST_USE_RESULT absl::Status CheckWantlist(
 // Constructs the parser and dies if the regular expression was not created
 // properly.
 WantlistParser::WantlistParser(int32_t small_step, int32_t big_step)
-    : kSmallStep(small_step), kBigStep(big_step),
+    : kSmallStep(small_step),
+      kBigStep(big_step),
       kWantlistPrefixRegex(kWantlistPrefixRegexStr) {
   CHECK(kWantlistPrefixRegex.ok()) << "Could not create regular expression: "
-      << kWantlistPrefixRegex.error();
+                                   << kWantlistPrefixRegex.error();
 }
 
 absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
@@ -167,8 +164,8 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
     // Checks the integrity of the wantlist, excluding the username. Must be
     // called before converting the username to case-insensitive, if applicable.
-    const absl::string_view text_without_username
-      = text.substr(text.find(username) + username.size() + 1);
+    const absl::string_view text_without_username =
+        text.substr(text.find(username) + username.size() + 1);
     if (absl::Status status = CheckWantlist(text, text_without_username);
         !status.ok()) {
       return status;
@@ -210,8 +207,8 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
   // and strings containing only whitespaces. The rest of the text should
   // contain the wanted items or the `kBigStepChar`.
   const std::string wanted_items(text_piece);
-  std::vector<absl::string_view> tokens = absl::StrSplit(
-      wanted_items, ' ', absl::SkipWhitespace());
+  std::vector<absl::string_view> tokens =
+      absl::StrSplit(wanted_items, ' ', absl::SkipWhitespace());
 
   // Empty wantlists, without wanted items, are allowed.
   if (tokens.empty()) {
@@ -239,10 +236,8 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
       // Processes the item if dummy, returning on error.
       // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
       // moved in this namespace.
-      if (const absl::Status status =
-              parser::util::ProcessIfDummy(
-                  offered_item->GetExtension(OfferedItem::username),
-                  wanted_item);
+      if (const absl::Status status = parser::util::ProcessIfDummy(
+              offered_item->GetExtension(OfferedItem::username), wanted_item);
           !status.ok()) {
         return status;
       }
@@ -255,9 +250,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
   return wantlist;
 }
 
-int32_t WantlistParser::ComputePriority(int32_t rank) const {
-  return rank;
-}
+int32_t WantlistParser::ComputePriority(int32_t rank) const { return rank; }
 
 // Returns the internal string that is used to build the regex that parses the
 // wantlists.

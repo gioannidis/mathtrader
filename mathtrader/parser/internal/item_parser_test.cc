@@ -26,8 +26,8 @@
 
 namespace {
 
-using ::mathtrader::internal_parser::ItemParser;
 using ::mathtrader::OfferedItem;
+using ::mathtrader::internal_parser::ItemParser;
 
 constexpr char kPandemicId[] = "0012-PANDE";  // case-insensitive
 constexpr char kPandemicName[] = "Pandemic";
@@ -47,8 +47,8 @@ void ExpectItem(absl::string_view text, absl::string_view id,
   EXPECT_FALSE(item->is_dummy());
 
   // Checks whether at least one official field has been given.
-  bool has_official_data = !username.empty() || !official_name.empty()
-                           || copy_id || num_copies;
+  bool has_official_data =
+      !username.empty() || !official_name.empty() || copy_id || num_copies;
 
   if (!username.empty()) {
     EXPECT_EQ(item->GetExtension(OfferedItem::username), username);
@@ -73,9 +73,7 @@ void ExpectItem(absl::string_view text, absl::string_view id,
 }
 
 // Expects Pandemic with only the item id.
-void ExpectPandemic(absl::string_view text) {
-  ExpectItem(text, kPandemicId);
-}
+void ExpectPandemic(absl::string_view text) { ExpectItem(text, kPandemicId); }
 
 // Expects Pandemic with username.
 void ExpectPandemicWithUsername(absl::string_view text) {
@@ -118,14 +116,15 @@ TEST(ItemParserTest, TestIdAndOfficialName) {
 
 // Username and official name.
 TEST(ItemParserTest, TestIdAndOfficialNameAndUsername) {
-  static constexpr absl::string_view text = R"(0012-Pande ==> "Pandemic" (from UsEr))";
+  static constexpr absl::string_view text =
+      R"(0012-Pande ==> "Pandemic" (from UsEr))";
   ExpectPandemicWithNameAndUsername(text);
 }
 
 // Tests an item where multiple copies are given.
 TEST(ItemParserTest, TestMultipleCopies) {
-  static constexpr absl::string_view text
-      = R"(9999-5GIFT-COPY10 ==> "Alt Name: $7 Gift Certificate" (from dummyUserName) [copy 17 of 64])";
+  static constexpr absl::string_view text =
+      R"(9999-5GIFT-COPY10 ==> "Alt Name: $7 Gift Certificate" (from dummyUserName) [copy 17 of 64])";
 
   ExpectItem(text, "9999-5GIFT-COPY10", "DUMMYUSERNAME",
              "Alt Name: $7 Gift Certificate", /*copy_id=*/17,
@@ -134,8 +133,8 @@ TEST(ItemParserTest, TestMultipleCopies) {
 
 // Tests an item separated by an optional colon, without separating spaces.
 TEST(ItemParserTest, TestWithColon) {
-  static constexpr absl::string_view text
-    = R"(0012-PANDE:"Pandemic" (from user))";
+  static constexpr absl::string_view text =
+      R"(0012-PANDE:"Pandemic" (from user))";
   ExpectPandemicWithNameAndUsername(text);
 }
 
@@ -147,8 +146,8 @@ TEST(ItemParserTest, TestWithSpaces) {
 
 // Tests an item with leading whitespaces.
 TEST(ItemParserTest, TestWithWhitespaces) {
-  static constexpr absl::string_view text
-    = " \t    \t   0012-PANDE    'some name'";
+  static constexpr absl::string_view text =
+      " \t    \t   0012-PANDE    'some name'";
   ExpectPandemic(text);
 }
 
@@ -170,69 +169,68 @@ TEST(ItemParserTest, TestWithExtraId) {
 
 // Tests a non-strict item id, which has an alphanumeric prefix "NNNN".
 TEST(ItemParserNonStrictItemIdTest, TestAlphanumericPrefix) {
-  static constexpr absl::string_view text
-    = R"(1A-ID ==> "OfficialName" (from Username))";
+  static constexpr absl::string_view text =
+      R"(1A-ID ==> "OfficialName" (from Username))";
   ExpectItem(text, "1A-ID", "USERNAME", "OfficialName");
 }
 
 // Tests a non-strict item id, which a lowercase suffix.
 TEST(ItemParserNonStrictItemIdTest, TestLowercaseSuffix) {
-  static constexpr absl::string_view text
-    = R"(1-id ==> "OfficialName" (from Username))";
+  static constexpr absl::string_view text =
+      R"(1-id ==> "OfficialName" (from Username))";
   ExpectItem(text, "1-ID", "USERNAME", "OfficialName");
 }
 
 // Tests a non-strict item id, missing the numeric prefix "NNNN".
 TEST(ItemParserNonStrictItemIdTest, TestMissingAlphanumeric) {
-  static constexpr absl::string_view text
-    = R"(1- ==> "OfficialName" (from Username))";
+  static constexpr absl::string_view text =
+      R"(1- ==> "OfficialName" (from Username))";
   ExpectItem(text, "1-", "USERNAME", "OfficialName");
 }
 
 // Tests a non-strict item id, missing the dash character in "NNNN-AAA".
 TEST(ItemParserNonStrictItemIdTest, TestMissingDash) {
-  static constexpr absl::string_view text
-    = R"(1ID ==> "OfficialName" (from Username))";
+  static constexpr absl::string_view text =
+      R"(1ID ==> "OfficialName" (from Username))";
   ExpectItem(text, "1ID", "USERNAME", "OfficialName");
 }
 
 // Tests a non-strict item id, missing the prefix numberical "NNNN".
 TEST(ItemParserNonStrictItemIdTest, TestMissingNumeric) {
-  static constexpr absl::string_view text
-    = R"(-ID ==> "OfficialName" (from Username))";
+  static constexpr absl::string_view text =
+      R"(-ID ==> "OfficialName" (from Username))";
   ExpectItem(text, "-ID", "USERNAME", "OfficialName");
 }
 
 // Tests a non-strict item id, having a negative prefix numerical "NNNN".
 TEST(ItemParserNonStrictItemIdTest, TestNegativeNumeric) {
-  static constexpr absl::string_view text
-    = R"(-1-ID ==> "OfficialName" (from Username))";
+  static constexpr absl::string_view text =
+      R"(-1-ID ==> "OfficialName" (from Username))";
   ExpectItem(text, "-1-ID", "USERNAME", "OfficialName");
 }
 
 // Test suite: capturing copy ids.
 
 TEST(ItemParserCopiesTest, TestCopies) {
-  static constexpr absl::string_view text
-    = R"(1A-ID ==> "OfficialName" (from Username) [copy 5 of 42])";
+  static constexpr absl::string_view text =
+      R"(1A-ID ==> "OfficialName" (from Username) [copy 5 of 42])";
   ExpectItem(text, "1A-ID", "USERNAME", "OfficialName", 5, 42);
 }
 
 TEST(ItemParserCopiesTest, TestCopiesWithoutUsername) {
-  static constexpr absl::string_view text
-    = R"(1A-ID ==> (from Username) [copy 10 of 10000])";
+  static constexpr absl::string_view text =
+      R"(1A-ID ==> (from Username) [copy 10 of 10000])";
   ExpectItem(text, "1A-ID", "USERNAME", "", 10, 10000);
 }
 
 TEST(ItemParserCopiesTest, TestCopiesWithoutOfficialName) {
-  static constexpr absl::string_view text
-    = R"(1A-ID ==> "OfficialName" [copy 10 of 10000])";
+  static constexpr absl::string_view text =
+      R"(1A-ID ==> "OfficialName" [copy 10 of 10000])";
   ExpectItem(text, "1A-ID", "", "OfficialName", 10, 10000);
 }
 
 TEST(ItemParserCopiesTest, TestCopiesWithoutOfficialNameOrUsername) {
-  static constexpr absl::string_view text
-    = R"(1A-ID ==> [copy 10 of 10000])";
+  static constexpr absl::string_view text = R"(1A-ID ==> [copy 10 of 10000])";
   ExpectItem(text, "1A-ID", "", "", 10, 10000);
 }
 

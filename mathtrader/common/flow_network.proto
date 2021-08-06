@@ -28,7 +28,7 @@ message Node {
   enum ItemType {
     kNull = 0;
     kOffered = 1;  // An offered item.
-    kWanted = 2;  // A wanted item.
+    kWanted = 2;   // A wanted item.
   }
 
   // The identifying id of the Node.
@@ -55,10 +55,10 @@ message Node {
 // Message encapsulating a directed Arc within a FlowNetwork, with a direction
 // "x -> y".
 message Arc {
-  optional string head = 1;  // inbound node, e.g., "y"
-  optional string tail = 2;  // outbound node, e.g., "x"
+  optional string head = 1;                   // inbound node, e.g., "y"
+  optional string tail = 2;                   // outbound node, e.g., "x"
   optional int64 capacity = 3 [default = 1];  // max supported flow capacity
-  optional int64 cost = 4;  // associated cost if used
+  optional int64 cost = 4;                    // associated cost if used
 }
 
 // Message encapsulating a Flow Network, representing the math trade.

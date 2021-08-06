@@ -51,8 +51,7 @@ absl::Status InternalParser::ParseFile(absl::string_view filename) {
   }
   if (!line_count_) {
     return absl::InvalidArgumentError(absl::StrFormat(
-        "Could not open input file or file is empty: %s",
-        filename));
+        "Could not open input file or file is empty: %s", filename));
   }
   FinalizeParserResult();
   return absl::OkStatus();

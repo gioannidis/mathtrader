@@ -38,7 +38,7 @@ namespace {
 
 // Internal regex that matches a text line defining an official item.
 constexpr char kOfficialItemRegexStr[]
-      // Prefix matching at the beginning of the text.
+    // Prefix matching at the beginning of the text.
     = "^"
 
       // Captures item id. Stops at a ':' character or at a whitespace. Also

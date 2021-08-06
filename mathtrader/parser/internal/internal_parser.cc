@@ -68,8 +68,7 @@ absl::string_view StripPrefix(absl::string_view line) {
 }
 }  // namespace
 
-absl::Status InternalParser::ParseLine(
-    absl::string_view line) {
+absl::Status InternalParser::ParseLine(absl::string_view line) {
   // Skips lines that should be ignored. Use of PartialMatch is recommended over
   // FullMatch as it deals better with unicode characters in comment lines, such
   // as the pound (GBP) character.
@@ -84,16 +83,16 @@ absl::Status InternalParser::ParseLine(
   absl::Status status = absl::OkStatus();
 
   if (IsOptionLine(line)) {
-    status.Update(ParseOption(stripped_line));;
+    status.Update(ParseOption(stripped_line));
   } else if (IsDirectiveLine(line)) {
-    status.Update(ParseDirective(stripped_line));;
+    status.Update(ParseDirective(stripped_line));
   } else if (!line.empty()) {
     // Empty lines or comments are ignored.
     // Any other line: dependent on current state.
     switch (state_) {
       case ParserState::kOptionParsing: {
         state_ = ParserState::kWantlistParsing;
-        status.Update(ParseWantlist(line));;
+        status.Update(ParseWantlist(line));
         break;
       }
       case ParserState::kWantlistParsing: {
@@ -105,9 +104,8 @@ absl::Status InternalParser::ParseLine(
         break;
       }
       default: {
-        return absl::InternalError(absl::StrFormat(
-            "Internal error during Parser::State %d.",
-            state_));
+        return absl::InternalError(
+            absl::StrFormat("Internal error during Parser::State %d.", state_));
       }
     }
   }
@@ -148,8 +146,7 @@ absl::Status InternalParser::ParseItem(absl::string_view line) {
              !gtl::InsertIfNotPresent(&items_, id, *item)) {
     // Failed to insert the item; already exists.
     return absl::InvalidArgumentError(absl::StrFormat(
-        "Duplicate declaration of official item %s not allowed.",
-        id));
+        "Duplicate declaration of official item %s not allowed.", id));
   }
 
   // Registers the username.
@@ -209,28 +206,27 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
   // all items and `duplicates` for repeated items.
   auto* const wanted_items = wantlist->mutable_wanted_item();
   wanted_items->erase(
-      std::remove_if(
-          wanted_items->begin(), wanted_items->end(),
+      std::remove_if(wanted_items->begin(), wanted_items->end(),
 
-          // Lambda: decides whether an item should be erased.
-          [&frequencies, &duplicates](const Item& wanted_item) {
-            const std::string& id = wanted_item.id();
+                     // Lambda: decides whether an item should be erased.
+                     [&frequencies, &duplicates](const Item& wanted_item) {
+                       const std::string& id = wanted_item.id();
 
-            // Retrieves the item's frequency, if previously defined, otherwise
-            // initializes it.
-            int32_t& frequency = gtl::LookupOrInsert(
-                &frequencies, id, /*frequency=*/0);
-            ++frequency;
+                       // Retrieves the item's frequency, if previously defined,
+                       // otherwise initializes it.
+                       int32_t& frequency = gtl::LookupOrInsert(
+                           &frequencies, id, /*frequency=*/0);
+                       ++frequency;
 
-            // Removes item if we have already encountered it, adding it to
-            // `duplicates`.
-            const bool is_duplicate = (frequency > 1);
-            if (is_duplicate) {
-              gtl::InsertIfNotPresent(
-                  &duplicates, id, GetUnmodifiedId(wanted_item));
-            }
-            return is_duplicate;
-          }),
+                       // Removes item if we have already encountered it, adding
+                       // it to `duplicates`.
+                       const bool is_duplicate = (frequency > 1);
+                       if (is_duplicate) {
+                         gtl::InsertIfNotPresent(&duplicates, id,
+                                                 GetUnmodifiedId(wanted_item));
+                       }
+                       return is_duplicate;
+                     }),
       wanted_items->end());  // 2nd argument of `erase()`.
 
   // Populates the `parser_result` with the duplicate items that appear 2+ times
@@ -271,31 +267,30 @@ void RemoveMissingItems(
   // Checks if a wanted item is missing and, if so, records it as a missing
   // item in `parser_result_`.
   wanted_items->erase(
-      std::remove_if(
-          wanted_items->begin(), wanted_items->end(),
+      std::remove_if(wanted_items->begin(), wanted_items->end(),
 
-          // Lambda: decides whether an item should be erased.
-          [&official_items, missing_items](const Item& wanted_item) {
-              const std::string& id = wanted_item.id();
+                     // Lambda: decides whether an item should be erased.
+                     [&official_items, missing_items](const Item& wanted_item) {
+                       const std::string& id = wanted_item.id();
 
-              // TODO(gioannidis) remove 'parser' qualifier once InternalParser
-              // has been moved in this namespace.
-              if (parser::util::IsDummyItem(id)) {
-                // Does not erase the item, because it is dummy.
-                return false;
+                       // TODO(gioannidis) remove 'parser' qualifier once
+                       // InternalParser has been moved in this namespace.
+                       if (parser::util::IsDummyItem(id)) {
+                         // Does not erase the item, because it is dummy.
+                         return false;
 
-              // Checks whether the item has an official name.
-              } else if (gtl::FindOrNull(official_items, id)) {
-                // Does not erase the item, because it has been found.
-                return false;
-              }
-              // Initializes the frequency of the missing item to zero or
-              // retrieves it if present.
-              int32_t& frequency =
-                  gtl::LookupOrInsert(missing_items, id, /*frequency=*/0);
-              ++frequency;
-              return true;
-          }),
+                         // Checks whether the item has an official name.
+                       } else if (gtl::FindOrNull(official_items, id)) {
+                         // Does not erase the item, because it has been found.
+                         return false;
+                       }
+                       // Initializes the frequency of the missing item to zero
+                       // or retrieves it if present.
+                       int32_t& frequency = gtl::LookupOrInsert(
+                           missing_items, id, /*frequency=*/0);
+                       ++frequency;
+                       return true;
+                     }),
       wanted_items->end());  // 2nd argument of `erase()`.
 }
 }  // namespace
@@ -319,7 +314,8 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
   // official names where previously given and this is the first wantlist for
   // this username.
   if (absl::string_view username =
-          offered_item.GetExtension(OfferedItem::username); !username.empty()) {
+          offered_item.GetExtension(OfferedItem::username);
+      !username.empty()) {
     gtl::InsertIfNotPresent(&users_, static_cast<std::string>(username));
   }
 
@@ -328,20 +324,18 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
 
   // The "proper" id of the offered item; username is appended if dummy.
   const std::string offered_id = GetProperItemId(
-      offered_item,
-      offered_item.GetExtension(OfferedItem::username));
+      offered_item, offered_item.GetExtension(OfferedItem::username));
 
   // Registers the wantlist and verifies that no other wantlist has been
   // declared.
-  if (const auto& [it, inserted] = wantlist_of_item_.emplace(offered_id,
-                                                             line_count_);
+  if (const auto& [it, inserted] =
+          wantlist_of_item_.emplace(offered_id, line_count_);
       !inserted) {
     // Reports the line number of the existing wantlist.
     return absl::InvalidArgumentError(absl::StrFormat(
         "Cannot declare multiple wantlists for item %s. Previous wantlist "
         "declared in line %d.",
-        raw_offered_id,
-        it->second));
+        raw_offered_id, it->second));
   }
 
   // Registers the offered item or retrieves the official data from an already
@@ -396,8 +390,7 @@ void InternalParser::FinalizeParserResult() {
 
   // Moves the missing items to parser_result.
   while (!missing_items_.empty()) {
-    ParserResult_MissingItem* missing_item =
-        parser_result_.add_missing_items();
+    ParserResult_MissingItem* missing_item = parser_result_.add_missing_items();
 
     // Internal node: maps item_id -> frequency.
     auto internal_node = missing_items_.extract(missing_items_.begin());

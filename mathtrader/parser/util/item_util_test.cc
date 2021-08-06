@@ -27,10 +27,10 @@
 #include "mathtrader/common/offered_item.pb.h"
 
 namespace {
-using ::mathtrader::parser::util::IsDummyItem;
-using ::mathtrader::parser::util::ProcessIfDummy;
 using ::mathtrader::Item;
 using ::mathtrader::OfferedItem;
+using ::mathtrader::parser::util::IsDummyItem;
+using ::mathtrader::parser::util::ProcessIfDummy;
 using ::testing::AllOf;
 using ::testing::EndsWith;
 using ::testing::StartsWith;

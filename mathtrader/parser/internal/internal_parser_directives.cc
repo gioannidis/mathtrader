@@ -40,8 +40,8 @@ constexpr char kDirectiveOfficialNamesEnd[] = "END-OFFICIAL-NAMES";
 //
 //    ParseDirective("!DIRECTIVE-1");
 absl::Status InternalParser::ParseDirective(absl::string_view line) {
-  static constexpr absl::string_view kInternalErrorMsg
-      = "Internal error when processing directive %s.";
+  static constexpr absl::string_view kInternalErrorMsg =
+      "Internal error when processing directive %s.";
 
   const absl::string_view directive = line;
 
@@ -49,12 +49,11 @@ absl::Status InternalParser::ParseDirective(absl::string_view line) {
   // already inserted.
   if (const auto [it, inserted] = directives_.try_emplace(
           static_cast<std::string>(directive), line_count_);
-          !inserted) {
+      !inserted) {
     return absl::InvalidArgumentError(absl::StrFormat(
         "Duplicate declaration of directive %s not permitted, previously "
         "declared in line %d.",
-        directive,
-        it->second));
+        directive, it->second));
   }
 
   // Handles the directive.
@@ -77,9 +76,8 @@ absl::Status InternalParser::ParseDirective(absl::string_view line) {
       }
       default: {
         // Other errors: expected to be caught by the double directive check.
-        return absl::InternalError(absl::StrFormat(
-            kInternalErrorMsg,
-            kDirectiveOfficialNamesBegin));
+        return absl::InternalError(
+            absl::StrFormat(kInternalErrorMsg, kDirectiveOfficialNamesBegin));
       }
     }
   } else if (line == kDirectiveOfficialNamesEnd) {
@@ -89,8 +87,7 @@ absl::Status InternalParser::ParseDirective(absl::string_view line) {
       return absl::InvalidArgumentError(absl::StrFormat(
           "Declaring directive %s requires previous declaration of directive "
           "%s, which is missing.",
-          kDirectiveOfficialNamesEnd,
-          kDirectiveOfficialNamesBegin));
+          kDirectiveOfficialNamesEnd, kDirectiveOfficialNamesBegin));
     }
     switch (state_) {
       case ParserState::kItemParsing: {
@@ -99,17 +96,15 @@ absl::Status InternalParser::ParseDirective(absl::string_view line) {
       }
       default: {
         // Other errors: expected to be caught by the double directive check.
-        return absl::InternalError(absl::StrFormat(
-            kInternalErrorMsg,
-            kDirectiveOfficialNamesBegin));
+        return absl::InternalError(
+            absl::StrFormat(kInternalErrorMsg, kDirectiveOfficialNamesBegin));
         break;
       }
     }
   } else {
     // Handles an unknown directive.
-    return absl::InvalidArgumentError(absl::StrFormat(
-        "Encountered unsupported directive: %s.",
-        directive));
+    return absl::InvalidArgumentError(
+        absl::StrFormat("Encountered unsupported directive: %s.", directive));
   }
   return absl::OkStatus();
 }

@@ -35,11 +35,11 @@
 
 namespace {
 
-using ::mathtrader::internal_parser::WantlistParser;
-using ::mathtrader::OfferedItem;
 using ::mathtrader::Item;
+using ::mathtrader::OfferedItem;
 using ::mathtrader::WantedItem;
 using ::mathtrader::Wantlist;
+using ::mathtrader::internal_parser::WantlistParser;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
@@ -55,9 +55,9 @@ using ::testing::StrEq;
 
 // Matches the username extension of the `arg` Item, ignoring case.
 MATCHER_P(UsernameStrCaseEq, username, "") {
-  return ExplainMatchResult(
-      StrCaseEq(username), arg.GetExtension(OfferedItem::username),
-      result_listener);
+  return ExplainMatchResult(StrCaseEq(username),
+                            arg.GetExtension(OfferedItem::username),
+                            result_listener);
 }
 
 // Matches the priority extension of the `arg` Item.
@@ -68,37 +68,36 @@ MATCHER_P(PriorityEq, priority, "") {
 
 // Matches an item with no offered/wanted item extensions.
 MATCHER(HasNoItemExtension, "") {
-  return (!arg.HasExtension(OfferedItem::username)
-          && !arg.HasExtension(OfferedItem::copy_id)
-          && !arg.HasExtension(OfferedItem::num_copies)
-          && !arg.HasExtension(WantedItem::priority));
+  return (!arg.HasExtension(OfferedItem::username) &&
+          !arg.HasExtension(OfferedItem::copy_id) &&
+          !arg.HasExtension(OfferedItem::num_copies) &&
+          !arg.HasExtension(WantedItem::priority));
 }
-
 
 // Tests an empty wantlist without username. Verifies that we ignore spaces.
 TEST(WantlistParserTest, TestNoItems) {
   const WantlistParser parser;
 
   // Defines multiple empty wantlists.
-  const std::vector<std::string> texts
-      = {"0001-PANDE", "0001-PANDE:", "0001-PANDE :", "  0001-PANDE  :  "};
+  const std::vector<std::string> texts = {
+      "0001-PANDE", "0001-PANDE:", "0001-PANDE :", "  0001-PANDE  :  "};
 
   for (absl::string_view text : texts) {
     const auto wantlist = parser.ParseWantlist(text);
 
-    ASSERT_TRUE(wantlist.ok()) << text << " error: "
-      << wantlist.status().message();
+    ASSERT_TRUE(wantlist.ok())
+        << text << " error: " << wantlist.status().message();
 
     // For each wantlist checks:
     // * Offered item:
     //    * id
     //    * No official data or priority.
     // * No wanted items.
-    EXPECT_THAT(*wantlist, AllOf(
-        Property(&Wantlist::offered_item,
-                 AllOf(Property(&Item::id, StrEq("0001-PANDE")),
-                       HasNoItemExtension())),
-        Property(&Wantlist::wanted_item, IsEmpty())));
+    EXPECT_THAT(*wantlist,
+                AllOf(Property(&Wantlist::offered_item,
+                               AllOf(Property(&Item::id, StrEq("0001-PANDE")),
+                                     HasNoItemExtension())),
+                      Property(&Wantlist::wanted_item, IsEmpty())));
   }
 }
 
@@ -106,11 +105,8 @@ TEST(WantlistParserTest, TestNoItems) {
 TEST(WantlistParserTest, TestNoItemsWithUsername) {
   const WantlistParser parser;
   const std::vector<std::string> texts = {
-      "(user) 0001-PANDE",
-      "(user) 0001-PANDE:",
-      "(user) 0001-PANDE :",
-      "  (user)   0001-PANDE    :   "
-  };
+      "(user) 0001-PANDE", "(user) 0001-PANDE:", "(user) 0001-PANDE :",
+      "  (user)   0001-PANDE    :   "};
 
   for (absl::string_view text : texts) {
     const auto wantlist = parser.ParseWantlist(text);
@@ -123,11 +119,11 @@ TEST(WantlistParserTest, TestNoItemsWithUsername) {
     //    * id
     //    * username
     // * No wanted items.
-    EXPECT_THAT(*wantlist, AllOf(
-        Property(&Wantlist::offered_item,
-                 AllOf(Property(&Item::id, StrEq("0001-PANDE")),
-                       UsernameStrCaseEq("user"))),
-        Property(&Wantlist::wanted_item, IsEmpty())));
+    EXPECT_THAT(*wantlist,
+                AllOf(Property(&Wantlist::offered_item,
+                               AllOf(Property(&Item::id, StrEq("0001-PANDE")),
+                                     UsernameStrCaseEq("user"))),
+                      Property(&Wantlist::wanted_item, IsEmpty())));
   }
 }
 
@@ -135,46 +131,37 @@ TEST(WantlistParserTest, TestNoItemsWithUsername) {
 TEST(WantlistParserTest, TestWantlist) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "0001-MKBG",
-      "0002-TTAANSOC",
-      "0003-PANDE",
-      "0004-SCYTHE",
-      "0005-PUERIC",
+      "0001-MKBG", "0002-TTAANSOC", "0003-PANDE", "0004-SCYTHE", "0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
   ASSERT_TRUE(wantlist.ok());
 
   // Checks offered item.
-  EXPECT_THAT(wantlist->offered_item(),
-              AllOf(Property(&Item::id, StrEq(items[0])),
-                    Property(&Item::is_dummy, IsFalse()),
-                    HasNoItemExtension()));
+  EXPECT_THAT(
+      wantlist->offered_item(),
+      AllOf(Property(&Item::id, StrEq(items[0])),
+            Property(&Item::is_dummy, IsFalse()), HasNoItemExtension()));
 
   // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(), AllOf(
-      SizeIs(Eq(4)),
-      Each(Property(&Item::is_dummy, IsFalse()))));
+  EXPECT_THAT(wantlist->wanted_item(),
+              AllOf(SizeIs(Eq(4)), Each(Property(&Item::is_dummy, IsFalse()))));
 
   // Verifies priorities and item names.
-  EXPECT_THAT(wantlist->wanted_item(), ElementsAre(
-      AllOf(PriorityEq(1), Property(&Item::id, StrEq(items[1]))),
-      AllOf(PriorityEq(2), Property(&Item::id, StrEq(items[2]))),
-      AllOf(PriorityEq(3), Property(&Item::id, StrEq(items[3]))),
-      AllOf(PriorityEq(4), Property(&Item::id, StrEq(items[4])))));
+  EXPECT_THAT(
+      wantlist->wanted_item(),
+      ElementsAre(AllOf(PriorityEq(1), Property(&Item::id, StrEq(items[1]))),
+                  AllOf(PriorityEq(2), Property(&Item::id, StrEq(items[2]))),
+                  AllOf(PriorityEq(3), Property(&Item::id, StrEq(items[3]))),
+                  AllOf(PriorityEq(4), Property(&Item::id, StrEq(items[4])))));
 }
 
 // Tests a small wantlist with username and colon.
 TEST(WantlistParserTest, TestWantlistWithUsernameAndColon) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "(username)",
-      "0001-MKBG",
-      ":",
-      "0002-TTAANSOC",
-      "0003-PANDE",
-      "0004-SCYTHE",
-      "0005-PUERIC",
+      "(username)", "0001-MKBG",   ":",           "0002-TTAANSOC",
+      "0003-PANDE", "0004-SCYTHE", "0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
@@ -187,16 +174,16 @@ TEST(WantlistParserTest, TestWantlistWithUsernameAndColon) {
                     UsernameStrCaseEq("username")));
 
   // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(), AllOf(
-      SizeIs(Eq(4)),
-      Each(Property(&Item::is_dummy, IsFalse()))));
+  EXPECT_THAT(wantlist->wanted_item(),
+              AllOf(SizeIs(Eq(4)), Each(Property(&Item::is_dummy, IsFalse()))));
 
   // Verifies priorities and item names.
-  EXPECT_THAT(wantlist->wanted_item(), ElementsAre(
-      AllOf(PriorityEq(1), Property(&Item::id, StrEq(items[3]))),
-      AllOf(PriorityEq(2), Property(&Item::id, StrEq(items[4]))),
-      AllOf(PriorityEq(3), Property(&Item::id, StrEq(items[5]))),
-      AllOf(PriorityEq(4), Property(&Item::id, StrEq(items[6])))));
+  EXPECT_THAT(
+      wantlist->wanted_item(),
+      ElementsAre(AllOf(PriorityEq(1), Property(&Item::id, StrEq(items[3]))),
+                  AllOf(PriorityEq(2), Property(&Item::id, StrEq(items[4]))),
+                  AllOf(PriorityEq(3), Property(&Item::id, StrEq(items[5]))),
+                  AllOf(PriorityEq(4), Property(&Item::id, StrEq(items[6])))));
 }
 
 // Test suite: dummy items
@@ -205,12 +192,8 @@ TEST(WantlistParserTest, TestWantlistWithUsernameAndColon) {
 TEST(WantlistParserDummyItemsTest, TestDummyOfferedItem) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "(username)",
-      "%0001-MKBG",
-      "0002-TTAANSOC",
-      "0003-PANDE",
-      "0004-SCYTHE",
-      "0005-PUERIC",
+      "(username)", "%0001-MKBG",  "0002-TTAANSOC",
+      "0003-PANDE", "0004-SCYTHE", "0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
@@ -220,21 +203,16 @@ TEST(WantlistParserDummyItemsTest, TestDummyOfferedItem) {
   EXPECT_THAT(wantlist->offered_item(), Property(&Item::is_dummy, IsTrue()));
 
   // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(), AllOf(
-      SizeIs(Eq(4)),
-      Each(Property(&Item::is_dummy, IsFalse()))));
+  EXPECT_THAT(wantlist->wanted_item(),
+              AllOf(SizeIs(Eq(4)), Each(Property(&Item::is_dummy, IsFalse()))));
 }
 
 // Dummy wanted items: all.
 TEST(WantlistParserDummyItemsTest, TesAllDummyWantedItems) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "(username)",
-      "0001-MKBG",
-      "%0002-TTAANSOC",
-      "%0003-PANDE",
-      "%0004-SCYTHE",
-      "%0005-PUERIC",
+      "(username)",  "0001-MKBG",    "%0002-TTAANSOC",
+      "%0003-PANDE", "%0004-SCYTHE", "%0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
@@ -244,21 +222,16 @@ TEST(WantlistParserDummyItemsTest, TesAllDummyWantedItems) {
   EXPECT_THAT(wantlist->offered_item(), Property(&Item::is_dummy, IsFalse()));
 
   // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(), AllOf(
-      SizeIs(Eq(4)),
-      Each(Property(&Item::is_dummy, IsTrue()))));
+  EXPECT_THAT(wantlist->wanted_item(),
+              AllOf(SizeIs(Eq(4)), Each(Property(&Item::is_dummy, IsTrue()))));
 }
 
 // Dummy wanted items: some.
 TEST(WantlistParserDummyItemsTest, TesSomeDummyWantedItems) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "(username)",
-      "0001-MKBG",
-      "%0002-TTAANSOC",
-      "0003-PANDE",
-      "0004-SCYTHE",
-      "%0005-PUERIC",
+      "(username)", "0001-MKBG",   "%0002-TTAANSOC",
+      "0003-PANDE", "0004-SCYTHE", "%0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
@@ -363,8 +336,7 @@ TEST(WantlistParserNegativeTest, TestUsernameInvalidChars) {
 
   // Verifies that the following characters are valid in usernames. This
   // includes the '\0' character.
-  static constexpr char kValidChars[] =
-    R"tag(`~!@#$%^&*+-=[]{}\|;'"<>?,./)tag";
+  static constexpr char kValidChars[] = R"tag(`~!@#$%^&*+-=[]{}\|;'"<>?,./)tag";
 
   for (char c : kValidChars) {
     std::string username = "user";
@@ -376,8 +348,7 @@ TEST(WantlistParserNegativeTest, TestUsernameInvalidChars) {
 
 TEST(WantlistParserNegativeTest, TestInvalidCharsInSuffix) {
   WantlistParser parser;
-  const std::string invalid_chars
-      = R"tag(`~!@#$^&*+={}[]\|;'",.<>/?)tag";
+  const std::string invalid_chars = R"tag(`~!@#$^&*+={}[]\|;'",.<>/?)tag";
 
   for (char c : invalid_chars) {
     std::string text = "0001-A : 0002-B";
@@ -396,11 +367,8 @@ TEST(WantlistParserNegativeTest, TestInvalidCharsInSuffix) {
 TEST(WantlistParserNegativeTest, TestDummyOfferedAndWantedItems) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "%0001-MKBG",
-      "0002-TTAANSOC",
-      "0003-PANDE",
-      "%0004-SCYTHE",
-      "0005-PUERIC",
+      "%0001-MKBG",   "0002-TTAANSOC", "0003-PANDE",
+      "%0004-SCYTHE", "0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
@@ -411,11 +379,7 @@ TEST(WantlistParserNegativeTest, TestDummyOfferedAndWantedItems) {
 TEST(WantlistParserNegativeTest, TestDummyOfferedWithoutUsername) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "%0001-MKBG",
-      "0002-TTAANSOC",
-      "0003-PANDE",
-      "0004-SCYTHE",
-      "0005-PUERIC",
+      "%0001-MKBG", "0002-TTAANSOC", "0003-PANDE", "0004-SCYTHE", "0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
@@ -426,11 +390,7 @@ TEST(WantlistParserNegativeTest, TestDummyOfferedWithoutUsername) {
 TEST(WantlistParserNegativeTest, TestDummyWantedWithoutUsername) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "0001-MKBG",
-      "0002-TTAANSOC",
-      "0003-PANDE",
-      "%0004-SCYTHE",
-      "0005-PUERIC",
+      "0001-MKBG", "0002-TTAANSOC", "0003-PANDE", "%0004-SCYTHE", "0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
@@ -459,7 +419,8 @@ TEST(WantlistParserRegexTest, SimpleTest) {
       "(user) 1-A : 2-B 3-C 4-D",
   };
   for (absl::string_view wantlist : wantlists) {
-    EXPECT_TRUE(re2::RE2::PartialMatch(wantlist, *re)) << "Failed to match"
+    EXPECT_TRUE(re2::RE2::PartialMatch(wantlist, *re))
+        << "Failed to match"
         << " wantlist: '" << wantlist << "'";
   }
 }
@@ -484,11 +445,11 @@ TEST(WantlistParserRegexTest, SimpleCapturingTest) {
   std::string colon;
 
   // The expected capture groups.
-  const std::vector<std::string> expected_username
-      = {"", "", "", "", "user", "user", "user", "user"};
+  const std::vector<std::string> expected_username = {
+      "", "", "", "", "user", "user", "user", "user"};
   const std::string expected_offered_item = "1-A";
-  const std::vector<std::string> expected_colon
-      = {"", ":", "", ":", "", ":", ":", ":"};
+  const std::vector<std::string> expected_colon = {"", ":", "",  ":",
+                                                   "", ":", ":", ":"};
 
   // Size of expected results must be the same as the size of the tests.
   EXPECT_EQ(expected_username.size(), wantlists.size());
@@ -496,8 +457,8 @@ TEST(WantlistParserRegexTest, SimpleCapturingTest) {
 
   int i = 0;
   for (absl::string_view wantlist : wantlists) {
-    EXPECT_TRUE(re2::RE2::PartialMatch(wantlist, *re, &username, &offered_item,
-                                       &colon))
+    EXPECT_TRUE(
+        re2::RE2::PartialMatch(wantlist, *re, &username, &offered_item, &colon))
         << "Failed to match wantlist: '" << wantlist << "'";
 
     EXPECT_EQ(username, expected_username[i])

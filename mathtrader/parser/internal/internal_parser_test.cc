@@ -25,15 +25,14 @@
 #include "mathtrader/parser/parser_result.pb.h"
 
 #ifndef EXPECT_OK
-#define EXPECT_OK(status) \
-  EXPECT_TRUE((status).ok()) << (status).message();
+#define EXPECT_OK(status) EXPECT_TRUE((status).ok()) << (status).message();
 #endif
 
 namespace {
 
-using ::mathtrader::internal_parser::InternalParser;
 using ::mathtrader::Item;
 using ::mathtrader::Wantlist;
+using ::mathtrader::internal_parser::InternalParser;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -72,8 +71,7 @@ TEST(InternalParser, TestSingleWantlist) {
   EXPECT_THAT(parser.get_parser_result().wantlists(),
               ElementsAre(AllOf(Property(&Wantlist::offered_item,
                                          Property(&Item::id, StrEq("1-A"))),
-                                Property(&Wantlist::wanted_item,
-                                         SizeIs(3)))));
+                                Property(&Wantlist::wanted_item, SizeIs(3)))));
 }
 
 TEST(InternalParser, TestMultipleWantlists) {
@@ -187,34 +185,41 @@ TEST(InternalParser, TestDuplicateItems) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
 
-  EXPECT_THAT(parser.get_parser_result().wantlists(), ElementsAre(
-      Property("wanted items", &Wantlist::wanted_item, SizeIs(7)),
-      Property("wanted items", &Wantlist::wanted_item, SizeIs(6)),
-      Property("wanted items", &Wantlist::wanted_item, SizeIs(8))));
+  EXPECT_THAT(
+      parser.get_parser_result().wantlists(),
+      ElementsAre(Property("wanted items", &Wantlist::wanted_item, SizeIs(7)),
+                  Property("wanted items", &Wantlist::wanted_item, SizeIs(6)),
+                  Property("wanted items", &Wantlist::wanted_item, SizeIs(8))));
 
   // Verifies all missing items and their frequencies.
   // Note that the order of duplicate items is irrelevant.
   const auto& duplicates = parser.get_parser_result().duplicate_wanted_items();
-  EXPECT_THAT(duplicates, UnorderedElementsAre(
-      AllOf(Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
-            Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
-            Property("owner", &DuplicateItem::username, StrCaseEq("user2")),
-            Property("frequency", &DuplicateItem::frequency, Eq(3))),
+  EXPECT_THAT(
+      duplicates,
+      UnorderedElementsAre(
+          AllOf(
+              Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
+              Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
+              Property("owner", &DuplicateItem::username, StrCaseEq("user2")),
+              Property("frequency", &DuplicateItem::frequency, Eq(3))),
 
-      AllOf(Property("wanted", &DuplicateItem::wanted_item_id, StrEq("A")),
-            Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
-            Property("owner", &DuplicateItem::username, StrCaseEq("user2")),
-            Property("frequency", &DuplicateItem::frequency, Eq(2))),
+          AllOf(
+              Property("wanted", &DuplicateItem::wanted_item_id, StrEq("A")),
+              Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
+              Property("owner", &DuplicateItem::username, StrCaseEq("user2")),
+              Property("frequency", &DuplicateItem::frequency, Eq(2))),
 
-      AllOf(Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
-            Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
-            Property("owner", &DuplicateItem::username, StrCaseEq("user3")),
-            Property("frequency", &DuplicateItem::frequency, Eq(2))),
+          AllOf(
+              Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
+              Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
+              Property("owner", &DuplicateItem::username, StrCaseEq("user3")),
+              Property("frequency", &DuplicateItem::frequency, Eq(2))),
 
-      AllOf(Property("wanted", &DuplicateItem::wanted_item_id, StrEq("K")),
-            Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
-            Property("owner", &DuplicateItem::username, StrCaseEq("user3")),
-            Property("frequency", &DuplicateItem::frequency, Eq(5)))));
+          AllOf(
+              Property("wanted", &DuplicateItem::wanted_item_id, StrEq("K")),
+              Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
+              Property("owner", &DuplicateItem::username, StrCaseEq("user3")),
+              Property("frequency", &DuplicateItem::frequency, Eq(5)))));
 }
 
 // Test suite: negative tests
