@@ -30,12 +30,12 @@
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
-using ::mathtrader::network::internal::NodeBuilder;
 using ::mathtrader::FlowNetwork;
 using ::mathtrader::Item;
 using ::mathtrader::Node;
 using ::mathtrader::OfferedItem;
 using ::mathtrader::ParserResult;
+using ::mathtrader::network::internal::NodeBuilder;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::Eq;
@@ -58,8 +58,10 @@ MATCHER(NodeIdsStartWithItemId, "") {
 TEST(NodeBuilderTest, Base) {
   // The offered items and usernames at the input.
   const std::vector<std::pair<std::string, std::string>> items_users = {
-    {"abcd", "User1"}, {"0001-", "fooBarUser"}, {"0042-MKBG", "owner42"},
-    {"Qwerty0123", "qwertzUser"}};
+      {"abcd", "User1"},
+      {"0001-", "fooBarUser"},
+      {"0042-MKBG", "owner42"},
+      {"Qwerty0123", "qwertzUser"}};
 
   // Propagates the offered items and usernames to the input.
   ParserResult input;
@@ -76,31 +78,36 @@ TEST(NodeBuilderTest, Base) {
   EXPECT_EQ(flow_network.nodes_size(), 2 * items_users.size());
 
   // Verifies that each item id is contained twice in the Nodes.
-  EXPECT_THAT(flow_network.nodes(), AllOf(
-      Contains(Property(&Node::id, StartsWith("abcd"))).Times(2),
-      Contains(Property(&Node::id, StartsWith("0001-"))).Times(2),
-      Contains(Property(&Node::id, StartsWith("0042-MKBG"))).Times(2),
-      Contains(Property(&Node::id, StartsWith("Qwerty0123"))).Times(2)));
+  EXPECT_THAT(
+      flow_network.nodes(),
+      AllOf(Contains(Property(&Node::id, StartsWith("abcd"))).Times(2),
+            Contains(Property(&Node::id, StartsWith("0001-"))).Times(2),
+            Contains(Property(&Node::id, StartsWith("0042-MKBG"))).Times(2),
+            Contains(Property(&Node::id, StartsWith("Qwerty0123"))).Times(2)));
 
   // Verifies that no node is a source or sink.
   EXPECT_THAT(flow_network.nodes(),
               Each(Property(&Node::has_production, IsFalse())));
 
   // Verifies that half the nodes are offered and half are wanted items.
-  EXPECT_THAT(flow_network.nodes(), AllOf(
-      Contains(Property(&Node::item_type, Eq(Node::kOffered))).Times(4),
-      Contains(Property(&Node::item_type, Eq(Node::kWanted))).Times(4)));
+  EXPECT_THAT(
+      flow_network.nodes(),
+      AllOf(Contains(Property(&Node::item_type, Eq(Node::kOffered))).Times(4),
+            Contains(Property(&Node::item_type, Eq(Node::kWanted))).Times(4)));
 
   // Verifies that the item id is a prefix of both the node id and the symmetric
   // node id.
   EXPECT_THAT(flow_network.nodes(), Each(NodeIdsStartWithItemId()));
 
   // Verifies that there are two nodes with each username.
-  EXPECT_THAT(flow_network.nodes(), AllOf(
-      Contains(Property(&Node::username, StrCaseEq("User1"))).Times(2),
-      Contains(Property(&Node::username, StrCaseEq("fooBarUser"))).Times(2),
-      Contains(Property(&Node::username, StrCaseEq("owner42"))).Times(2),
-      Contains(Property(&Node::username, StrCaseEq("qwertzUser"))).Times(2)));
+  EXPECT_THAT(
+      flow_network.nodes(),
+      AllOf(
+          Contains(Property(&Node::username, StrCaseEq("User1"))).Times(2),
+          Contains(Property(&Node::username, StrCaseEq("fooBarUser"))).Times(2),
+          Contains(Property(&Node::username, StrCaseEq("owner42"))).Times(2),
+          Contains(Property(&Node::username, StrCaseEq("qwertzUser")))
+              .Times(2)));
 
   // Verifies the source properties.
   ASSERT_TRUE(flow_network.has_source());

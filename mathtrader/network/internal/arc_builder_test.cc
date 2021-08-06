@@ -37,13 +37,13 @@
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
-using ::mathtrader::network::internal::ArcBuilder;
 using ::mathtrader::Arc;
 using ::mathtrader::FlowNetwork;
 using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
 using ::mathtrader::WantedItem;
 using ::mathtrader::Wantlist;
+using ::mathtrader::network::internal::ArcBuilder;
 using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::Each;
@@ -59,7 +59,7 @@ using ::testing::StartsWith;
 using WantlistVector = std::vector<std::vector<std::string>>;
 
 // Counts the number of elements in a 2D-vector.
-template<typename T>
+template <typename T>
 int64_t count2d(std::vector<std::vector<T>> vector_2d) {
   int64_t num_elements = 0;
   for (const std::vector<T>& vec : vector_2d) {
@@ -100,12 +100,10 @@ void ExpectArcFrequencies(const FlowNetwork& flow_network,
   const std::string_view id = frequencies.item_id;
   const int64_t head_count = frequencies.head_count;
   const int64_t tail_count = frequencies.tail_count;
-  EXPECT_THAT(
-      flow_network.arcs(),
-      Contains(Property(&Arc::head, StartsWith(id))).Times(head_count));
-  EXPECT_THAT(
-      flow_network.arcs(),
-      Contains(Property(&Arc::tail, StartsWith(id))).Times(tail_count));
+  EXPECT_THAT(flow_network.arcs(),
+              Contains(Property(&Arc::head, StartsWith(id))).Times(head_count));
+  EXPECT_THAT(flow_network.arcs(),
+              Contains(Property(&Arc::tail, StartsWith(id))).Times(tail_count));
 }
 
 // As above, but for multiple items.
@@ -121,12 +119,11 @@ void ExpectArcFrequencies(const FlowNetwork& flow_network,
 // Wantlists where all items are valid candidates, i.e., have their own offered
 // wantlist and are wanted in another wantlist.
 TEST(ArcBuilderTest, AllValidItems) {
-  const WantlistVector wantlists = {
-      {"A", "B", "C", "D"},
-      {"B", "A", "E"},
-      {"C", "B", "A"},
-      {"D", "A"},
-      {"E", "C", "A", "D"}};
+  const WantlistVector wantlists = {{"A", "B", "C", "D"},
+                                    {"B", "A", "E"},
+                                    {"C", "B", "A"},
+                                    {"D", "A"},
+                                    {"E", "C", "A", "D"}};
 
   FlowNetwork flow_network;
   ArcBuilder::BuildArcs(BuildParserResult(wantlists), &flow_network);
@@ -147,12 +144,12 @@ TEST(ArcBuilderTest, AllValidItems) {
       arcs, Contains(Property(&Arc::cost, AllOf(Gt(4), Lt(10'000)))).Times(0));
 
   // Verifies the arc frequency for each item.
-  ExpectArcFrequencies(flow_network, {
-      {"A", /*head_count=*/5, /*tail_count=*/4},
-      {"B", /*head_count=*/3, /*tail_count=*/3},
-      {"C", /*head_count=*/3, /*tail_count=*/3},
-      {"D", /*head_count=*/3, /*tail_count=*/2},
-      {"E", /*head_count=*/2, /*tail_count=*/4}});
+  ExpectArcFrequencies(flow_network,
+                       {{"A", /*head_count=*/5, /*tail_count=*/4},
+                        {"B", /*head_count=*/3, /*tail_count=*/3},
+                        {"C", /*head_count=*/3, /*tail_count=*/3},
+                        {"D", /*head_count=*/3, /*tail_count=*/2},
+                        {"E", /*head_count=*/2, /*tail_count=*/4}});
 
   // All arcs have unit capacity.
   EXPECT_THAT(arcs, Each(Property(&Arc::capacity, Eq(1))));
@@ -160,12 +157,11 @@ TEST(ArcBuilderTest, AllValidItems) {
 
 // As above, but with source/sink defined.
 TEST(ArcBuilderTest, AllValidItemsWithSourceAndSink) {
-  const WantlistVector wantlists = {
-      {"A", "B", "C", "D"},
-      {"B", "A", "E"},
-      {"C", "B", "A"},
-      {"D", "A"},
-      {"E", "C", "A", "D"}};
+  const WantlistVector wantlists = {{"A", "B", "C", "D"},
+                                    {"B", "A", "E"},
+                                    {"C", "B", "A"},
+                                    {"D", "A"},
+                                    {"E", "C", "A", "D"}};
 
   const int64_t wantlist_count = wantlists.size();
 
@@ -179,15 +175,15 @@ TEST(ArcBuilderTest, AllValidItemsWithSourceAndSink) {
   // since all items are valid candidates, plus two to connect each wantlist
   // to the source/sink.
   const auto& arcs = flow_network.arcs();
-  EXPECT_THAT(arcs, SizeIs(count2d(wantlists) + 2*wantlist_count));
+  EXPECT_THAT(arcs, SizeIs(count2d(wantlists) + 2 * wantlist_count));
 
   // Verifies the self-trading arcs.
-  EXPECT_THAT(
-      arcs, Contains(Property(&Arc::cost, Gt(10'000))).Times(wantlist_count));
+  EXPECT_THAT(arcs,
+              Contains(Property(&Arc::cost, Gt(10'000))).Times(wantlist_count));
 
   // Arcs with zero cost: between source/sink and each item.
-  EXPECT_THAT(
-      arcs, Contains(Property(&Arc::cost, Eq(0))).Times(2*wantlist_count));
+  EXPECT_THAT(arcs,
+              Contains(Property(&Arc::cost, Eq(0))).Times(2 * wantlist_count));
 
   // Number of trading arcs with specific cost (priority).
   EXPECT_THAT(arcs, Contains(Property(&Arc::cost, Eq(1))).Times(5));
@@ -198,12 +194,12 @@ TEST(ArcBuilderTest, AllValidItemsWithSourceAndSink) {
 
   // Verifies the arc frequency for each item. The frequencies are the same as
   // in the previous test, with an additional arc for the source/sink.
-  ExpectArcFrequencies(flow_network, {
-      {"A", /*head_count=*/5+1, /*tail_count=*/4+1},
-      {"B", /*head_count=*/3+1, /*tail_count=*/3+1},
-      {"C", /*head_count=*/3+1, /*tail_count=*/3+1},
-      {"D", /*head_count=*/3+1, /*tail_count=*/2+1},
-      {"E", /*head_count=*/2+1, /*tail_count=*/4+1}});
+  ExpectArcFrequencies(flow_network,
+                       {{"A", /*head_count=*/5 + 1, /*tail_count=*/4 + 1},
+                        {"B", /*head_count=*/3 + 1, /*tail_count=*/3 + 1},
+                        {"C", /*head_count=*/3 + 1, /*tail_count=*/3 + 1},
+                        {"D", /*head_count=*/3 + 1, /*tail_count=*/2 + 1},
+                        {"E", /*head_count=*/2 + 1, /*tail_count=*/4 + 1}});
 
   // All arcs have unit capacity.
   EXPECT_THAT(arcs, Each(Property(&Arc::capacity, Eq(1))));

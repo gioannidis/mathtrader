@@ -69,7 +69,7 @@ void AddArc(std::string_view tail, std::string_view head, int64_t capacity,
 
 // Same as above, but adds an arc with a unit capacity.
 void AddArc(std::string_view tail, std::string_view head, int64_t cost,
-    ArcMap* arcs) {
+            ArcMap* arcs) {
   AddArc(tail, head, /*capacity=*/1, cost, arcs);
 }
 
@@ -77,8 +77,8 @@ void AddArc(std::string_view tail, std::string_view head, int64_t cost,
 // respective Offered/Wanted node ids. Arcs between items have unit capacity.
 void AddArc(const Item& offered, const Item& wanted, int64_t cost,
             ArcMap* arcs) {
-  AddArc(GetOfferedNodeId(offered.id()), GetWantedNodeId(wanted.id()),
-         cost, arcs);
+  AddArc(GetOfferedNodeId(offered.id()), GetWantedNodeId(wanted.id()), cost,
+         arcs);
 }
 
 // Same as above, but takes the arc "cost" from the wanted item's priority.
@@ -140,14 +140,13 @@ void RemoveNonTradingNodes(const ItemSet& candidate_items,
                            FlowNetwork* flow_network) {
   auto* nodes = flow_network->mutable_nodes();
   nodes->erase(
-      std::remove_if(
-          nodes->begin(), nodes->end(),
-          // Lambda that erases the node if the item is not a candidate item.
-          // The original item_id is looked up, which is a substring of the
-          // node id.
-          [&candidate_items](const Node& node) {
-            return !candidate_items.contains(node.item_id());
-          }),
+      std::remove_if(nodes->begin(), nodes->end(),
+                     // Lambda that erases the node if the item is not a
+                     // candidate item. The original item_id is looked up, which
+                     // is a substring of the node id.
+                     [&candidate_items](const Node& node) {
+                       return !candidate_items.contains(node.item_id());
+                     }),
       nodes->end());  // second argument of nodes->erase().
 }
 }  // namespace
