@@ -39,9 +39,7 @@
 #include "mathtrader/parser/util/item_util.h"
 
 namespace mathtrader::internal_parser {
-
 namespace {
-
 // Prefix for directive lines.
 constexpr absl::string_view kPrefixDirective = "!";
 // Prefix for option lines.
@@ -59,6 +57,7 @@ bool IsOptionLine(absl::string_view line) {
 
 // Removes special line prefixes so that they can be subsequently parsed.
 // Note that the argument must outlive the result.
+// TODO(gioannidis) Replace with absl::ConsumePrefix.
 absl::string_view StripPrefix(absl::string_view line) {
   if (IsDirectiveLine(line)) {
     line.remove_prefix(kPrefixDirective.size());
@@ -67,7 +66,6 @@ absl::string_view StripPrefix(absl::string_view line) {
   }
   return line;
 }
-
 }  // namespace
 
 absl::Status InternalParser::ParseLine(
@@ -99,7 +97,7 @@ absl::Status InternalParser::ParseLine(
         break;
       }
       case ParserState::kWantlistParsing: {
-        status.Update(ParseWantlist(line));;
+        status.Update(ParseWantlist(line));
         break;
       }
       case ParserState::kItemParsing: {
@@ -186,60 +184,77 @@ std::string GetProperItemId(const Item& item, const std::string& user) {
   return id;
 }
 
+// Retrieves the `unmodified_id` field if set, otherwise `id`.
+const std::string& GetUnmodifiedId(const Item& item) {
+  return (item.has_unmodified_id() ? item.unmodified_id() : item.id());
+}
+
 // Identifies and removes duplicate items from a wantlist, reporting them to
-// parser_result.
+// parser_result. The unmodified ids are reported.
 void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
   CHECK_NOTNULL(wantlist);
   CHECK_NOTNULL(parser_result);
+
+  // Tracks the frequency of each wanted item in the wantlist.
+  // key: item ID in wantlist.
+  // mapped: frequency
+  absl::flat_hash_map<std::string, int32_t> frequencies;
+
+  // Tracks the actual items that were found to be duplicates.
+  // key: item ID in wantlist.
+  // mapped: unmodified item id (used in reporting)
+  absl::flat_hash_map<std::string, std::string> duplicates;
+
+  // Erases items that occur 2+ times in the wantlist. Updates `frequencies` for
+  // all items and `duplicates` for repeated items.
   auto* const wanted_items = wantlist->mutable_wanted_item();
-
-  // Original count of wanted items. Optimization to determine whether any
-  // wanted items were eventually deleted or not.
-  const int32_t initial_item_count = wanted_items->size();
-
-  // Tracks the frequency of each wanted item in the wantlist. Used to identify
-  // repeated items. The frequency is subsequently appended to the results on
-  // duplicate items.
-  absl::flat_hash_map<std::string, int32_t> item_frequency;
-
-  // Erases items that occur 2+ times in the wantlist. Updates `item_frequency`.
   wanted_items->erase(
       std::remove_if(
           wanted_items->begin(), wanted_items->end(),
 
           // Lambda: decides whether an item should be erased.
-          [&item_frequency](const Item& wanted_item) {
+          [&frequencies, &duplicates](const Item& wanted_item) {
+            const std::string& id = wanted_item.id();
+
             // Retrieves the item's frequency, if previously defined, otherwise
-            // initializes the item's frequency.
+            // initializes it.
             int32_t& frequency = gtl::LookupOrInsert(
-                &item_frequency, wanted_item.id(), /*frequency=*/0);
+                &frequencies, id, /*frequency=*/0);
             ++frequency;
 
-            // Removes item if we have already encountered it.
-            return (frequency > 1);
+            // Removes item if we have already encountered it, adding it to
+            // `duplicates`.
+            const bool is_duplicate = (frequency > 1);
+            if (is_duplicate) {
+              gtl::InsertIfNotPresent(
+                  &duplicates, id, GetUnmodifiedId(wanted_item));
+            }
+            return is_duplicate;
           }),
       wanted_items->end());  // 2nd argument of `erase()`.
 
-  // Returns if no items were removed.
-  if (wanted_items->size() == initial_item_count) {
-    return;
-  }
+  // Populates the `parser_result` with the duplicate items that appear 2+ times
+  // in the wantlist. Extracts the nodes from `duplicates` to avoid copying the
+  // unmodified id.
+  while (!duplicates.empty()) {
+    auto internal_node = duplicates.extract(duplicates.begin());
 
-  // Extracts the map nodes to avoid copying the item ids.
-  while (!item_frequency.empty()) {
-    auto internal_node = item_frequency.extract(item_frequency.begin());
-    std::string& wanted_item_id = internal_node.key();
-    int32_t frequency = internal_node.mapped();
+    // Creates a new duplicate item, setting:
+    // * The unmodified offered item id.
+    // * The username.
+    auto* const duplicate_item = parser_result->add_duplicate_wanted_items();
+    duplicate_item->set_offered_item_id(
+        GetUnmodifiedId(wantlist->offered_item()));
+    duplicate_item->set_username(
+        wantlist->offered_item().GetExtension(OfferedItem::username));
 
-    // Creates report for duplicate items only.
-    if (frequency > 1) {
-      auto* const duplicate_item = parser_result->add_duplicate_wanted_items();
-      duplicate_item->set_wanted_item_id(std::move(wanted_item_id));
-      duplicate_item->set_offered_item_id(wantlist->offered_item().id());
-      duplicate_item->set_username(
-          wantlist->offered_item().GetExtension(OfferedItem::username));
-      duplicate_item->set_frequency(frequency);
-    }
+    // Retrieves the frequency from the `frequencies` map and sets it.
+    const int32_t frequency = gtl::FindOrDie(frequencies, internal_node.key());
+    CHECK_GT(frequency, 1);
+    duplicate_item->set_frequency(frequency);
+
+    // Moves the unmodified item id from the internal node.
+    duplicate_item->set_wanted_item_id(std::move(internal_node.mapped()));
   }
 }
 
@@ -390,5 +405,4 @@ void InternalParser::FinalizeParserResult() {
     missing_item->set_frequency(internal_node.mapped());
   }
 }
-
 }  // namespace mathtrader::internal_parser
