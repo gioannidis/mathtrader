@@ -34,10 +34,6 @@ message Node {
   // The identifying id of the Node.
   optional string id = 1;
 
-  // Flow units the node produces. Node represents a source if positive, or a
-  // sink if negative, or an item if zero.
-  optional int64 production = 2 [deprecated=true];
-
   // Specifies the item type the Node represents, if applicable.
   optional ItemType item_type = 3 [deprecated=true];
 
@@ -50,6 +46,8 @@ message Node {
 
   // The username associated with the item id, if applicable.
   optional string username = 6;
+
+  reserved 2;
 }
 
 // Message encapsulating a directed Arc within a FlowNetwork, with a direction
@@ -57,7 +55,7 @@ message Node {
 message Arc {
   optional string head = 1;                   // inbound node, e.g., "y"
   optional string tail = 2;                   // outbound node, e.g., "x"
-  optional int64 capacity = 3 [default = 1];  // max supported flow capacity
+  optional int64 capacity = 3 [default = 1];  // max supported capacity
   optional int64 cost = 4;                    // associated cost if used
 }
 
@@ -68,10 +66,4 @@ message FlowNetwork {
 
   // All Arcs of the network, including arcs connecting source and/or sinks.
   repeated Arc arcs = 2;
-
-  // The single source of the network.
-  optional Node source = 3 [deprecated=true];
-
-  // The single sink of the network.
-  optional Node sink = 4 [deprecated=true];
 }
