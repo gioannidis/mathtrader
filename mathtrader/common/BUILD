@@ -35,7 +35,7 @@ cc_proto_library(
     deps = [":item_proto"],
 )
 
-# Build rules for offered items.
+# Build rules for offered item extensions.
 proto_library(
     name = "offered_item_proto",
     srcs = ["offered_item.proto"],
@@ -45,18 +45,6 @@ proto_library(
 cc_proto_library(
     name = "offered_item_cc_proto",
     deps = [":offered_item_proto"],
-)
-
-# Build rules for wanted items.
-proto_library(
-    name = "wanted_item_proto",
-    srcs = ["wanted_item.proto"],
-    deps = [":item_proto"],
-)
-
-cc_proto_library(
-    name = "wanted_item_cc_proto",
-    deps = [":wanted_item_proto"],
 )
 
 # Build rules for wantlists.

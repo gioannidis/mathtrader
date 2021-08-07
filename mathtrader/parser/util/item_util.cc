@@ -25,7 +25,6 @@
 #include "ortools/base/logging.h"
 
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/offered_item.pb.h"
 
 namespace mathtrader::parser::util {
 // Processes the item if it is a dummy. Makes the id unique by appending the
@@ -54,6 +53,6 @@ absl::Status ProcessIfDummy(std::string_view username, Item* item) {
 
 absl::Status ProcessIfDummy(Item* item) {
   CHECK_NOTNULL(item);
-  return ProcessIfDummy(item->GetExtension(OfferedItem::username), item);
+  return ProcessIfDummy(item->username(), item);
 }
 }  // namespace mathtrader::parser::util

@@ -51,9 +51,9 @@ void ExpectItem(absl::string_view text, absl::string_view id,
       !username.empty() || !official_name.empty() || copy_id || num_copies;
 
   if (!username.empty()) {
-    EXPECT_EQ(item->GetExtension(OfferedItem::username), username);
+    EXPECT_EQ(item->username(), username);
   } else if (has_official_data) {
-    EXPECT_FALSE(item->HasExtension(OfferedItem::username));
+    EXPECT_FALSE(item->has_username());
   }
   if (!official_name.empty()) {
     EXPECT_EQ(item->GetExtension(OfferedItem::official_name), official_name);

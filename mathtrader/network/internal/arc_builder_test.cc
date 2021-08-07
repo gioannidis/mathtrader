@@ -32,7 +32,6 @@
 
 #include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
@@ -41,7 +40,6 @@ using ::mathtrader::Arc;
 using ::mathtrader::FlowNetwork;
 using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
-using ::mathtrader::WantedItem;
 using ::mathtrader::Wantlist;
 using ::mathtrader::network::internal::ArcBuilder;
 using ::testing::AllOf;
@@ -81,7 +79,7 @@ ParserResult BuildParserResult(const WantlistVector& wantlists) {
     for (unsigned i = 1; i < wantlist_vector.size(); ++i) {
       Item* const wanted_item = wantlist->add_wanted_item();
       wanted_item->set_id(wantlist_vector[i]);
-      wanted_item->SetExtension(WantedItem::priority, i);
+      wanted_item->set_priority(i);
     }
   }
   return parser_result;

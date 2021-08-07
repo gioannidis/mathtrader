@@ -26,14 +26,12 @@
 
 #include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
 using ::mathtrader::FlowNetwork;
 using ::mathtrader::Item;
 using ::mathtrader::Node;
-using ::mathtrader::OfferedItem;
 using ::mathtrader::ParserResult;
 using ::mathtrader::network::internal::NodeBuilder;
 using ::testing::AllOf;
@@ -68,7 +66,7 @@ TEST(NodeBuilderTest, Base) {
   for (const auto& pair : items_users) {
     Item* const item = input.add_wantlists()->mutable_offered_item();
     item->set_id(pair.first);
-    item->SetExtension(OfferedItem::username, pair.second);
+    item->set_username(pair.second);
   }
 
   FlowNetwork flow_network;

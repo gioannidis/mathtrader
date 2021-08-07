@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Proto definition for an offered item.
+// Proto definition for offered item extensions.
 
 syntax = "proto2";
 
@@ -26,16 +26,13 @@ import "mathtrader/common/item.proto";
 // Extends Item with fields relevant to offered items.
 message OfferedItem {
   extend Item {
-    // The username of the item's owner.
-    optional string username = 100;
-
     // The official name of the item, e.g., "Pandemic".
-    optional string official_name = 101;
+    optional string official_name = 100;
 
     // The copy id for this particular item.
-    optional int32 copy_id = 102 [default = 1];
+    optional int32 copy_id = 101 [default = 1];
 
     // Number of total item copies that the user has submitted.
-    optional int32 num_copies = 103 [default = 1];
+    optional int32 num_copies = 102 [default = 1];
   }
 }

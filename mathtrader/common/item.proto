@@ -23,6 +23,7 @@ package mathtrader;
 
 // Message encapsulating an exchangeable item. Usually a board game, but can
 // also be, e.g., a dummy item.
+// Next id: 6
 message Item {
   // The id assigned to the item by the OLWLG. If dummy, it is a modified id
   // to disambiguate it from potentially other similarly-named dummy items.
@@ -36,6 +37,13 @@ message Item {
   // "%MKBG". Provides the original, unmodified id of dummy items. Expected not
   // to be set for non-dummy items.
   optional string unmodified_id = 3;
+
+  // Expresses user preference in a given wantlist: lower priority indicates
+  // a more preferred item.
+  optional int32 priority = 4;
+
+  // The username of the item's owner. Set for offered items.
+  optional string username = 5;
 
   extensions 100 to 199;
 }

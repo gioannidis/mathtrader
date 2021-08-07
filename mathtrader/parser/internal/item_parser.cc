@@ -33,9 +33,7 @@
 #include "mathtrader/util/str_toupper.h"
 
 namespace mathtrader::internal_parser {
-
 namespace {
-
 // Internal regex that matches a text line defining an official item.
 constexpr char kOfficialItemRegexStr[]
     // Prefix matching at the beginning of the text.
@@ -74,7 +72,6 @@ constexpr char kOfficialItemRegexStr[]
       // Captures optional copy ids. Expected format:
       //    [copy 1 of 10]
       R"regex((?:\[copy\s+(\d+)\s+of\s+(\d+)\])?)regex";
-
 }  // namespace
 
 // Constructs the parser and dies if the regular expression was not created
@@ -128,7 +125,7 @@ absl::StatusOr<Item> ItemParser::ParseItem(absl::string_view text) const {
   // Sets any available official data.
   if (!username.empty()) {
     // Makes the username case-insensitive.
-    item.SetExtension(OfferedItem::username, util::StrToUpper(username));
+    item.set_username(util::StrToUpper(username));
   }
   if (!official_name.empty()) {
     item.SetExtension(OfferedItem::official_name, official_name);
@@ -145,5 +142,4 @@ absl::StatusOr<Item> ItemParser::ParseItem(absl::string_view text) const {
   }
   return item;
 }
-
 }  // namespace mathtrader::internal_parser

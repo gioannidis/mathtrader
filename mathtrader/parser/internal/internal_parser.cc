@@ -32,8 +32,6 @@
 #include "ortools/base/map_util.h"
 #include "re2/re2.h"
 
-#include "mathtrader/common/offered_item.pb.h"
-#include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 #include "mathtrader/parser/util/item_util.h"
@@ -150,8 +148,7 @@ absl::Status InternalParser::ParseItem(absl::string_view line) {
   }
 
   // Registers the username.
-  if (absl::string_view username = item->GetExtension(OfferedItem::username);
-      !username.empty()) {
+  if (absl::string_view username = item->username(); !username.empty()) {
     gtl::InsertIfNotPresent(&users_, static_cast<std::string>(username));
   }
 
@@ -171,7 +168,7 @@ std::string GetProperItemId(const Item& item, const std::string& user) {
   if (parser::util::IsDummyItem(id)) {
     // Retrieves the username and the line id where the username was first
     // defined. At this point, it is guaranteed that these operations succeed.
-    const std::string& username = item.GetExtension(OfferedItem::username);
+    const std::string& username = item.username();
     CHECK(!username.empty());
 
     // Appends the line number as a unique id.
@@ -241,8 +238,7 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
     auto* const duplicate_item = parser_result->add_duplicate_wanted_items();
     duplicate_item->set_offered_item_id(
         GetUnmodifiedId(wantlist->offered_item()));
-    duplicate_item->set_username(
-        wantlist->offered_item().GetExtension(OfferedItem::username));
+    duplicate_item->set_username(wantlist->offered_item().username());
 
     // Retrieves the frequency from the `frequencies` map and sets it.
     const int32_t frequency = gtl::FindOrDie(frequencies, internal_node.key());
@@ -313,9 +309,7 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
   // Registers the username, if it has been given. This is possible if no
   // official names where previously given and this is the first wantlist for
   // this username.
-  if (absl::string_view username =
-          offered_item.GetExtension(OfferedItem::username);
-      !username.empty()) {
+  if (absl::string_view username = offered_item.username(); !username.empty()) {
     gtl::InsertIfNotPresent(&users_, static_cast<std::string>(username));
   }
 
@@ -323,8 +317,8 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
   const absl::string_view raw_offered_id = offered_item.id();
 
   // The "proper" id of the offered item; username is appended if dummy.
-  const std::string offered_id = GetProperItemId(
-      offered_item, offered_item.GetExtension(OfferedItem::username));
+  const std::string offered_id =
+      GetProperItemId(offered_item, offered_item.username());
 
   // Registers the wantlist and verifies that no other wantlist has been
   // declared.

@@ -30,9 +30,7 @@
 #include "absl/strings/str_split.h"
 #include "glog/logging.h"
 
-#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/util/item_util.h"
 #include "mathtrader/util/str_toupper.h"
@@ -188,7 +186,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     // Sets the wantlist username, if specified. Should be done before
     // processing a potentially dummy item.
     if (!username.empty()) {
-      offered_item->SetExtension(OfferedItem::username, username);
+      offered_item->set_username(username);
     } else {
       // TODO(gioannidis) return if usernames are required.
     }
@@ -237,13 +235,13 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
       // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
       // moved in this namespace.
       if (const absl::Status status = parser::util::ProcessIfDummy(
-              offered_item->GetExtension(OfferedItem::username), wanted_item);
+              offered_item->username(), wanted_item);
           !status.ok()) {
         return status;
       }
 
       const int32_t priority = ComputePriority(rank);
-      wanted_item->SetExtension(WantedItem::priority, priority);
+      wanted_item->set_priority(priority);
       rank += kSmallStep;
     }
   }

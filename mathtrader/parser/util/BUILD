@@ -29,7 +29,6 @@ cc_library(
     hdrs = ["item_util.h"],
     deps = [
         "//mathtrader/common:item_cc_proto",
-        "//mathtrader/common:offered_item_cc_proto",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
@@ -44,7 +43,6 @@ cc_test(
     deps = [
         ":item_util",
         "//mathtrader/common:item_cc_proto",
-        "//mathtrader/common:offered_item_cc_proto",
         "@com_google_absl//absl/status",
         "@com_google_googletest//:gtest_main",
     ],

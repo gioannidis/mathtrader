@@ -23,16 +23,13 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
-
 using ::mathtrader::Item;
 using ::mathtrader::MathParser;
-using ::mathtrader::OfferedItem;
 using ::mathtrader::Wantlist;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -44,14 +41,6 @@ using ::testing::SizeIs;
 using ::testing::StrCaseEq;
 
 using MissingItem = mathtrader::ParserResult::MissingItem;
-
-// Matches the username extension of the `arg` Item, ignoring case.
-MATCHER_P(UsernameMatchesRegex, username_regex, "") {
-  return ExplainMatchResult(
-      MatchesRegex(username_regex),
-      arg.GetExtension(mathtrader::OfferedItem::username),
-      result_listener);
-}
 
 // Base test case with official item names and wantlists. Each wantlist defines
 // three (3) non-dummy items.
@@ -85,7 +74,8 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
   EXPECT_THAT(result->wantlists(), Each(AllOf(
       Property("offered item", &Wantlist::offered_item,
                AllOf(Property("dummy", &Item::is_dummy, IsFalse()),
-                     UsernameMatchesRegex(R"([Aa][Bb][Cc][Dd][0-9])"))),
+                     Property("username", &Item::username,
+                              MatchesRegex(R"([Aa][Bb][Cc][Dd][0-9])")))),
       Property("wanted items", &Wantlist::wanted_item,
                AllOf(SizeIs(3),
                      Each(Property("dummy", &Item::is_dummy, IsFalse())))))));
@@ -132,5 +122,4 @@ TEST(MathParserTest, TestMissingItems) {
   // first, so no errors are generated, even if it appears 2+ times in a list.
   EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
 }
-
 }  // namespace

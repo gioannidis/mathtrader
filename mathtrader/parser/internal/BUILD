@@ -56,8 +56,6 @@ cc_library(
     hdrs = ["wantlist_parser.h"],
     deps = [
         "//mathtrader/common:item_cc_proto",
-        "//mathtrader/common:offered_item_cc_proto",
-        "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser/util:item_util",
         "//mathtrader/util:strings",
@@ -76,8 +74,6 @@ cc_test(
     deps = [
         ":wantlist_parser",
         "//mathtrader/common:item_cc_proto",
-        "//mathtrader/common:offered_item_cc_proto",
-        "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
@@ -98,8 +94,6 @@ cc_library(
         ":item_parser",
         ":wantlist_parser",
         "//mathtrader/common:item_cc_proto",
-        "//mathtrader/common:offered_item_cc_proto",
-        "//mathtrader/common:wanted_item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser:parser_result_cc_proto",
         "//mathtrader/parser/util:item_util",

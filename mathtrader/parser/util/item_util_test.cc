@@ -24,11 +24,9 @@
 #include "gtest/gtest.h"
 
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/offered_item.pb.h"
 
 namespace {
 using ::mathtrader::Item;
-using ::mathtrader::OfferedItem;
 using ::mathtrader::parser::util::IsDummyItem;
 using ::mathtrader::parser::util::ProcessIfDummy;
 using ::testing::AllOf;
@@ -66,7 +64,7 @@ TEST(ProcessIfDummyTest, TestNonDummy) {
   // Builds the item.
   Item item;
   item.set_id(kItemId);
-  item.SetExtension(OfferedItem::username, std::string(kUsername));
+  item.set_username(std::string(kUsername));
 
   // Does not change the original item, since it's not a dummy.
   ASSERT_TRUE(ProcessIfDummy(&item).ok());
@@ -81,7 +79,7 @@ TEST(ProcessIfDummyTest, TestDummy) {
   // Builds the item.
   Item item;
   item.set_id(kItemId);
-  item.SetExtension(OfferedItem::username, std::string(kUsername));
+  item.set_username(std::string(kUsername));
 
   // Mutates the item id, since it's a dummy.
   ASSERT_TRUE(ProcessIfDummy(&item).ok());

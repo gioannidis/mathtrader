@@ -28,16 +28,12 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 
 namespace {
 
 using ::mathtrader::Item;
-using ::mathtrader::OfferedItem;
-using ::mathtrader::WantedItem;
 using ::mathtrader::Wantlist;
 using ::mathtrader::internal_parser::WantlistParser;
 using ::testing::AllOf;
@@ -55,23 +51,13 @@ using ::testing::StrEq;
 
 // Matches the username extension of the `arg` Item, ignoring case.
 MATCHER_P(UsernameStrCaseEq, username, "") {
-  return ExplainMatchResult(StrCaseEq(username),
-                            arg.GetExtension(OfferedItem::username),
+  return ExplainMatchResult(StrCaseEq(username), arg.username(),
                             result_listener);
 }
 
 // Matches the priority extension of the `arg` Item.
 MATCHER_P(PriorityEq, priority, "") {
-  return ExplainMatchResult(
-      Eq(priority), arg.GetExtension(WantedItem::priority), result_listener);
-}
-
-// Matches an item with no offered/wanted item extensions.
-MATCHER(HasNoItemExtension, "") {
-  return (!arg.HasExtension(OfferedItem::username) &&
-          !arg.HasExtension(OfferedItem::copy_id) &&
-          !arg.HasExtension(OfferedItem::num_copies) &&
-          !arg.HasExtension(WantedItem::priority));
+  return ExplainMatchResult(Eq(priority), arg.priority(), result_listener);
 }
 
 // Tests an empty wantlist without username. Verifies that we ignore spaces.
@@ -91,12 +77,12 @@ TEST(WantlistParserTest, TestNoItems) {
     // For each wantlist checks:
     // * Offered item:
     //    * id
-    //    * No official data or priority.
+    //    * No priority.
     // * No wanted items.
     EXPECT_THAT(*wantlist,
                 AllOf(Property(&Wantlist::offered_item,
                                AllOf(Property(&Item::id, StrEq("0001-PANDE")),
-                                     HasNoItemExtension())),
+                                     Property(&Item::has_priority, IsFalse()))),
                       Property(&Wantlist::wanted_item, IsEmpty())));
   }
 }
@@ -138,10 +124,10 @@ TEST(WantlistParserTest, TestWantlist) {
   ASSERT_TRUE(wantlist.ok());
 
   // Checks offered item.
-  EXPECT_THAT(
-      wantlist->offered_item(),
-      AllOf(Property(&Item::id, StrEq(items[0])),
-            Property(&Item::is_dummy, IsFalse()), HasNoItemExtension()));
+  EXPECT_THAT(wantlist->offered_item(),
+              AllOf(Property(&Item::id, StrEq(items[0])),
+                    Property(&Item::is_dummy, IsFalse()),
+                    Property(&Item::has_priority, IsFalse())));
 
   // Verifies wantlist size and that all items are non-dummies.
   EXPECT_THAT(wantlist->wanted_item(),

@@ -25,7 +25,6 @@
 
 #include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/network/internal/node_util.h"
 #include "mathtrader/parser/parser_result.pb.h"
@@ -88,7 +87,7 @@ void NodeBuilder::BuildNodes(const ParserResult& parser_result,
 
     // Sets the username.
     {
-      const std::string& username = item.GetExtension(OfferedItem::username);
+      const std::string& username = item.username();
       offered_node->set_username(username);
       wanted_node->set_username(username);
     }

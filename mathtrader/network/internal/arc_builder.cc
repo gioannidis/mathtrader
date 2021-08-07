@@ -30,7 +30,6 @@
 
 #include "mathtrader/common/flow_network.pb.h"
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/wanted_item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/network/internal/node_util.h"
 #include "mathtrader/parser/parser_result.pb.h"
@@ -85,9 +84,8 @@ void AddArc(const Item& offered, const Item& wanted, int64_t cost,
 // Dies if the `wanted` item has no priority extension.
 // The cost is set to zero if the offered item is dummy.
 void AddArc(const Item& offered, const Item& wanted, ArcMap* arcs) {
-  CHECK(wanted.HasExtension(WantedItem::priority));
-  const int64_t cost =
-      (!offered.is_dummy() ? wanted.GetExtension(WantedItem::priority) : 0);
+  CHECK(wanted.priority());
+  const int64_t cost = (!offered.is_dummy() ? wanted.priority() : 0);
   AddArc(offered, wanted, cost, arcs);
 }
 
