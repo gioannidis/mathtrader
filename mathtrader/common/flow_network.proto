@@ -36,10 +36,10 @@ message Node {
 
   // Flow units the node produces. Node represents a source if positive, or a
   // sink if negative, or an item if zero.
-  optional int64 production = 2;
+  optional int64 production = 2 [deprecated=true];
 
   // Specifies the item type the Node represents, if applicable.
-  optional ItemType item_type = 3;
+  optional ItemType item_type = 3 [deprecated=true];
 
   // Specifies the "symmetric" item Node id. If the Node represents an offered
   // item, specifies the respective wanted item and vice-versa.
@@ -70,8 +70,8 @@ message FlowNetwork {
   repeated Arc arcs = 2;
 
   // The single source of the network.
-  optional Node source = 3;
+  optional Node source = 3 [deprecated=true];
 
   // The single sink of the network.
-  optional Node sink = 4;
+  optional Node sink = 4 [deprecated=true];
 }
