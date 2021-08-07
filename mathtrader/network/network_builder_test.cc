@@ -30,7 +30,7 @@
 #include "mathtrader/common/wantlist.pb.h"
 
 namespace {
-using ::mathtrader::FlowNetwork;
+using ::mathtrader::Assignment;
 using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
 using ::mathtrader::Wantlist;
@@ -73,7 +73,7 @@ TEST(NetworkBuilderTest, UnwantedItemsAndEmptyWantlists) {
   // empty wantlists.
   constexpr static int32_t kValidOfferedItems = 4;
 
-  FlowNetwork const assignment =
+  Assignment const assignment =
       NetworkBuilder::BuildNetwork(BuildParserResult(wantlists));
 
   EXPECT_EQ(assignment.nodes_size(), 2 * kValidOfferedItems);

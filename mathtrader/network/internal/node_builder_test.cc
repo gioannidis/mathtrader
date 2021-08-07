@@ -29,7 +29,7 @@
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
-using ::mathtrader::FlowNetwork;
+using ::mathtrader::Assignment;
 using ::mathtrader::Item;
 using ::mathtrader::Node;
 using ::mathtrader::ParserResult;
@@ -68,7 +68,7 @@ TEST(NodeBuilderTest, Base) {
     item->set_username(pair.second);
   }
 
-  FlowNetwork assignment;
+  Assignment assignment;
   NodeBuilder::BuildNodes(input, &assignment);
 
   // Two nodes were generated for each item.
@@ -112,7 +112,7 @@ TEST(NodeBuilderDeathTest, DuplicateItems) {
   for (int i = 0; i < 2; ++i) {
     input.add_wantlists()->mutable_offered_item()->set_id(item_id);
   }
-  FlowNetwork assignment;
+  Assignment assignment;
   EXPECT_DEATH(NodeBuilder::BuildNodes(input, &assignment), item_id);
 }
 

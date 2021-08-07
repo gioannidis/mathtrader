@@ -15,13 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Proto definition for a Flow Network and its components.
+// Proto definition for an Assignment and its components.
 
 syntax = "proto2";
 
 package mathtrader;
 
-// Message encapsulating a Node on the Flow Graph that models the math trade.
+// Message encapsulating a Node of the Assignment models the math trade.
 // Generally, represents an item.
 message Node {
   // Item types that the Node may represent.
@@ -50,7 +50,7 @@ message Node {
   reserved 2;
 }
 
-// Message encapsulating a directed Arc within a FlowNetwork, with a direction
+// Message encapsulating a directed Arc within a Assignment, with a direction
 // "x -> y".
 message Arc {
   optional string head = 1;                   // inbound node, e.g., "y"
@@ -59,8 +59,8 @@ message Arc {
   optional int64 cost = 4;                    // associated cost if used
 }
 
-// Message encapsulating a Flow Network, representing the math trade.
-message FlowNetwork {
+// Message encapsulating an Assignment, representing the math trade.
+message Assignment {
   // All non-production Nodes of the network. Does not contain sources or sinks.
   repeated Node nodes = 1;
 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-# Build rules for internal modules that build a FlowNetwork.
+# Build rules for internal modules that build an Assignment.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 

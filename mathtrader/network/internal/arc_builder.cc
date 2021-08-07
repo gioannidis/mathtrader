@@ -132,10 +132,10 @@ ItemSet GetCandidateItems(const ParserResult& input) {
   return candidate_items;
 }
 
-// Removes all nodes from the flow network that are definitely not trading,
+// Removes all nodes from the Assignment that are definitely not trading,
 // i.e., not in the `candidate_items` set.
 void RemoveNonTradingNodes(const ItemSet& candidate_items,
-                           FlowNetwork* assignment) {
+                           Assignment* assignment) {
   auto* nodes = assignment->mutable_nodes();
   nodes->erase(
       std::remove_if(nodes->begin(), nodes->end(),
@@ -160,7 +160,7 @@ void RemoveNonTradingNodes(const ItemSet& candidate_items,
 // arc betwen the source/sink and each item, updating the source and sink
 // production fields.
 void ArcBuilder::BuildArcs(const ParserResult& parser_result,
-                           FlowNetwork* assignment) {
+                           Assignment* assignment) {
   // Tracks duplicate arcs.
   ArcMap arc_map;
 
@@ -191,7 +191,7 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
   // Finally, removes non-trading nodes.
   RemoveNonTradingNodes(candidate_items, assignment);
 
-  // Moves the arcs to the FlowNetwork.
+  // Moves the arcs to the Assignment.
   while (!arc_map.empty()) {
     auto internal_node = arc_map.extract(arc_map.begin());
     *assignment->add_arcs() = std::move(internal_node.mapped());

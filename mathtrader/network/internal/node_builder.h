@@ -32,14 +32,14 @@ namespace mathtrader::network::internal {
 //
 // Note that NodeBuilder aggressively prunes any wanted items that do not have
 // their own wantlist, i.e., that are never offered. No Nodes are generated for
-// these items. This reduces the size of the resulting FlowNetwork by removing
+// these items. This reduces the size of the resulting Assignment by removing
 // the items that will never be traded.
 //
 // Usage:
 //
 //     ParserResult parser_result;
 //     // ... populates parser_result
-//     FlowNetwork assignment;
+//     Assignment assignment;
 //     NodeBuilder::BuildNodes(parser_result, &assignment);
 class NodeBuilder {
  public:
@@ -52,7 +52,7 @@ class NodeBuilder {
   // Generates Nodes from the parser result, adding them to the `assignment`.
   // Adds two nodes for each item, a source and a sink.
   static void BuildNodes(const ParserResult& parser_result,
-                         FlowNetwork* assignment);
+                         Assignment* assignment);
 };
 }  // namespace mathtrader::network::internal
 #endif  // MATHTRADER_NETWORK_INTERNAL_NODE_BUILDER_H_

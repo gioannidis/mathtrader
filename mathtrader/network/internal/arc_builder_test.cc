@@ -37,7 +37,7 @@
 
 namespace {
 using ::mathtrader::Arc;
-using ::mathtrader::FlowNetwork;
+using ::mathtrader::Assignment;
 using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
 using ::mathtrader::Wantlist;
@@ -93,7 +93,7 @@ struct ItemArcFrequency {
 };
 
 // Verifies the number of Arcs for a given item.
-void ExpectArcFrequencies(const FlowNetwork& assignment,
+void ExpectArcFrequencies(const Assignment& assignment,
                           const ItemArcFrequency& frequencies) {
   const std::string_view id = frequencies.item_id;
   const int64_t head_count = frequencies.head_count;
@@ -105,7 +105,7 @@ void ExpectArcFrequencies(const FlowNetwork& assignment,
 }
 
 // As above, but for multiple items.
-void ExpectArcFrequencies(const FlowNetwork& assignment,
+void ExpectArcFrequencies(const Assignment& assignment,
                           const std::vector<ItemArcFrequency>& frequencies) {
   for (const ItemArcFrequency& item_frequencies : frequencies) {
     ExpectArcFrequencies(assignment, item_frequencies);
@@ -123,7 +123,7 @@ TEST(ArcBuilderTest, AllValidItems) {
                                     {"D", "A"},
                                     {"E", "C", "A", "D"}};
 
-  FlowNetwork assignment;
+  Assignment assignment;
   ArcBuilder::BuildArcs(BuildParserResult(wantlists), &assignment);
 
   // Verifies the total number of arcs: one arc for each item, since all items

@@ -38,7 +38,7 @@ using NodeSet = absl::flat_hash_set<std::string>;
 // Generates Nodes from the parser result, adding them to the `assignment`.
 // Adds two nodes for each item, a source and a sink.
 void NodeBuilder::BuildNodes(const ParserResult& parser_result,
-                             FlowNetwork* assignment) {
+                             Assignment* assignment) {
   // Verifies that no duplicate offered items are encountered.
   NodeSet offered_items;
 

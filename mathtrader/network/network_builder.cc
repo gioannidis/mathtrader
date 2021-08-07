@@ -22,10 +22,10 @@
 #include "mathtrader/network/internal/node_builder.h"
 
 namespace mathtrader::network {
-// Processes the OLWLG-generated wantlists and builds the flow network.
-FlowNetwork NetworkBuilder::BuildNetwork(const ParserResult& parser_result) {
-  // The flow network to return.
-  FlowNetwork assignment;
+// Processes the OLWLG-generated wantlists and builds the Assignment.
+Assignment NetworkBuilder::BuildNetwork(const ParserResult& parser_result) {
+  // The Assignment to return.
+  Assignment assignment;
 
   // First, builds all the item nodes and the source/sink.
   internal::NodeBuilder::BuildNodes(parser_result, &assignment);

@@ -39,7 +39,6 @@ cc_test(
     name = "network_builder_test",
     size = "small",
     srcs = ["network_builder_test.cc"],
-    data = ["//mathtrader/parser/test_data:olwlg_test_data"],
     deps = [
         ":network_builder",
         "//mathtrader/common:assignment_cc_proto",

@@ -81,7 +81,7 @@ class ArcBuilder {
   // arc betwen the source/sink and each item, updating the source and sink
   // production fields.
   static void BuildArcs(const ParserResult& parser_result,
-                        FlowNetwork* assignment);
+                        Assignment* assignment);
 };
 }  // namespace mathtrader::network::internal
 #endif  // MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_

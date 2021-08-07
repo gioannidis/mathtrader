@@ -16,7 +16,7 @@
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
 // Entry point of the network builder, which transforms a `ParserResult`
-// message, representing wantlists, to a `FlowNetwork` graph.
+// message, representing wantlists, to a `Assignment` graph.
 
 #ifndef MATHTRADER_NETWORK_NETWORK_BUILDER_H_
 #define MATHTRADER_NETWORK_NETWORK_BUILDER_H_
@@ -34,8 +34,8 @@ class NetworkBuilder {
   NetworkBuilder(const NetworkBuilder&) = delete;
   NetworkBuilder& operator=(const NetworkBuilder&) = delete;
 
-  // Processes the OLWLG-generated wantlists and builds the flow network.
-  static FlowNetwork BuildNetwork(const ParserResult& parser_result);
+  // Processes the OLWLG-generated wantlists and builds the Assignment.
+  static Assignment BuildNetwork(const ParserResult& parser_result);
 };
 }  // namespace mathtrader::network
 #endif  // MATHTRADER_NETWORK_NETWORK_BUILDER_H_
