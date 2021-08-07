@@ -28,7 +28,7 @@
 #include "ortools/base/logging.h"
 #include "ortools/base/map_util.h"
 
-#include "mathtrader/common/flow_network.pb.h"
+#include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/network/internal/node_util.h"
@@ -135,8 +135,8 @@ ItemSet GetCandidateItems(const ParserResult& input) {
 // Removes all nodes from the flow network that are definitely not trading,
 // i.e., not in the `candidate_items` set.
 void RemoveNonTradingNodes(const ItemSet& candidate_items,
-                           FlowNetwork* flow_network) {
-  auto* nodes = flow_network->mutable_nodes();
+                           FlowNetwork* assignment) {
+  auto* nodes = assignment->mutable_nodes();
   nodes->erase(
       std::remove_if(nodes->begin(), nodes->end(),
                      // Lambda that erases the node if the item is not a
@@ -149,18 +149,18 @@ void RemoveNonTradingNodes(const ItemSet& candidate_items,
 }
 }  // namespace
 
-// Generates Arcs from the parser result, adding them to `flow_network`.
+// Generates Arcs from the parser result, adding them to `assignment`.
 // Prunes items as follows:
 // 1. Detects all items that have a valid wantlist, i.e., being offered.
 // 2. Detects all items that are valid trade candidates. These are all items
 //    that have a valid wantlist as an offered item and appear in at least one
 //    other wantlist.
 //
-// If both source and sink have been defined in `flow_network`, also adds an
+// If both source and sink have been defined in `assignment`, also adds an
 // arc betwen the source/sink and each item, updating the source and sink
 // production fields.
 void ArcBuilder::BuildArcs(const ParserResult& parser_result,
-                           FlowNetwork* flow_network) {
+                           FlowNetwork* assignment) {
   // Tracks duplicate arcs.
   ArcMap arc_map;
 
@@ -189,12 +189,12 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
   }
 
   // Finally, removes non-trading nodes.
-  RemoveNonTradingNodes(candidate_items, flow_network);
+  RemoveNonTradingNodes(candidate_items, assignment);
 
   // Moves the arcs to the FlowNetwork.
   while (!arc_map.empty()) {
     auto internal_node = arc_map.extract(arc_map.begin());
-    *flow_network->add_arcs() = std::move(internal_node.mapped());
+    *assignment->add_arcs() = std::move(internal_node.mapped());
   }
 }
 }  // namespace mathtrader::network::internal

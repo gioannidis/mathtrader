@@ -20,7 +20,7 @@
 #ifndef MATHTRADER_NETWORK_INTERNAL_NODE_BUILDER_H_
 #define MATHTRADER_NETWORK_INTERNAL_NODE_BUILDER_H_
 
-#include "mathtrader/common/flow_network.pb.h"
+#include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::network::internal {
@@ -39,8 +39,8 @@ namespace mathtrader::network::internal {
 //
 //     ParserResult parser_result;
 //     // ... populates parser_result
-//     FlowNetwork flow_network;
-//     NodeBuilder::BuildNodes(parser_result, &flow_network);
+//     FlowNetwork assignment;
+//     NodeBuilder::BuildNodes(parser_result, &assignment);
 class NodeBuilder {
  public:
   NodeBuilder() = default;
@@ -49,10 +49,10 @@ class NodeBuilder {
   NodeBuilder(const NodeBuilder&) = delete;
   NodeBuilder& operator=(const NodeBuilder&) = delete;
 
-  // Generates Nodes from the parser result, adding them to the `flow_network`.
+  // Generates Nodes from the parser result, adding them to the `assignment`.
   // Adds two nodes for each item, a source and a sink.
   static void BuildNodes(const ParserResult& parser_result,
-                         FlowNetwork* flow_network);
+                         FlowNetwork* assignment);
 };
 }  // namespace mathtrader::network::internal
 #endif  // MATHTRADER_NETWORK_INTERNAL_NODE_BUILDER_H_

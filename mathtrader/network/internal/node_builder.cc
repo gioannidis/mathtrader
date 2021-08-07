@@ -23,7 +23,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "ortools/base/map_util.h"
 
-#include "mathtrader/common/flow_network.pb.h"
+#include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/network/internal/node_util.h"
@@ -35,10 +35,10 @@ namespace {
 using NodeSet = absl::flat_hash_set<std::string>;
 }  // namespace
 
-// Generates Nodes from the parser result, adding them to the `flow_network`.
+// Generates Nodes from the parser result, adding them to the `assignment`.
 // Adds two nodes for each item, a source and a sink.
 void NodeBuilder::BuildNodes(const ParserResult& parser_result,
-                             FlowNetwork* flow_network) {
+                             FlowNetwork* assignment) {
   // Verifies that no duplicate offered items are encountered.
   NodeSet offered_items;
 
@@ -51,8 +51,8 @@ void NodeBuilder::BuildNodes(const ParserResult& parser_result,
     gtl::InsertOrDie(&offered_items, item_id);
 
     // Creates the offered/wanted nodes.
-    Node* const offered_node = flow_network->add_nodes();
-    Node* const wanted_node = flow_network->add_nodes();
+    Node* const offered_node = assignment->add_nodes();
+    Node* const wanted_node = assignment->add_nodes();
 
     // Creates unique ids.
     offered_node->set_id(GetOfferedNodeId(item_id));

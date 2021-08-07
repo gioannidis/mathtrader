@@ -59,13 +59,13 @@ cc_proto_library(
     deps = [":wantlist_proto"],
 )
 
-# Build rules for FlowNetwork.
+# Build rules for an Assignment graph.
 proto_library(
-    name = "flow_network_proto",
-    srcs = ["flow_network.proto"],
+    name = "assignment_proto",
+    srcs = ["assignment.proto"],
 )
 
 cc_proto_library(
-    name = "flow_network_cc_proto",
-    deps = [":flow_network_proto"],
+    name = "assignment_cc_proto",
+    deps = [":assignment_proto"],
 )

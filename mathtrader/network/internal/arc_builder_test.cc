@@ -30,7 +30,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "mathtrader/common/flow_network.pb.h"
+#include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
@@ -93,22 +93,22 @@ struct ItemArcFrequency {
 };
 
 // Verifies the number of Arcs for a given item.
-void ExpectArcFrequencies(const FlowNetwork& flow_network,
+void ExpectArcFrequencies(const FlowNetwork& assignment,
                           const ItemArcFrequency& frequencies) {
   const std::string_view id = frequencies.item_id;
   const int64_t head_count = frequencies.head_count;
   const int64_t tail_count = frequencies.tail_count;
-  EXPECT_THAT(flow_network.arcs(),
+  EXPECT_THAT(assignment.arcs(),
               Contains(Property(&Arc::head, StartsWith(id))).Times(head_count));
-  EXPECT_THAT(flow_network.arcs(),
+  EXPECT_THAT(assignment.arcs(),
               Contains(Property(&Arc::tail, StartsWith(id))).Times(tail_count));
 }
 
 // As above, but for multiple items.
-void ExpectArcFrequencies(const FlowNetwork& flow_network,
+void ExpectArcFrequencies(const FlowNetwork& assignment,
                           const std::vector<ItemArcFrequency>& frequencies) {
   for (const ItemArcFrequency& item_frequencies : frequencies) {
-    ExpectArcFrequencies(flow_network, item_frequencies);
+    ExpectArcFrequencies(assignment, item_frequencies);
   }
 }
 
@@ -123,12 +123,12 @@ TEST(ArcBuilderTest, AllValidItems) {
                                     {"D", "A"},
                                     {"E", "C", "A", "D"}};
 
-  FlowNetwork flow_network;
-  ArcBuilder::BuildArcs(BuildParserResult(wantlists), &flow_network);
+  FlowNetwork assignment;
+  ArcBuilder::BuildArcs(BuildParserResult(wantlists), &assignment);
 
   // Verifies the total number of arcs: one arc for each item, since all items
   // are valid candidates.
-  const auto& arcs = flow_network.arcs();
+  const auto& arcs = assignment.arcs();
   EXPECT_THAT(arcs, SizeIs(count2d(wantlists)));
 
   // Verifies the self-trading arcs.
@@ -142,12 +142,11 @@ TEST(ArcBuilderTest, AllValidItems) {
       arcs, Contains(Property(&Arc::cost, AllOf(Gt(4), Lt(10'000)))).Times(0));
 
   // Verifies the arc frequency for each item.
-  ExpectArcFrequencies(flow_network,
-                       {{"A", /*head_count=*/5, /*tail_count=*/4},
-                        {"B", /*head_count=*/3, /*tail_count=*/3},
-                        {"C", /*head_count=*/3, /*tail_count=*/3},
-                        {"D", /*head_count=*/3, /*tail_count=*/2},
-                        {"E", /*head_count=*/2, /*tail_count=*/4}});
+  ExpectArcFrequencies(assignment, {{"A", /*head_count=*/5, /*tail_count=*/4},
+                                    {"B", /*head_count=*/3, /*tail_count=*/3},
+                                    {"C", /*head_count=*/3, /*tail_count=*/3},
+                                    {"D", /*head_count=*/3, /*tail_count=*/2},
+                                    {"E", /*head_count=*/2, /*tail_count=*/4}});
 
   // All arcs have unit capacity.
   EXPECT_THAT(arcs, Each(Property(&Arc::capacity, Eq(1))));

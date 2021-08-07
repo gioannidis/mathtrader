@@ -24,7 +24,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "mathtrader/common/flow_network.pb.h"
+#include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
@@ -68,15 +68,15 @@ TEST(NodeBuilderTest, Base) {
     item->set_username(pair.second);
   }
 
-  FlowNetwork flow_network;
-  NodeBuilder::BuildNodes(input, &flow_network);
+  FlowNetwork assignment;
+  NodeBuilder::BuildNodes(input, &assignment);
 
   // Two nodes were generated for each item.
-  EXPECT_EQ(flow_network.nodes_size(), 2 * items_users.size());
+  EXPECT_EQ(assignment.nodes_size(), 2 * items_users.size());
 
   // Verifies that each item id is contained twice in the Nodes.
   EXPECT_THAT(
-      flow_network.nodes(),
+      assignment.nodes(),
       AllOf(Contains(Property(&Node::id, StartsWith("abcd"))).Times(2),
             Contains(Property(&Node::id, StartsWith("0001-"))).Times(2),
             Contains(Property(&Node::id, StartsWith("0042-MKBG"))).Times(2),
@@ -84,17 +84,17 @@ TEST(NodeBuilderTest, Base) {
 
   // Verifies that half the nodes are offered and half are wanted items.
   EXPECT_THAT(
-      flow_network.nodes(),
+      assignment.nodes(),
       AllOf(Contains(Property(&Node::item_type, Eq(Node::kOffered))).Times(4),
             Contains(Property(&Node::item_type, Eq(Node::kWanted))).Times(4)));
 
   // Verifies that the item id is a prefix of both the node id and the symmetric
   // node id.
-  EXPECT_THAT(flow_network.nodes(), Each(NodeIdsStartWithItemId()));
+  EXPECT_THAT(assignment.nodes(), Each(NodeIdsStartWithItemId()));
 
   // Verifies that there are two nodes with each username.
   EXPECT_THAT(
-      flow_network.nodes(),
+      assignment.nodes(),
       AllOf(
           Contains(Property(&Node::username, StrCaseEq("User1"))).Times(2),
           Contains(Property(&Node::username, StrCaseEq("fooBarUser"))).Times(2),
@@ -112,8 +112,8 @@ TEST(NodeBuilderDeathTest, DuplicateItems) {
   for (int i = 0; i < 2; ++i) {
     input.add_wantlists()->mutable_offered_item()->set_id(item_id);
   }
-  FlowNetwork flow_network;
-  EXPECT_DEATH(NodeBuilder::BuildNodes(input, &flow_network), item_id);
+  FlowNetwork assignment;
+  EXPECT_DEATH(NodeBuilder::BuildNodes(input, &assignment), item_id);
 }
 
 }  // namespace
