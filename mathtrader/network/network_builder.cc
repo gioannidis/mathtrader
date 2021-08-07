@@ -1,0 +1,39 @@
+// This file is part of mathtrader.
+//
+// Copyright (C) 2021 George Ioannidis
+//
+// mathtrader is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// mathtrader is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
+
+#include "mathtrader/network/network_builder.h"
+
+#include "mathtrader/common/assignment.pb.h"
+#include "mathtrader/network/internal/arc_builder.h"
+#include "mathtrader/network/internal/node_builder.h"
+
+namespace mathtrader::network {
+// Processes the OLWLG-generated wantlists and builds the flow network.
+FlowNetwork NetworkBuilder::BuildNetwork(const ParserResult& parser_result) {
+  // The flow network to return.
+  FlowNetwork assignment;
+
+  // First, builds all the item nodes and the source/sink.
+  internal::NodeBuilder::BuildNodes(parser_result, &assignment);
+
+  // Then, builds all the arcs representing the offered-wanted item
+  // relationships and connects the items to the source/sink.
+  internal::ArcBuilder::BuildArcs(parser_result, &assignment);
+
+  return assignment;
+}
+}  // namespace mathtrader::network

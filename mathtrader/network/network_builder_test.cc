@@ -25,7 +25,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "mathtrader/common/flow_network.pb.h"
+#include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 
@@ -73,9 +73,9 @@ TEST(NetworkBuilderTest, UnwantedItemsAndEmptyWantlists) {
   // empty wantlists.
   constexpr static int32_t kValidOfferedItems = 4;
 
-  FlowNetwork const flow_network =
+  FlowNetwork const assignment =
       NetworkBuilder::BuildNetwork(BuildParserResult(wantlists));
 
-  EXPECT_EQ(flow_network.nodes_size(), 2 * kValidOfferedItems);
+  EXPECT_EQ(assignment.nodes_size(), 2 * kValidOfferedItems);
 }
 }  // namespace
