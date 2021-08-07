@@ -37,7 +37,6 @@ using ::mathtrader::network::internal::NodeBuilder;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::Eq;
-using ::testing::IsFalse;
 using ::testing::Property;
 using ::testing::StartsWith;
 using ::testing::StrCaseEq;
@@ -83,10 +82,6 @@ TEST(NodeBuilderTest, Base) {
             Contains(Property(&Node::id, StartsWith("0042-MKBG"))).Times(2),
             Contains(Property(&Node::id, StartsWith("Qwerty0123"))).Times(2)));
 
-  // Verifies that no node is a source or sink.
-  EXPECT_THAT(flow_network.nodes(),
-              Each(Property(&Node::has_production, IsFalse())));
-
   // Verifies that half the nodes are offered and half are wanted items.
   EXPECT_THAT(
       flow_network.nodes(),
@@ -106,14 +101,6 @@ TEST(NodeBuilderTest, Base) {
           Contains(Property(&Node::username, StrCaseEq("owner42"))).Times(2),
           Contains(Property(&Node::username, StrCaseEq("qwertzUser")))
               .Times(2)));
-
-  // Verifies the source properties.
-  ASSERT_TRUE(flow_network.has_source());
-  EXPECT_EQ(flow_network.source().production(), 4);
-
-  // Verifies the sink properties.
-  ASSERT_TRUE(flow_network.has_source());
-  EXPECT_EQ(flow_network.sink().production(), -4);
 }
 
 // Test suite: Death Tests

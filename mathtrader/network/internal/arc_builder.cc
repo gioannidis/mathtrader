@@ -188,26 +188,6 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
     }
   }
 
-  // Applies source/sink operations, if both have been defined.
-  if (flow_network->has_source() && flow_network->has_sink()) {
-    CHECK_NE(flow_network->source().id(), "") << "Empty source id not allowed";
-    CHECK_NE(flow_network->sink().id(), "") << "Empty sink id not allowed";
-
-    // Updates the source/sink productions equal to the actual number o
-    // candidate items, as some items may have been pruned.
-    flow_network->mutable_source()->set_production(candidate_items.size());
-    flow_network->mutable_sink()->set_production(-1 * candidate_items.size());
-
-    // Adds an arc between the source/sink and each candidate item with unit
-    // capacity and zero cost.
-    for (const std::string_view item_id : candidate_items) {
-      AddArc(/*tail=*/flow_network->source().id(), /*head=*/item_id,
-             /*capacity=*/1, /*cost=*/0, &arc_map);
-      AddArc(/*tail=*/item_id, /*head=*/flow_network->sink().id(),
-             /*capacity=*/1, /*cost=*/0, &arc_map);
-    }
-  }
-
   // Finally, removes non-trading nodes.
   RemoveNonTradingNodes(candidate_items, flow_network);
 
