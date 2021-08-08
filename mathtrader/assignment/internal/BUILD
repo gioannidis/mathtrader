@@ -20,7 +20,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
 package(
-    default_visibility = ["//mathtrader/network:__pkg__"],
+    default_visibility = ["//mathtrader/assignment:__pkg__"],
 )
 
 # Build rules for the ArcBuilder.

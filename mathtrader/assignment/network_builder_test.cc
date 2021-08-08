@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-#include "mathtrader/network/network_builder.h"
+#include "mathtrader/assignment/network_builder.h"
 
 #include <string>
 #include <string_view>

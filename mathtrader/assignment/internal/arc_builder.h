@@ -18,8 +18,8 @@
 
 // Builds Assignment Arcs that correspond to valid offered-wanted matchings.
 
-#ifndef MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_
-#define MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_
+#ifndef MATHTRADER_ASSIGNMENT_INTERNAL_ARC_BUILDER_H_
+#define MATHTRADER_ASSIGNMENT_INTERNAL_ARC_BUILDER_H_
 
 #include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
@@ -82,4 +82,4 @@ class ArcBuilder {
                         Assignment* assignment);
 };
 }  // namespace mathtrader::network::internal
-#endif  // MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_
+#endif  // MATHTRADER_ASSIGNMENT_INTERNAL_ARC_BUILDER_H_

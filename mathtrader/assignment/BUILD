@@ -28,8 +28,8 @@ cc_library(
     srcs = ["network_builder.cc"],
     hdrs = ["network_builder.h"],
     deps = [
+        "//mathtrader/assignment/internal:arc_builder",
         "//mathtrader/common:assignment_cc_proto",
-        "//mathtrader/network/internal:arc_builder",
         "//mathtrader/parser:parser_result_cc_proto",
     ],
 )

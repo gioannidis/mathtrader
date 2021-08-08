@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-#include "mathtrader/network/internal/arc_builder.h"
+#include "mathtrader/assignment/internal/arc_builder.h"
 
 #include <cstdint>
 #include <string>
