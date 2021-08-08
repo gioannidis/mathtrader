@@ -147,6 +147,10 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
       continue;
     }
 
+    // Also populates the offered items field.
+    gtl::InsertOrDie(assignment->mutable_items(), offered_item.id(),
+                     offered_item);
+
     // Adds an Arc for wanted items that are also being offered.
     for (const Item& wanted_item : wantlist.wanted_item()) {
       if (candidate_items.contains(wanted_item.id())) {

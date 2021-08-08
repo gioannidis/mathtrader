@@ -35,7 +35,9 @@ using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
 using ::mathtrader::Wantlist;
 using ::mathtrader::network::NetworkBuilder;
+using ::testing::Key;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 // Defines the test wantlists as a vector of wantlists. In each wantlist, the
 // first element is the offered item, the rest are the wanted items.
@@ -80,5 +82,7 @@ TEST(NetworkBuilderTest, UnwantedItemsAndEmptyWantlists) {
       NetworkBuilder::BuildNetwork(BuildParserResult(wantlists));
 
   EXPECT_THAT(assignment.arcs(), SizeIs(kValidWantedItems));
+  EXPECT_THAT(assignment.items(),
+              UnorderedElementsAre(Key("A"), Key("B"), Key("C"), Key("E")));
 }
 }  // namespace

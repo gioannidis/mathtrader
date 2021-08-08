@@ -21,34 +21,7 @@ syntax = "proto2";
 
 package mathtrader;
 
-// Message encapsulating a Node of the Assignment models the math trade.
-// Generally, represents an item.
-message Node {
-  // Item types that the Node may represent.
-  enum ItemType {
-    kNull = 0;
-    kOffered = 1;  // An offered item.
-    kWanted = 2;   // A wanted item.
-  }
-
-  // The identifying id of the Node.
-  optional string id = 1;
-
-  // Specifies the item type the Node represents, if applicable.
-  optional ItemType item_type = 3 [deprecated = true];
-
-  // Specifies the "symmetric" item Node id. If the Node represents an offered
-  // item, specifies the respective wanted item and vice-versa.
-  optional string symmetric_node = 4 [deprecated = true];
-
-  // The original item id, if applicable.
-  optional string item_id = 5;
-
-  // The username associated with the item id, if applicable.
-  optional string username = 6;
-
-  reserved 2;
-}
+import "mathtrader/common/item.proto";
 
 // Message encapsulating a directed Arc within a Assignment, representing a
 // valid matching "offered -> wanted".
@@ -66,8 +39,9 @@ message Arc {
 // the `arcs` field. Each item can always be assigned to itself, representing
 // the item not being traded.
 message Assignment {
-  // Represent valid matchings between offered and wanted items.
-  repeated Arc arcs = 3;
+  // Encapsulates the trading items that appear in the `arcs` field.
+  map<string, Item> items = 1;
 
-  reserved 1, 2;
+  // Represent valid matchings between offered and wanted items.
+  repeated Arc arcs = 2;
 }

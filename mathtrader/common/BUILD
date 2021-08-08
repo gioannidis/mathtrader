@@ -63,6 +63,7 @@ cc_proto_library(
 proto_library(
     name = "assignment_proto",
     srcs = ["assignment.proto"],
+    deps = [":item_proto"],
 )
 
 cc_proto_library(

@@ -28,7 +28,10 @@ package(
 proto_library(
     name = "parser_result_proto",
     srcs = ["parser_result.proto"],
-    deps = ["//mathtrader/common:wantlist_proto"],
+    deps = [
+        "//mathtrader/common:item_proto",
+        "//mathtrader/common:wantlist_proto",
+    ],
 )
 
 cc_proto_library(
