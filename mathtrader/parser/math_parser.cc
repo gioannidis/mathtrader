@@ -24,8 +24,7 @@
 #include "mathtrader/parser/internal/internal_parser.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
-namespace mathtrader {
-
+namespace mathtrader::parser {
 namespace {
 // Creates a stateful internal parser, parses the OLWLG data and returns the
 // result.
@@ -52,5 +51,4 @@ absl::StatusOr<ParserResult> MathParser::ParseFile(absl::string_view filename) {
 absl::StatusOr<ParserResult> MathParser::ParseText(absl::string_view text) {
   return ParseFileOrText(text, /*is_file=*/false);
 }
-
-}  // namespace mathtrader
+}  // namespace mathtrader::parser

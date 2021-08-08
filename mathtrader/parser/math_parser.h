@@ -25,8 +25,14 @@
 
 #include "mathtrader/parser/parser_result.pb.h"
 
-namespace mathtrader {
-
+namespace mathtrader::parser {
+// Parses the official wants provided by the Online Want List Generator (OLWLG)
+// and generates a `ParserResult` message. Minimum configuration to parse a
+// file from OLWLG:
+//
+//    const auto parser_result = MathParser::ParseFile("123-officialwants.txt");
+//    CHECK(parser_result.ok());
+//    const auto& Wantlists = parser_result->wantlists();
 class MathParser {
  public:
   MathParser() = default;
@@ -41,7 +47,5 @@ class MathParser {
   // Identical to `ParseFile`, but operates directly on the data string.
   static absl::StatusOr<ParserResult> ParseText(absl::string_view text);
 };
-
-}  // namespace mathtrader
-
+}  // namespace mathtrader::parser
 #endif  // MATHTRADER_PARSER_MATH_PARSER_H_
