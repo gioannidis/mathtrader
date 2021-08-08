@@ -33,7 +33,7 @@
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
-namespace mathtrader::network::internal {
+namespace mathtrader::assignment::internal {
 namespace {
 // Generic set of item ids.
 using ItemSet = absl::flat_hash_set<std::string>;
@@ -165,4 +165,4 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
     *assignment->add_arcs() = std::move(internal_node.mapped());
   }
 }
-}  // namespace mathtrader::network::internal
+}  // namespace mathtrader::assignment::internal

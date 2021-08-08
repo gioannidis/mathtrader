@@ -24,7 +24,7 @@
 #include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
-namespace mathtrader::network {
+namespace mathtrader::assignment {
 
 class AssignmentBuilder {
  public:
@@ -37,5 +37,5 @@ class AssignmentBuilder {
   // Processes the OLWLG-generated wantlists and builds the Assignment.
   static Assignment BuildNetwork(const ParserResult& parser_result);
 };
-}  // namespace mathtrader::network
+}  // namespace mathtrader::assignment
 #endif  // MATHTRADER_ASSIGNMENT_NETWORK_BUILDER_H_

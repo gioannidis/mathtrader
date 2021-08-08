@@ -24,7 +24,7 @@
 #include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
-namespace mathtrader::network::internal {
+namespace mathtrader::assignment::internal {
 // Generates Arcs from the given wantlists items. Each wantlist generates an arc
 // from the offered item to each wanted item. The arc's cost is taken from the
 // wanted item's priority. A self-trading arc is also added for each offered
@@ -81,5 +81,5 @@ class ArcBuilder {
   static void BuildArcs(const ParserResult& parser_result,
                         Assignment* assignment);
 };
-}  // namespace mathtrader::network::internal
+}  // namespace mathtrader::assignment::internal
 #endif  // MATHTRADER_ASSIGNMENT_INTERNAL_ARC_BUILDER_H_

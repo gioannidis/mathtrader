@@ -20,7 +20,7 @@
 #include "mathtrader/assignment/internal/arc_builder.h"
 #include "mathtrader/common/assignment.pb.h"
 
-namespace mathtrader::network {
+namespace mathtrader::assignment {
 // Processes the OLWLG-generated wantlists and builds the Assignment.
 Assignment AssignmentBuilder::BuildNetwork(const ParserResult& parser_result) {
   // The Assignment to return.
@@ -31,4 +31,4 @@ Assignment AssignmentBuilder::BuildNetwork(const ParserResult& parser_result) {
 
   return assignment;
 }
-}  // namespace mathtrader::network
+}  // namespace mathtrader::assignment

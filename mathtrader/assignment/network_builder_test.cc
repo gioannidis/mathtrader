@@ -35,7 +35,7 @@ using ::mathtrader::Assignment;
 using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
 using ::mathtrader::Wantlist;
-using ::mathtrader::network::AssignmentBuilder;
+using ::mathtrader::assignment::AssignmentBuilder;
 using ::testing::Eq;
 using ::testing::Key;
 using ::testing::Property;
