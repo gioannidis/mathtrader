@@ -28,7 +28,6 @@
 #include "ortools/base/filelineiter.h"
 
 namespace mathtrader::internal_parser {
-
 namespace {
 // Regex defining the lines to ignore: empty lines, lines with all whitespaces,
 // or comment lines beginning with "#" but not "#!".
@@ -74,5 +73,4 @@ absl::Status InternalParser::ParseText(absl::string_view data) {
   FinalizeParserResult();
   return absl::OkStatus();
 }
-
 }  // namespace mathtrader::internal_parser

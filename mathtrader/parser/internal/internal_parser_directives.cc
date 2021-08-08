@@ -24,15 +24,12 @@
 #include "ortools/base/map_util.h"
 
 namespace mathtrader::internal_parser {
-
 namespace {
-
 // Indicates start of official names.
 constexpr char kDirectiveOfficialNamesBegin[] = "BEGIN-OFFICIAL-NAMES";
 
 // Indicates end of official names.
 constexpr char kDirectiveOfficialNamesEnd[] = "END-OFFICIAL-NAMES";
-
 }  // namespace
 
 // Parses a directive. Exactly one directive can be specified per line.
@@ -108,5 +105,4 @@ absl::Status InternalParser::ParseDirective(absl::string_view line) {
   }
   return absl::OkStatus();
 }
-
 }  // namespace mathtrader::internal_parser
