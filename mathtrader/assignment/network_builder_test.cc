@@ -25,16 +25,16 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "mathtrader/common/assignment.pb.h"
+#include "mathtrader/assignment/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 
 namespace {
-using ::mathtrader::Arc;
-using ::mathtrader::Assignment;
 using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
 using ::mathtrader::Wantlist;
+using ::mathtrader::assignment::Arc;
+using ::mathtrader::assignment::Assignment;
 using ::mathtrader::assignment::AssignmentBuilder;
 using ::testing::Eq;
 using ::testing::Key;

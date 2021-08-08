@@ -58,15 +58,3 @@ cc_proto_library(
     name = "wantlist_cc_proto",
     deps = [":wantlist_proto"],
 )
-
-# Build rules for an Assignment graph.
-proto_library(
-    name = "assignment_proto",
-    srcs = ["assignment.proto"],
-    deps = [":item_proto"],
-)
-
-cc_proto_library(
-    name = "assignment_cc_proto",
-    deps = [":assignment_proto"],
-)

@@ -21,7 +21,7 @@
 #ifndef MATHTRADER_ASSIGNMENT_INTERNAL_ARC_BUILDER_H_
 #define MATHTRADER_ASSIGNMENT_INTERNAL_ARC_BUILDER_H_
 
-#include "mathtrader/common/assignment.pb.h"
+#include "mathtrader/assignment/assignment.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::assignment::internal {

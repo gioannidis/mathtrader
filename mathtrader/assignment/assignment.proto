@@ -19,7 +19,7 @@
 
 syntax = "proto2";
 
-package mathtrader;
+package mathtrader.assignment;
 
 import "mathtrader/common/item.proto";
 

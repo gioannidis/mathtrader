@@ -28,7 +28,7 @@
 #include "ortools/base/logging.h"
 #include "ortools/base/map_util.h"
 
-#include "mathtrader/common/assignment.pb.h"
+#include "mathtrader/assignment/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"

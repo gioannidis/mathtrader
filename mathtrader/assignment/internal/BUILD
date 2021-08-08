@@ -29,7 +29,7 @@ cc_library(
     srcs = ["arc_builder.cc"],
     hdrs = ["arc_builder.h"],
     deps = [
-        "//mathtrader/common:assignment_cc_proto",
+        "//mathtrader/assignment:assignment_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser:parser_result_cc_proto",
