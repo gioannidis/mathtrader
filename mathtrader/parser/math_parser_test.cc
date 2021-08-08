@@ -28,9 +28,9 @@
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
-using ::mathtrader::Item;
 using ::mathtrader::MathParser;
-using ::mathtrader::Wantlist;
+using ::mathtrader::common::Item;
+using ::mathtrader::common::Wantlist;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;

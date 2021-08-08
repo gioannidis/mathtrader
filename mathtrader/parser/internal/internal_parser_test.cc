@@ -29,9 +29,8 @@
 #endif
 
 namespace {
-
-using ::mathtrader::Item;
-using ::mathtrader::Wantlist;
+using ::mathtrader::common::Item;
+using ::mathtrader::common::Wantlist;
 using ::mathtrader::internal_parser::InternalParser;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -284,5 +283,4 @@ TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
               AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("%003-C"))));
 }
-
 }  // namespace

@@ -25,8 +25,7 @@
 #include "mathtrader/common/offered_item.pb.h"
 
 namespace {
-
-using ::mathtrader::OfferedItem;
+using ::mathtrader::common::OfferedItem;
 using ::mathtrader::internal_parser::ItemParser;
 
 constexpr char kPandemicId[] = "0012-PANDE";  // case-insensitive

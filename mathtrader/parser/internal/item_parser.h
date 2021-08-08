@@ -52,7 +52,7 @@ class ItemParser {
 
   // Parses the input text and returns an Item on success. If it fails, returns
   // an InvalidArgumentError.
-  absl::StatusOr<Item> ParseItem(absl::string_view text) const;
+  absl::StatusOr<common::Item> ParseItem(absl::string_view text) const;
 
  private:
   // Matches a line declaring an official item. Note that is not declared as

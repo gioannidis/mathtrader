@@ -32,7 +32,6 @@
 #include "re2/re2.h"
 
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/internal/item_parser.h"
 #include "mathtrader/parser/internal/wantlist_parser.h"
 #include "mathtrader/parser/parser_result.pb.h"
@@ -133,7 +132,7 @@ class InternalParser {
 
   // Tracks the ids of the trading items, excluding dummy items. If official
   // items have been given, tracks only the ids of items with an official name.
-  absl::flat_hash_map<std::string, Item> items_;
+  absl::flat_hash_map<std::string, common::Item> items_;
 
   // Tracks the ids of the dummy items. Used to verify that a wantlist has been
   // given for a dummy item, i.e., that it has been encountered as an official
@@ -151,7 +150,5 @@ class InternalParser {
   // The trade input to return.
   ParserResult parser_result_;
 };
-
 }  // namespace mathtrader::internal_parser
-
 #endif  // MATHTRADER_PARSER_INTERNAL_INTERNAL_PARSER_H_

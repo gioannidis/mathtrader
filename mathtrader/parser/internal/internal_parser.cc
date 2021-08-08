@@ -38,6 +38,9 @@
 
 namespace mathtrader::internal_parser {
 namespace {
+using ::mathtrader::common::Item;
+using ::mathtrader::common::Wantlist;
+
 // Prefix for directive lines.
 constexpr absl::string_view kPrefixDirective = "!";
 // Prefix for option lines.

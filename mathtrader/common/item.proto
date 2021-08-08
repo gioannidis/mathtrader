@@ -19,7 +19,7 @@
 
 syntax = "proto2";
 
-package mathtrader;
+package mathtrader.common;
 
 // Message encapsulating an exchangeable item. Usually a board game, but can
 // also be, e.g., a dummy item.

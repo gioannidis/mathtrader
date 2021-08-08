@@ -37,6 +37,9 @@
 
 namespace mathtrader::internal_parser {
 namespace {
+using ::mathtrader::common::Item;
+using ::mathtrader::common::Wantlist;
+
 // Internal regex that matches wantlist prefix, capturing offered item id and
 // optionally the username.
 constexpr absl::string_view kWantlistPrefixRegexStr

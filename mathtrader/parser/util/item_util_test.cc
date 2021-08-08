@@ -26,7 +26,7 @@
 #include "mathtrader/common/item.pb.h"
 
 namespace {
-using ::mathtrader::Item;
+using ::mathtrader::common::Item;
 using ::mathtrader::parser::util::IsDummyItem;
 using ::mathtrader::parser::util::ProcessIfDummy;
 using ::testing::AllOf;

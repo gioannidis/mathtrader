@@ -33,10 +33,10 @@
 
 namespace {
 
-using ::mathtrader::Item;
 using ::mathtrader::MathParser;
 using ::mathtrader::ParserResult;
-using ::mathtrader::Wantlist;
+using ::mathtrader::common::Item;
+using ::mathtrader::common::Wantlist;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Contains;

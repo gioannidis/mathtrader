@@ -34,6 +34,9 @@
 
 namespace mathtrader::internal_parser {
 namespace {
+using ::mathtrader::common::Item;
+using ::mathtrader::common::OfferedItem;
+
 // Internal regex that matches a text line defining an official item.
 constexpr char kOfficialItemRegexStr[]
     // Prefix matching at the beginning of the text.

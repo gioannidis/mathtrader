@@ -30,12 +30,12 @@
 #include "mathtrader/common/wantlist.pb.h"
 
 namespace {
-using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
-using ::mathtrader::Wantlist;
 using ::mathtrader::assignment::Arc;
 using ::mathtrader::assignment::Assignment;
 using ::mathtrader::assignment::AssignmentBuilder;
+using ::mathtrader::common::Item;
+using ::mathtrader::common::Wantlist;
 using ::testing::Eq;
 using ::testing::Key;
 using ::testing::Property;

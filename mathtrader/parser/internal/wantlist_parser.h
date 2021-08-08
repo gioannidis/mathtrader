@@ -52,7 +52,7 @@ class WantlistParser {
   // returns an InvalidArgumentError. Does not check whether the offered or any
   // of the wanted items correspond to an actual official item, if official item
   // names have been given.
-  absl::StatusOr<Wantlist> ParseWantlist(absl::string_view text) const;
+  absl::StatusOr<common::Wantlist> ParseWantlist(absl::string_view text) const;
 
   // Returns the internal string that is used to build the regex that parses the
   // wantlists.

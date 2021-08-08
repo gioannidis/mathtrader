@@ -27,6 +27,10 @@
 #include "mathtrader/common/item.pb.h"
 
 namespace mathtrader::parser::util {
+namespace {
+using ::mathtrader::common::Item;
+}  // namespace
+
 // Processes the item if it is a dummy. Makes the id unique by appending the
 // username of its owner in order to disambiguify it from similarly-named dummy
 // items of other users. Sets the `is_dummy` field and copies the original id

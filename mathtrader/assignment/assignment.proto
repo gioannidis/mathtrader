@@ -40,7 +40,7 @@ message Arc {
 // the item not being traded.
 message Assignment {
   // Encapsulates the trading items that appear in the `arcs` field.
-  map<string, Item> items = 1;
+  map<string, common.Item> items = 1;
 
   // Represent valid matchings between offered and wanted items.
   repeated Arc arcs = 2;

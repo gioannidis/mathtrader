@@ -39,12 +39,12 @@ inline bool IsDummyItem(std::string_view item_id) {
 // Determines whether the given item is dummy if any of the following holds:
 // 1. The `id` field represents a dummy item.
 // 2. The `is_dummy` field has been explicitly set.
-inline bool IsDummyItem(const Item& item) {
+inline bool IsDummyItem(const common::Item& item) {
   return item.is_dummy() || IsDummyItem(item.id());
 }
 
 // Determines whether the given item is a dummy item. Returns false if null.
-inline bool IsDummyItem(const Item* item) {
+inline bool IsDummyItem(const common::Item* item) {
   return (item && IsDummyItem(*item));
 }
 
@@ -54,9 +54,9 @@ inline bool IsDummyItem(const Item* item) {
 // to the `original_id` field. Does nothing if the item is non-dummy.
 // Returns `InvalidArgumentError` if a dummy item has no username.
 ABSL_MUST_USE_RESULT absl::Status ProcessIfDummy(std::string_view username,
-                                                 Item* item);
+                                                 common::Item* item);
 
 // As above, but retrieves the username from the item.
-ABSL_MUST_USE_RESULT absl::Status ProcessIfDummy(Item* item);
+ABSL_MUST_USE_RESULT absl::Status ProcessIfDummy(common::Item* item);
 }  // namespace mathtrader::parser::util
 #endif  // MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_
