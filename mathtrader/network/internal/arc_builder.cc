@@ -49,8 +49,8 @@ void AddArc(std::string_view tail, std::string_view head, int64_t capacity,
 
   // Creates and initializes an arc.
   Arc arc;
-  arc.set_tail(std::string(tail));
-  arc.set_head(std::string(head));
+  arc.set_offered(std::string(tail));
+  arc.set_wanted(std::string(head));
   arc.set_capacity(capacity);
   arc.set_cost(cost);
 

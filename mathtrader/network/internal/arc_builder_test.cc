@@ -82,20 +82,21 @@ ParserResult BuildParserResult(const WantlistVector& wantlists) {
 // Encodes the expected arc frequency of a given item.
 struct ItemArcFrequency {
   const std::string item_id;
-  const int64_t head_count;  // number of arcs where item is the arc head.
-  const int64_t tail_count;  // number of arcs where item is the arc tail.
+  const int64_t wanted_count;   // Number of arcs where item is the wanted item
+  const int64_t offered_count;  // Number of arcs where item is the offered item
 };
 
 // Verifies the number of Arcs for a given item.
 void ExpectArcFrequencies(const Assignment& assignment,
                           const ItemArcFrequency& frequencies) {
   const std::string_view id = frequencies.item_id;
-  const int64_t head_count = frequencies.head_count;
-  const int64_t tail_count = frequencies.tail_count;
+  const int64_t wanted_count = frequencies.wanted_count;
+  const int64_t offered_count = frequencies.offered_count;
   EXPECT_THAT(assignment.arcs(),
-              Contains(Property(&Arc::head, StrEq(id))).Times(head_count));
-  EXPECT_THAT(assignment.arcs(),
-              Contains(Property(&Arc::tail, StrEq(id))).Times(tail_count));
+              Contains(Property(&Arc::wanted, StrEq(id))).Times(wanted_count));
+  EXPECT_THAT(
+      assignment.arcs(),
+      Contains(Property(&Arc::offered, StrEq(id))).Times(offered_count));
 }
 
 // As above, but for multiple items.
@@ -132,11 +133,12 @@ TEST(ArcBuilderTest, AllValidItems) {
   EXPECT_THAT(arcs, Contains(Property(&Arc::cost, Eq(3))).Times(2));
 
   // Verifies the arc frequency for each item.
-  ExpectArcFrequencies(assignment, {{"A", /*head_count=*/4, /*tail_count=*/3},
-                                    {"B", /*head_count=*/2, /*tail_count=*/2},
-                                    {"C", /*head_count=*/2, /*tail_count=*/2},
-                                    {"D", /*head_count=*/2, /*tail_count=*/1},
-                                    {"E", /*head_count=*/1, /*tail_count=*/3}});
+  ExpectArcFrequencies(assignment,
+                       {{"A", /*wanted_count=*/4, /*offered_count=*/3},
+                        {"B", /*wanted_count=*/2, /*offered_count=*/2},
+                        {"C", /*wanted_count=*/2, /*offered_count=*/2},
+                        {"D", /*wanted_count=*/2, /*offered_count=*/1},
+                        {"E", /*wanted_count=*/1, /*offered_count=*/3}});
 
   // All arcs have unit capacity.
   EXPECT_THAT(arcs, Each(Property(&Arc::capacity, Eq(1))));

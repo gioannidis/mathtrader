@@ -50,13 +50,13 @@ message Node {
   reserved 2;
 }
 
-// Message encapsulating a directed Arc within a Assignment, with a direction
-// "x -> y".
+// Message encapsulating a directed Arc within a Assignment, representing a
+// valid matching "offered -> wanted".
 message Arc {
-  optional string head = 1;                   // inbound node, e.g., "y"
-  optional string tail = 2;                   // outbound node, e.g., "x"
-  optional int64 capacity = 3 [default = 1];  // max supported capacity
-  optional int64 cost = 4;                    // associated cost if used
+  optional string offered = 1;                // Outbound item.
+  optional string wanted = 2;                 // Inbound item.
+  optional int64 capacity = 3 [default = 1];  // Max supported capacity.
+  optional int64 cost = 4;                    // Associated cost if used.
 }
 
 // Message encapsulating an Assignment, representing the math trade. Defines
