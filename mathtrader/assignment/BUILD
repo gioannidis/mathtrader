@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-# Build rules the NetworkBuilder.
+# Build rules the AssignmentBuilder.
 
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 

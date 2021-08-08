@@ -1,6 +1,6 @@
-# Internal `NetworkBuilder`
+# Internal `AssignmentBuilder`
 
-Implements `ArcBuilder`, the internal module of `NetworkBuilder`, which
+Implements `ArcBuilder`, the internal module of `AssignmentBuilder`, which
 generates the arcs that correspond to each input wantlist. Each `Arc` represents
 a valid matching between an offered item and a different wanted item.
 

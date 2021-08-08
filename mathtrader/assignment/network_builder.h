@@ -26,13 +26,13 @@
 
 namespace mathtrader::network {
 
-class NetworkBuilder {
+class AssignmentBuilder {
  public:
-  NetworkBuilder() = default;
+  AssignmentBuilder() = default;
 
   // Disables copy constructor and move assignment.
-  NetworkBuilder(const NetworkBuilder&) = delete;
-  NetworkBuilder& operator=(const NetworkBuilder&) = delete;
+  AssignmentBuilder(const AssignmentBuilder&) = delete;
+  AssignmentBuilder& operator=(const AssignmentBuilder&) = delete;
 
   // Processes the OLWLG-generated wantlists and builds the Assignment.
   static Assignment BuildNetwork(const ParserResult& parser_result);

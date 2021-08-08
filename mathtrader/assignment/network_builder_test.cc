@@ -35,7 +35,7 @@ using ::mathtrader::Assignment;
 using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
 using ::mathtrader::Wantlist;
-using ::mathtrader::network::NetworkBuilder;
+using ::mathtrader::network::AssignmentBuilder;
 using ::testing::Eq;
 using ::testing::Key;
 using ::testing::Property;
@@ -105,11 +105,11 @@ void ExpectArcFrequencies(const Assignment& assignment,
   }
 }
 
-// Test suite: NetworkBuilderTest
+// Test suite: AssignmentBuilderTest
 
 // Wantlists where all items are valid candidates, i.e., have their own offered
 // wantlist and are wanted in another wantlist.
-TEST(NetworkBuilderTest, AllValidItems) {
+TEST(AssignmentBuilderTest, AllValidItems) {
   const WantlistVector wantlists = {{"A", "B", "C", "D"},
                                     {"B", "A", "E"},
                                     {"C", "B", "A"},
@@ -117,7 +117,7 @@ TEST(NetworkBuilderTest, AllValidItems) {
                                     {"E", "C", "A", "D"}};
 
   Assignment const assignment =
-      NetworkBuilder::BuildNetwork(BuildParserResult(wantlists));
+      AssignmentBuilder::BuildNetwork(BuildParserResult(wantlists));
 
   // Verifies the total number of arcs: one arc for wanted item. This is
   // computed by counting all elements of `wantlists`, minus the offered item,
@@ -147,7 +147,7 @@ TEST(NetworkBuilderTest, AllValidItems) {
   EXPECT_THAT(arcs, Each(Property(&Arc::capacity, Eq(1))));
 }
 
-TEST(NetworkBuilderTest, UnwantedItemsAndEmptyWantlists) {
+TEST(AssignmentBuilderTest, UnwantedItemsAndEmptyWantlists) {
   // Defines the test wantlists; first item is offered, the rest are wanted.
   const WantlistVector wantlists = {
       {"A", "B", "C", "non-offered_1", "empty_wantlist_1"},
@@ -160,7 +160,7 @@ TEST(NetworkBuilderTest, UnwantedItemsAndEmptyWantlists) {
       {"empty_wantlist_2"}};
 
   Assignment const assignment =
-      NetworkBuilder::BuildNetwork(BuildParserResult(wantlists));
+      AssignmentBuilder::BuildNetwork(BuildParserResult(wantlists));
 
   // Verifies the trading items.
   EXPECT_THAT(assignment.items(),
