@@ -78,7 +78,7 @@ class ArcBuilder {
   // If both source and sink have been defined in `assignment`, also adds an
   // arc betwen the source/sink and each item, updating the source and sink
   // production fields.
-  static void BuildArcs(const ParserResult& parser_result,
+  static void BuildArcs(const parser::ParserResult& parser_result,
                         Assignment* assignment);
 };
 }  // namespace mathtrader::assignment::internal

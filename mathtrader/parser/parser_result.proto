@@ -20,7 +20,7 @@
 
 syntax = "proto2";
 
-package mathtrader;
+package mathtrader.parser;
 
 import "mathtrader/common/wantlist.proto";
 

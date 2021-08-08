@@ -45,7 +45,7 @@ using ::testing::StrCaseEq;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
-using DuplicateItem = mathtrader::ParserResult::DuplicateWantedItem;
+using DuplicateItem = mathtrader::parser::ParserResult::DuplicateWantedItem;
 
 // Tests a basic use-case.
 TEST(InternalParser, TestOnlyComments) {

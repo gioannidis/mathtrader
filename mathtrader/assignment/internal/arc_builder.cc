@@ -37,6 +37,7 @@ namespace mathtrader::assignment::internal {
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
+using ::mathtrader::parser::ParserResult;
 
 // Generic set of item ids.
 using ItemSet = absl::flat_hash_set<std::string>;

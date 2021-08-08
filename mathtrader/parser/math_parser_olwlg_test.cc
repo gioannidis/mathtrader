@@ -32,11 +32,10 @@
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace {
-
-using ::mathtrader::ParserResult;
 using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::MathParser;
+using ::mathtrader::parser::ParserResult;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Contains;
@@ -53,8 +52,8 @@ using ::testing::StartsWith;
 using ::testing::StrCaseEq;
 using ::testing::StrEq;
 
-using DuplicateItem = mathtrader::ParserResult::DuplicateWantedItem;
-using MissingItem = mathtrader::ParserResult::MissingItem;
+using DuplicateItem = ParserResult::DuplicateWantedItem;
+using MissingItem = ParserResult::MissingItem;
 
 // ID of non-dummy items: NNNN-AAAA or NNNN-AAAA-COPYNN.
 // Examples:
@@ -205,5 +204,4 @@ TEST(MathParserOlwlgCountryTest, TestJuly2021Greece) {
                  /*user_count=*/66, /*item_count=*/687,
                  /*wantlist_count=*/1003, /*longest_wantlist=*/235);
 }
-
 }  // namespace

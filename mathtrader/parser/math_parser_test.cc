@@ -40,7 +40,7 @@ using ::testing::Property;
 using ::testing::SizeIs;
 using ::testing::StrCaseEq;
 
-using MissingItem = mathtrader::ParserResult::MissingItem;
+using MissingItem = mathtrader::parser::ParserResult::MissingItem;
 
 // Base test case with official item names and wantlists. Each wantlist defines
 // three (3) non-dummy items.
