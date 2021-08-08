@@ -1,9 +1,8 @@
 # Internal `NetworkBuilder`
 
-Implements the internal modules of `NetworkBuilder`, which generates a
-`Assignment` out of a `ParserResult`:
+Implements `ArcBuilder`, the internal module of `NetworkBuilder`, which
+generates the arcs that correspond to each input wantlist. Each `Arc` represents
+a valid matching between an offered item and a different wanted item.
 
-* `NodeBuilder`: generates two nodes for each offered item: one `Node` to
-  represent the item being offered and one to represent the item being wanted.
-* `ArcBuilder`: generates the arcs that correspond to each input wantlist.
-* `node_util.h`: `Node` utility functions.
+`ArcBuilder` pre-processes the model and prunes items that are certain not to
+trade.

@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Builds the trade network nodes.
+// Builds Assignment Arcs that correspond to valid offered-wanted matchings.
 
 #ifndef MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_
 #define MATHTRADER_NETWORK_INTERNAL_ARC_BUILDER_H_
@@ -33,10 +33,9 @@ namespace mathtrader::network::internal {
 // As an example, consider the wantlist "A : B %C D" with default options. Item
 // "C" is a dummy item. The ArcBuilder generates the following arcs:
 //
-//    A+ ->  A- (self-trading, cost >> 1)
-//    A+ ->  B- (cost = 1)
-//    A+ -> %C- (cost = 2)
-//    A+ ->  D- (cost = 3)
+//    A ->  B (cost = 1)
+//    A -> %C (cost = 2)
+//    A ->  D (cost = 3)
 //
 // Note that ArcBuilder aggressively prunes:
 // * Wanted items that do not have their own wantlist, i.e., that are never
@@ -54,8 +53,7 @@ namespace mathtrader::network::internal {
 //
 // Items D and E are pruned because they have no respective wantlist, so they
 // are never traded. Item C is pruned because its wantlist is empty. Item F is
-// not wanted by anyone, so it is also pruned. The arcs that are generated are:
-// A->A, A-B, B->B
+// not wanted by anyone, so it is also pruned. Only A->B is generated.
 //
 // Usage:
 //

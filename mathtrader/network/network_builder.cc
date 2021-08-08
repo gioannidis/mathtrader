@@ -26,8 +26,7 @@ Assignment NetworkBuilder::BuildNetwork(const ParserResult& parser_result) {
   // The Assignment to return.
   Assignment assignment;
 
-  // Then, builds all the arcs representing the offered-wanted item
-  // relationships and connects the items to the source/sink.
+  // Builds all the arcs representing the offered-wanted item relationships.
   internal::ArcBuilder::BuildArcs(parser_result, &assignment);
 
   return assignment;

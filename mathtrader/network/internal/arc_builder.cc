@@ -41,7 +41,7 @@ using ItemSet = absl::flat_hash_set<std::string>;
 // Map of arcs indexed by "arc_id", defined as StrCat(tail_id, head_id).
 using ArcMap = absl::flat_hash_map<std::string, Arc>;
 
-// Adds an arc between two Nodes to the "arcs" set. Dies if the arc already
+// Adds an arc between two Items to the "arcs" set. Dies if the arc already
 // exists.
 void AddArc(std::string_view tail, std::string_view head, int64_t capacity,
             int64_t cost, ArcMap* arcs) {
@@ -67,7 +67,7 @@ void AddArc(std::string_view tail, std::string_view head, int64_t cost,
 }
 
 // Same as above, but operates on the item ids, which are converted to the
-// respective Offered/Wanted node ids. Arcs between items have unit capacity.
+// respective Offered/Wanted item ids. Arcs between items have unit capacity.
 void AddArc(const Item& offered, const Item& wanted, int64_t cost,
             ArcMap* arcs) {
   AddArc(offered.id(), wanted.id(), cost, arcs);
