@@ -30,7 +30,6 @@ cc_library(
     deps = [
         "//mathtrader/common:assignment_cc_proto",
         "//mathtrader/network/internal:arc_builder",
-        "//mathtrader/network/internal:node_builder",
         "//mathtrader/parser:parser_result_cc_proto",
     ],
 )

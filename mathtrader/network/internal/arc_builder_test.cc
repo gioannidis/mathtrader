@@ -15,12 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Tests the MathParser on real OLWLG testcases. Note that worldwide tests tend
-// to be longer than country-specfic tests, so you may want to use the following
-// filters:
-//  --test_filter=*CountryTest.* --> for country-specific tests
-//  --test_filter=*WorldTest.* --> for worldwide tests
-
 #include "mathtrader/network/internal/arc_builder.h"
 
 #include <string>
@@ -50,7 +44,7 @@ using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Property;
 using ::testing::SizeIs;
-using ::testing::StartsWith;
+using ::testing::StrEq;
 
 // Defines the test wantlists as a vector of wantlists. In each wantlist, the
 // first element is the offered item, the rest are the wanted items.
@@ -99,9 +93,9 @@ void ExpectArcFrequencies(const Assignment& assignment,
   const int64_t head_count = frequencies.head_count;
   const int64_t tail_count = frequencies.tail_count;
   EXPECT_THAT(assignment.arcs(),
-              Contains(Property(&Arc::head, StartsWith(id))).Times(head_count));
+              Contains(Property(&Arc::head, StrEq(id))).Times(head_count));
   EXPECT_THAT(assignment.arcs(),
-              Contains(Property(&Arc::tail, StartsWith(id))).Times(tail_count));
+              Contains(Property(&Arc::tail, StrEq(id))).Times(tail_count));
 }
 
 // As above, but for multiple items.
@@ -126,27 +120,23 @@ TEST(ArcBuilderTest, AllValidItems) {
   Assignment assignment;
   ArcBuilder::BuildArcs(BuildParserResult(wantlists), &assignment);
 
-  // Verifies the total number of arcs: one arc for each item, since all items
-  // are valid candidates.
+  // Verifies the total number of arcs: one arc for wanted item. This is
+  // computed by counting all elements of `wantlists`, minus the offered item,
+  // i.e., the number of individual wantlists.
   const auto& arcs = assignment.arcs();
-  EXPECT_THAT(arcs, SizeIs(count2d(wantlists)));
-
-  // Verifies the self-trading arcs.
-  EXPECT_THAT(arcs, Contains(Property(&Arc::cost, Gt(10'000))).Times(5));
+  EXPECT_THAT(arcs, SizeIs(count2d(wantlists) - wantlists.size()));
 
   // Number of trading arcs with specific cost (priority).
   EXPECT_THAT(arcs, Contains(Property(&Arc::cost, Eq(1))).Times(5));
   EXPECT_THAT(arcs, Contains(Property(&Arc::cost, Eq(2))).Times(4));
   EXPECT_THAT(arcs, Contains(Property(&Arc::cost, Eq(3))).Times(2));
-  EXPECT_THAT(
-      arcs, Contains(Property(&Arc::cost, AllOf(Gt(4), Lt(10'000)))).Times(0));
 
   // Verifies the arc frequency for each item.
-  ExpectArcFrequencies(assignment, {{"A", /*head_count=*/5, /*tail_count=*/4},
-                                    {"B", /*head_count=*/3, /*tail_count=*/3},
-                                    {"C", /*head_count=*/3, /*tail_count=*/3},
-                                    {"D", /*head_count=*/3, /*tail_count=*/2},
-                                    {"E", /*head_count=*/2, /*tail_count=*/4}});
+  ExpectArcFrequencies(assignment, {{"A", /*head_count=*/4, /*tail_count=*/3},
+                                    {"B", /*head_count=*/2, /*tail_count=*/2},
+                                    {"C", /*head_count=*/2, /*tail_count=*/2},
+                                    {"D", /*head_count=*/2, /*tail_count=*/1},
+                                    {"E", /*head_count=*/1, /*tail_count=*/3}});
 
   // All arcs have unit capacity.
   EXPECT_THAT(arcs, Each(Property(&Arc::capacity, Eq(1))));

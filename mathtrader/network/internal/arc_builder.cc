@@ -31,7 +31,6 @@
 #include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/network/internal/node_util.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::network::internal {
@@ -41,11 +40,6 @@ using ItemSet = absl::flat_hash_set<std::string>;
 
 // Map of arcs indexed by "arc_id", defined as StrCat(tail_id, head_id).
 using ArcMap = absl::flat_hash_map<std::string, Arc>;
-
-// The cost of an Arc that represents an item not being traded. This is called
-// a "self-trading" arc. Defined as a big number, so that the solver will try
-// to maximize the traded items.
-static constexpr int32_t kSelfTradingArcCost = (1 << 14);
 
 // Adds an arc between two Nodes to the "arcs" set. Dies if the arc already
 // exists.
@@ -76,8 +70,7 @@ void AddArc(std::string_view tail, std::string_view head, int64_t cost,
 // respective Offered/Wanted node ids. Arcs between items have unit capacity.
 void AddArc(const Item& offered, const Item& wanted, int64_t cost,
             ArcMap* arcs) {
-  AddArc(GetOfferedNodeId(offered.id()), GetWantedNodeId(wanted.id()), cost,
-         arcs);
+  AddArc(offered.id(), wanted.id(), cost, arcs);
 }
 
 // Same as above, but takes the arc "cost" from the wanted item's priority.
@@ -87,12 +80,6 @@ void AddArc(const Item& offered, const Item& wanted, ArcMap* arcs) {
   CHECK(wanted.priority());
   const int64_t cost = (!offered.is_dummy() ? wanted.priority() : 0);
   AddArc(offered, wanted, cost, arcs);
-}
-
-// Same as above, but adds a self-trading arc on a single item with unit
-// capacity.
-void AddArc(const Item& item, ArcMap* arcs) {
-  AddArc(/*offered=*/item, /*wanted=*/item, /*cost=*/kSelfTradingArcCost, arcs);
 }
 
 // Generates an ItemSet with all offered items that have a non-empty wantlist.
@@ -131,22 +118,6 @@ ItemSet GetCandidateItems(const ParserResult& input) {
   }
   return candidate_items;
 }
-
-// Removes all nodes from the Assignment that are definitely not trading,
-// i.e., not in the `candidate_items` set.
-void RemoveNonTradingNodes(const ItemSet& candidate_items,
-                           Assignment* assignment) {
-  auto* nodes = assignment->mutable_nodes();
-  nodes->erase(
-      std::remove_if(nodes->begin(), nodes->end(),
-                     // Lambda that erases the node if the item is not a
-                     // candidate item. The original item_id is looked up, which
-                     // is a substring of the node id.
-                     [&candidate_items](const Node& node) {
-                       return !candidate_items.contains(node.item_id());
-                     }),
-      nodes->end());  // second argument of nodes->erase().
-}
 }  // namespace
 
 // Generates Arcs from the parser result, adding them to `assignment`.
@@ -167,8 +138,7 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
   // Builds a set of candidate items that are both wanted and offered.
   const ItemSet candidate_items = GetCandidateItems(parser_result);
 
-  // Generates self-trading arcs for each offered item and trading arcs between
-  // the offered item and every wanted item.
+  // Generates arcs between offered and wanted items.
   for (const Wantlist& wantlist : parser_result.wantlists()) {
     const Item& offered_item = wantlist.offered_item();
 
@@ -177,9 +147,6 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
       continue;
     }
 
-    // Adds a self-trading arc.
-    AddArc(offered_item, &arc_map);
-
     // Adds an Arc for wanted items that are also being offered.
     for (const Item& wanted_item : wantlist.wanted_item()) {
       if (candidate_items.contains(wanted_item.id())) {
@@ -187,9 +154,6 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
       }
     }
   }
-
-  // Finally, removes non-trading nodes.
-  RemoveNonTradingNodes(candidate_items, assignment);
 
   // Moves the arcs to the Assignment.
   while (!arc_map.empty()) {

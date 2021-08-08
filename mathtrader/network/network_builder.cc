@@ -19,16 +19,12 @@
 
 #include "mathtrader/common/assignment.pb.h"
 #include "mathtrader/network/internal/arc_builder.h"
-#include "mathtrader/network/internal/node_builder.h"
 
 namespace mathtrader::network {
 // Processes the OLWLG-generated wantlists and builds the Assignment.
 Assignment NetworkBuilder::BuildNetwork(const ParserResult& parser_result) {
   // The Assignment to return.
   Assignment assignment;
-
-  // First, builds all the item nodes and the source/sink.
-  internal::NodeBuilder::BuildNodes(parser_result, &assignment);
 
   // Then, builds all the arcs representing the offered-wanted item
   // relationships and connects the items to the source/sink.

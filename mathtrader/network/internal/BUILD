@@ -65,7 +65,6 @@ cc_library(
     srcs = ["arc_builder.cc"],
     hdrs = ["arc_builder.h"],
     deps = [
-        ":node_util",
         "//mathtrader/common:assignment_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",

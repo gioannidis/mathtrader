@@ -35,6 +35,7 @@ using ::mathtrader::Item;
 using ::mathtrader::ParserResult;
 using ::mathtrader::Wantlist;
 using ::mathtrader::network::NetworkBuilder;
+using ::testing::SizeIs;
 
 // Defines the test wantlists as a vector of wantlists. In each wantlist, the
 // first element is the offered item, the rest are the wanted items.
@@ -61,21 +62,23 @@ ParserResult BuildParserResult(const WantlistVector& wantlists) {
 
 TEST(NetworkBuilderTest, UnwantedItemsAndEmptyWantlists) {
   // Defines the test wantlists; first item is offered, the rest are wanted.
-  const WantlistVector wantlists = {{"A", "B", "C", "non-offered", "D"},
-                                    {"B", "A", "empty-wantlist", "E"},
-                                    {"unwanted", "A", "B", "C", "D", "E", "F"},
-                                    {"C", "B", "also-non-offered", "A"},
-                                    {"also-unwanted", "D", "A"},
-                                    {"empty-wantlist"},
-                                    {"E", "C", "A", "D"}};
+  const WantlistVector wantlists = {
+      {"A", "B", "C", "non-offered_1", "empty_wantlist_1"},
+      {"B", "A", "empty-wantlist_1", "E"},
+      {"unwanted_1", "A", "B", "C", "empty_wantlist_1", "empty_wanlist_2", "F"},
+      {"C", "B", "non_offered_2", "A"},
+      {"unwanted_2", "empty_wantlist_1", "A"},
+      {"empty_wantlist_1"},
+      {"E", "C", "A", "empty_wantlist_2"},
+      {"empty_wantlist_2"}};
 
-  // Number of wantlists, excluding offered items that are never wanted or have
-  // empty wantlists.
-  constexpr static int32_t kValidOfferedItems = 4;
+  // Number of offered items, excluding offered items and items that are never
+  // wanted or have empty wantlists.
+  constexpr static int32_t kValidWantedItems = 8;
 
   Assignment const assignment =
       NetworkBuilder::BuildNetwork(BuildParserResult(wantlists));
 
-  EXPECT_EQ(assignment.nodes_size(), 2 * kValidOfferedItems);
+  EXPECT_THAT(assignment.arcs(), SizeIs(kValidWantedItems));
 }
 }  // namespace

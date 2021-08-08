@@ -35,11 +35,11 @@ message Node {
   optional string id = 1;
 
   // Specifies the item type the Node represents, if applicable.
-  optional ItemType item_type = 3 [deprecated=true];
+  optional ItemType item_type = 3 [deprecated = true];
 
   // Specifies the "symmetric" item Node id. If the Node represents an offered
   // item, specifies the respective wanted item and vice-versa.
-  optional string symmetric_node = 4;
+  optional string symmetric_node = 4 [deprecated = true];
 
   // The original item id, if applicable.
   optional string item_id = 5;
@@ -59,11 +59,15 @@ message Arc {
   optional int64 cost = 4;                    // associated cost if used
 }
 
-// Message encapsulating an Assignment, representing the math trade.
+// Message encapsulating an Assignment, representing the math trade. Defines
+// the trading items and valid matchings between them. Each item is considered
+// to be both an offered and a wanted item. Each offered itemhas to be assigned
+// to exactly one wanted item. The valid offered-wanted matchings are defined by
+// the `arcs` field. Each item can always be assigned to itself, representing
+// the item not being traded.
 message Assignment {
-  // All non-production Nodes of the network. Does not contain sources or sinks.
-  repeated Node nodes = 1;
+  // Represent valid matchings between offered and wanted items.
+  repeated Arc arcs = 3;
 
-  // All Arcs of the network, including arcs connecting source and/or sinks.
-  repeated Arc arcs = 2;
+  reserved 1, 2;
 }
