@@ -23,7 +23,7 @@
 #include "absl/strings/string_view.h"
 #include "ortools/base/map_util.h"
 
-namespace mathtrader::internal_parser {
+namespace mathtrader::parser::internal {
 namespace {
 // Indicates start of official names.
 constexpr char kDirectiveOfficialNamesBegin[] = "BEGIN-OFFICIAL-NAMES";
@@ -105,4 +105,4 @@ absl::Status InternalParser::ParseDirective(absl::string_view line) {
   }
   return absl::OkStatus();
 }
-}  // namespace mathtrader::internal_parser
+}  // namespace mathtrader::parser::internal

@@ -28,8 +28,7 @@
 
 #include "mathtrader/common/wantlist.pb.h"
 
-namespace mathtrader::internal_parser {
-
+namespace mathtrader::parser::internal {
 // Parses a line of text defining a wantlist, where one item is offered in
 // exchange for any one of the wanted items.
 // Example usage:
@@ -91,7 +90,5 @@ class WantlistParser {
   //    Captured texts: "user", "0001-A", ":"
   const re2::RE2 kWantlistPrefixRegex;
 };
-
-}  // namespace mathtrader::internal_parser
-
+}  // namespace mathtrader::parser::internal
 #endif  // MATHTRADER_PARSER_INTERNAL_WANTLIST_PARSER_H_

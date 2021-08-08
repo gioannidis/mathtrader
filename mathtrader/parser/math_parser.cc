@@ -30,7 +30,7 @@ namespace {
 // result.
 absl::StatusOr<ParserResult> ParseFileOrText(absl::string_view file_or_data,
                                              bool is_file) {
-  internal_parser::InternalParser parser;
+  internal::InternalParser parser;
 
   // Calls the internal parser and returns if an error has been raised.
   if (absl::Status status = (is_file ? parser.ParseFile(file_or_data)

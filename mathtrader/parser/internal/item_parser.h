@@ -14,7 +14,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
-//
+
 // Parser for lines defining official items.
 
 #ifndef MATHTRADER_PARSER_INTERNAL_ITEM_PARSER_H_
@@ -25,8 +25,7 @@
 
 #include "mathtrader/common/item.pb.h"
 
-namespace mathtrader::internal_parser {
-
+namespace mathtrader::parser::internal {
 // Parses a line of text defining an official item name and returns an `Item`.
 // Example usage:
 //
@@ -59,7 +58,5 @@ class ItemParser {
   // static, as the destructor of RE2 is not trivial.
   const re2::RE2 kOfficialItemRegex;
 };
-
-}  // namespace mathtrader::internal_parser
-
+}  // namespace mathtrader::parser::internal
 #endif  // MATHTRADER_PARSER_INTERNAL_ITEM_PARSER_H_

@@ -36,8 +36,7 @@
 #include "mathtrader/parser/internal/wantlist_parser.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
-namespace mathtrader::internal_parser {
-
+namespace mathtrader::parser::internal {
 class InternalParser {
  public:
   InternalParser();
@@ -150,5 +149,5 @@ class InternalParser {
   // The trade input to return.
   ParserResult parser_result_;
 };
-}  // namespace mathtrader::internal_parser
+}  // namespace mathtrader::parser::internal
 #endif  // MATHTRADER_PARSER_INTERNAL_INTERNAL_PARSER_H_

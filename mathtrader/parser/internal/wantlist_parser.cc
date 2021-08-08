@@ -35,10 +35,11 @@
 #include "mathtrader/parser/util/item_util.h"
 #include "mathtrader/util/str_toupper.h"
 
-namespace mathtrader::internal_parser {
+namespace mathtrader::parser::internal {
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
+using ::mathtrader::util::StrToUpper;
 
 // Internal regex that matches wantlist prefix, capturing offered item id and
 // optionally the username.
@@ -173,8 +174,8 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     }
 
     // Makes the id and username case-insensitive.
-    item_id = util::StrToUpper(item_id);
-    username = util::StrToUpper(username);
+    item_id = StrToUpper(item_id);
+    username = StrToUpper(username);
 
     // Checks if colons are specified after wanted items.
     if (text_piece.find(':') != std::string::npos) {
@@ -231,7 +232,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
       // Makes the wanted item id case-insensitive.
       {
         auto wanted_item_id = static_cast<std::string>(token);
-        wanted_item->set_id(util::StrToUpper(std::move(wanted_item_id)));
+        wanted_item->set_id(StrToUpper(std::move(wanted_item_id)));
       }
 
       // Processes the item if dummy, returning on error.
@@ -258,4 +259,4 @@ int32_t WantlistParser::ComputePriority(int32_t rank) const { return rank; }
 absl::string_view WantlistParser::get_regex_str() {
   return kWantlistPrefixRegexStr;
 }
-}  // namespace mathtrader::internal_parser
+}  // namespace mathtrader::parser::internal

@@ -35,7 +35,7 @@ namespace {
 
 using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
-using ::mathtrader::internal_parser::WantlistParser;
+using ::mathtrader::parser::internal::WantlistParser;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::ElementsAre;

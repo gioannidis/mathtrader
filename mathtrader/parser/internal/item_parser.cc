@@ -32,10 +32,11 @@
 #include "mathtrader/parser/util/item_util.h"
 #include "mathtrader/util/str_toupper.h"
 
-namespace mathtrader::internal_parser {
+namespace mathtrader::parser::internal {
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::common::OfferedItem;
+using ::mathtrader::util::StrToUpper;
 
 // Internal regex that matches a text line defining an official item.
 constexpr char kOfficialItemRegexStr[]
@@ -123,12 +124,12 @@ absl::StatusOr<Item> ItemParser::ParseItem(absl::string_view text) const {
   Item item;
 
   // Sets the item-id, case-insensitive.
-  item.set_id(util::StrToUpper(item_id));
+  item.set_id(StrToUpper(item_id));
 
   // Sets any available official data.
   if (!username.empty()) {
     // Makes the username case-insensitive.
-    item.set_username(util::StrToUpper(username));
+    item.set_username(StrToUpper(username));
   }
   if (!official_name.empty()) {
     item.SetExtension(OfferedItem::official_name, official_name);
@@ -145,4 +146,4 @@ absl::StatusOr<Item> ItemParser::ParseItem(absl::string_view text) const {
   }
   return item;
 }
-}  // namespace mathtrader::internal_parser
+}  // namespace mathtrader::parser::internal

@@ -26,7 +26,7 @@
 
 namespace {
 using ::mathtrader::common::OfferedItem;
-using ::mathtrader::internal_parser::ItemParser;
+using ::mathtrader::parser::internal::ItemParser;
 
 constexpr char kPandemicId[] = "0012-PANDE";  // case-insensitive
 constexpr char kPandemicName[] = "Pandemic";

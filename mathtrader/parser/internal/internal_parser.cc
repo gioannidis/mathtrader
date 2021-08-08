@@ -36,7 +36,7 @@
 #include "mathtrader/parser/parser_result.pb.h"
 #include "mathtrader/parser/util/item_util.h"
 
-namespace mathtrader::internal_parser {
+namespace mathtrader::parser::internal {
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
@@ -395,4 +395,4 @@ void InternalParser::FinalizeParserResult() {
     missing_item->set_frequency(internal_node.mapped());
   }
 }
-}  // namespace mathtrader::internal_parser
+}  // namespace mathtrader::parser::internal
