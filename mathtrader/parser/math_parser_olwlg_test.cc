@@ -61,13 +61,13 @@ using MissingItem = mathtrader::ParserResult::MissingItem;
 //    "0001-MKGB", "0002-20GIFT"
 static constexpr char kItemRegex[] =
     R"(()"  // opens item id group
-      // Item id format 1: exactly 4 leading digits, separating '-",
-      // followed by any alphanumeric, including zero.
-      R"(([[:digit:]]{4}-[[:alnum:]]*))"
-      R"(|)"
-      // Item id format 2: digits only.
-      R"(([[:digit:]]+))"
-    R"())"  // closes item id group
+            // Item id format 1: exactly 4 leading digits, separating '-",
+            // followed by any alphanumeric, including zero.
+    R"(([[:digit:]]{4}-[[:alnum:]]*))"
+    R"(|)"
+    // Item id format 2: digits only.
+    R"(([[:digit:]]+))"
+    R"())"                      // closes item id group
     R"((-COPY[[:digit:]]+)?)";  // e.g., "-COPY42"; optional
 
 // Matches an item that:
@@ -105,20 +105,20 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
               Each(Property(&Wantlist::offered_item, IsValidItemId())));
 
   // Verifies the longest wantlist.
-  EXPECT_THAT(wantlists,
-              Contains(Property(&Wantlist::wanted_item,
-                       SizeIs(longest_wantlist))));
+  EXPECT_THAT(wantlists, Contains(Property(&Wantlist::wanted_item,
+                                           SizeIs(longest_wantlist))));
 
   // Verifies the id format of wanted items.
-  EXPECT_THAT(
-      wantlists,
-      Each(Property(&Wantlist::wanted_item, Each(IsValidItemId()))));
+  EXPECT_THAT(wantlists,
+              Each(Property(&Wantlist::wanted_item, Each(IsValidItemId()))));
 
   // Verifies the number of missing items.
   if (missing_item_count) {
-    EXPECT_THAT(parser_result->missing_items(), ElementsAre(AllOf(
-        Property(&MissingItem::item_id, StrCaseEq("missing-official")),
-        Property(&MissingItem::frequency, missing_item_count))));
+    EXPECT_THAT(
+        parser_result->missing_items(),
+        ElementsAre(AllOf(
+            Property(&MissingItem::item_id, StrCaseEq("missing-official")),
+            Property(&MissingItem::frequency, missing_item_count))));
   }
 }
 
@@ -136,7 +136,6 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
   // check the repeated items afterwards.
   EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
 }
-
 
 // Test suites: OLWLG trades.
 
@@ -158,14 +157,15 @@ TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
 
   // Verifies that all duplicate items originate from the same user.
   const auto& duplicates = result->duplicate_wanted_items();
-  EXPECT_THAT(duplicates, Each(Property(
-      &DuplicateItem::username, StrCaseEq("tigersareawesome"))));
+  EXPECT_THAT(duplicates, Each(Property(&DuplicateItem::username,
+                                        StrCaseEq("tigersareawesome"))));
 
   // Checks one duplicate item.
-  EXPECT_THAT(duplicates, Contains(AllOf(
-      Property(&DuplicateItem::wanted_item_id, StrEq("%8153405")),
-      Property(&DuplicateItem::offered_item_id, StrEq("8177732")),
-      Property(&DuplicateItem::frequency, Eq(3)))));
+  EXPECT_THAT(duplicates,
+              Contains(AllOf(
+                  Property(&DuplicateItem::wanted_item_id, StrEq("%8153405")),
+                  Property(&DuplicateItem::offered_item_id, StrEq("8177732")),
+                  Property(&DuplicateItem::frequency, Eq(3)))));
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021US) {

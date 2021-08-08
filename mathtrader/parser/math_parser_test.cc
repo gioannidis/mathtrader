@@ -71,14 +71,16 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
   // * The offered items' usernames match "Abcd[0-9]", ignoring case.
   // * Have 3 wanted items.
   // * Have no dummy wanted items.
-  EXPECT_THAT(result->wantlists(), Each(AllOf(
-      Property("offered item", &Wantlist::offered_item,
-               AllOf(Property("dummy", &Item::is_dummy, IsFalse()),
-                     Property("username", &Item::username,
-                              MatchesRegex(R"([Aa][Bb][Cc][Dd][0-9])")))),
-      Property("wanted items", &Wantlist::wanted_item,
-               AllOf(SizeIs(3),
-                     Each(Property("dummy", &Item::is_dummy, IsFalse())))))));
+  EXPECT_THAT(
+      result->wantlists(),
+      Each(AllOf(
+          Property("offered item", &Wantlist::offered_item,
+                   AllOf(Property("dummy", &Item::is_dummy, IsFalse()),
+                         Property("username", &Item::username,
+                                  MatchesRegex(R"([Aa][Bb][Cc][Dd][0-9])")))),
+          Property("wanted items", &Wantlist::wanted_item,
+                   AllOf(SizeIs(3), Each(Property("dummy", &Item::is_dummy,
+                                                  IsFalse())))))));
 
   // Checks that there are no missing or duplicate items.
   EXPECT_EQ(result->missing_items_size(), 0);
@@ -114,9 +116,10 @@ TEST(MathParserTest, TestMissingItems) {
               Each(Property(&Wantlist::wanted_item, SizeIs(3))));
 
   // Checks that there is a 'missing-item' that has appeared 4 times.
-  EXPECT_THAT(result->missing_items(), ElementsAre(AllOf(
-      Property(&MissingItem::item_id, StrCaseEq("missing-item")),
-      Property(&MissingItem::frequency, Eq(4)))));
+  EXPECT_THAT(result->missing_items(),
+              ElementsAre(AllOf(
+                  Property(&MissingItem::item_id, StrCaseEq("missing-item")),
+                  Property(&MissingItem::frequency, Eq(4)))));
 
   // Checks that there are no duplicate items. 'missing-item' should be deleted
   // first, so no errors are generated, even if it appears 2+ times in a list.
