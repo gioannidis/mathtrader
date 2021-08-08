@@ -38,9 +38,9 @@ cc_proto_library(
 
 # Build rules for AssignmentBuilder.
 cc_library(
-    name = "network_builder",
-    srcs = ["network_builder.cc"],
-    hdrs = ["network_builder.h"],
+    name = "assignment_builder",
+    srcs = ["assignment_builder.cc"],
+    hdrs = ["assignment_builder.h"],
     deps = [
         ":assignment_cc_proto",
         "//mathtrader/assignment/internal:arc_builder",
@@ -49,12 +49,12 @@ cc_library(
 )
 
 cc_test(
-    name = "network_builder_test",
+    name = "assignment_builder_test",
     size = "small",
-    srcs = ["network_builder_test.cc"],
+    srcs = ["assignment_builder_test.cc"],
     deps = [
+        ":assignment_builder",
         ":assignment_cc_proto",
-        ":network_builder",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "@com_google_googletest//:gtest_main",

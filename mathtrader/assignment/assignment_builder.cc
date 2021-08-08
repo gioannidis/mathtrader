@@ -15,27 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Entry point of the network builder, which transforms a `ParserResult`
-// message, representing wantlists, to a `Assignment` graph.
-
-#ifndef MATHTRADER_ASSIGNMENT_NETWORK_BUILDER_H_
-#define MATHTRADER_ASSIGNMENT_NETWORK_BUILDER_H_
+#include "mathtrader/assignment/assignment_builder.h"
 
 #include "mathtrader/assignment/assignment.pb.h"
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/assignment/internal/arc_builder.h"
 
 namespace mathtrader::assignment {
+// Processes the OLWLG-generated wantlists and builds the Assignment.
+Assignment AssignmentBuilder::BuildAssignment(
+    const ParserResult& parser_result) {
+  // The Assignment to return.
+  Assignment assignment;
 
-class AssignmentBuilder {
- public:
-  AssignmentBuilder() = default;
+  // Builds all the arcs representing the offered-wanted item relationships.
+  internal::ArcBuilder::BuildArcs(parser_result, &assignment);
 
-  // Disables copy constructor and move assignment.
-  AssignmentBuilder(const AssignmentBuilder&) = delete;
-  AssignmentBuilder& operator=(const AssignmentBuilder&) = delete;
-
-  // Processes the OLWLG-generated wantlists and builds the Assignment.
-  static Assignment BuildAssignment(const ParserResult& parser_result);
-};
+  return assignment;
+}
 }  // namespace mathtrader::assignment
-#endif  // MATHTRADER_ASSIGNMENT_NETWORK_BUILDER_H_
