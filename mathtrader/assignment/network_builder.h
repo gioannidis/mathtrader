@@ -35,7 +35,7 @@ class AssignmentBuilder {
   AssignmentBuilder& operator=(const AssignmentBuilder&) = delete;
 
   // Processes the OLWLG-generated wantlists and builds the Assignment.
-  static Assignment BuildNetwork(const ParserResult& parser_result);
+  static Assignment BuildAssignment(const ParserResult& parser_result);
 };
 }  // namespace mathtrader::assignment
 #endif  // MATHTRADER_ASSIGNMENT_NETWORK_BUILDER_H_

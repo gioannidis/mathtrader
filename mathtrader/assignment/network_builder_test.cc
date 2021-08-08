@@ -117,7 +117,7 @@ TEST(AssignmentBuilderTest, AllValidItems) {
                                     {"E", "C", "A", "D"}};
 
   Assignment const assignment =
-      AssignmentBuilder::BuildNetwork(BuildParserResult(wantlists));
+      AssignmentBuilder::BuildAssignment(BuildParserResult(wantlists));
 
   // Verifies the total number of arcs: one arc for wanted item. This is
   // computed by counting all elements of `wantlists`, minus the offered item,
@@ -160,7 +160,7 @@ TEST(AssignmentBuilderTest, UnwantedItemsAndEmptyWantlists) {
       {"empty_wantlist_2"}};
 
   Assignment const assignment =
-      AssignmentBuilder::BuildNetwork(BuildParserResult(wantlists));
+      AssignmentBuilder::BuildAssignment(BuildParserResult(wantlists));
 
   // Verifies the trading items.
   EXPECT_THAT(assignment.items(),
