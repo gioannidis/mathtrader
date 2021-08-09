@@ -196,9 +196,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     }
 
     // Processes the item if dummy, returning on error.
-    // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
-    // moved in this namespace.
-    if (const absl::Status status = parser::util::ProcessIfDummy(offered_item);
+    if (const absl::Status status = util::ProcessIfDummy(offered_item);
         !status.ok()) {
       return status;
     }
@@ -237,10 +235,8 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     }
 
     // Processes the item if dummy, returning on error.
-    // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
-    // moved in this namespace.
-    if (const absl::Status status = parser::util::ProcessIfDummy(
-            offered_item->username(), wanted_item);
+    if (const absl::Status status =
+            util::ProcessIfDummy(offered_item->username(), wanted_item);
         !status.ok()) {
       return status;
     }
