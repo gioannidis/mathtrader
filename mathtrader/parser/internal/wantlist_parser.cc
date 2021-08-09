@@ -196,9 +196,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     }
 
     // Processes the item if dummy, returning on error.
-    // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
-    // moved in this namespace.
-    if (const absl::Status status = parser::util::ProcessIfDummy(offered_item);
+    if (const absl::Status status = util::ProcessIfDummy(offered_item);
         !status.ok()) {
       return status;
     }
@@ -224,7 +222,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
   // seen, where it further increases the next item's rank.
   for (absl::string_view token : tokens) {
     if (token.size() == 1 && token[0] == kBigStepChar) {
-      // Not a wanted item, but a "big step" characters.
+      // Not a wanted item, but a "big step" character.
       rank += kBigStep;
       continue;
     }
@@ -237,10 +235,8 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     }
 
     // Processes the item if dummy, returning on error.
-    // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
-    // moved in this namespace.
-    if (const absl::Status status = parser::util::ProcessIfDummy(
-            offered_item->username(), wanted_item);
+    if (const absl::Status status =
+            util::ProcessIfDummy(offered_item->username(), wanted_item);
         !status.ok()) {
       return status;
     }

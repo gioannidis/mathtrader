@@ -112,9 +112,7 @@ absl::StatusOr<Item> ItemParser::ParseItem(absl::string_view text) const {
   if (item_id.empty()) {
     return absl::InvalidArgumentError(
         "Empty official item name is not allowed.");
-  } else if (parser::util::IsDummyItem(item_id)) {
-    // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
-    // moved in this namespace.
+  } else if (util::IsDummyItem(item_id)) {
     return absl::InvalidArgumentError(absl::StrCat(
         "Specifying dummy item name as official item name is not allowed: ",
         item_id));

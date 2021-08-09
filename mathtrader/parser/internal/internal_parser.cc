@@ -166,9 +166,7 @@ namespace {
 std::string GetProperItemId(const Item& item, const std::string& user) {
   // The item id to return.
   std::string id = item.id();
-  // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
-  // moved in this namespace.
-  if (parser::util::IsDummyItem(id)) {
+  if (util::IsDummyItem(id)) {
     // Retrieves the username and the line id where the username was first
     // defined. At this point, it is guaranteed that these operations succeed.
     const std::string& username = item.username();
@@ -271,10 +269,7 @@ void RemoveMissingItems(
                      // Lambda: decides whether an item should be erased.
                      [&official_items, missing_items](const Item& wanted_item) {
                        const std::string& id = wanted_item.id();
-
-                       // TODO(gioannidis) remove 'parser' qualifier once
-                       // InternalParser has been moved in this namespace.
-                       if (parser::util::IsDummyItem(id)) {
+                       if (util::IsDummyItem(id)) {
                          // Does not erase the item, because it is dummy.
                          return false;
 
@@ -337,9 +332,7 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
 
   // Registers the offered item or retrieves the official data from an already
   // registered official item.
-  // TODO(gioannidis) remove 'parser' qualifier once InternalParser has been
-  // moved in this namespace.
-  if (parser::util::IsDummyItem(raw_offered_id)) {
+  if (util::IsDummyItem(raw_offered_id)) {
     // Registers the offered dummy item id. Must succeed, as this is the first
     // wantlist of the item.
     CHECK(gtl::InsertIfNotPresent(&dummy_items_, offered_id));
