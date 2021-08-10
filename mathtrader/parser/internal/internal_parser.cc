@@ -163,13 +163,12 @@ namespace {
 // If the item is a dummy, it appends the username of its owner to the item id,
 // in order to disambiguify it from similarly-named dummy items. In this case, a
 // username must exist.
-std::string GetProperItemId(const Item& item, const std::string& user) {
+std::string GetProperItemId(const Item& item, const std::string& username) {
   // The item id to return.
   std::string id = item.id();
   if (util::IsDummyItem(id)) {
     // Retrieves the username and the line id where the username was first
     // defined. At this point, it is guaranteed that these operations succeed.
-    const std::string& username = item.username();
     CHECK(!username.empty());
 
     // Appends the line number as a unique id.
