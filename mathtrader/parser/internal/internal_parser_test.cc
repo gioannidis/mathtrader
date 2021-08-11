@@ -50,7 +50,7 @@ using DuplicateItem = mathtrader::parser::ParserResult::DuplicateWantedItem;
 
 // Tests a basic use-case.
 TEST(InternalParser, TestOnlyComments) {
-  const std::string input_data = R"(# Comment line. Next line is empty.
+  static constexpr char input_data[] = R"(# Comment line. Next line is empty.
 
 #Comment line without leading whitespace. Next two lines are also empty.
 
@@ -63,7 +63,7 @@ TEST(InternalParser, TestOnlyComments) {
 }
 
 TEST(InternalParser, TestSingleWantlist) {
-  const std::string input_data = R"(1-A : 2-B 3-C 4-D)";
+  static constexpr char input_data[] = R"(1-A : 2-B 3-C 4-D)";
 
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
@@ -78,7 +78,7 @@ TEST(InternalParser, TestSingleWantlist) {
 }
 
 TEST(InternalParser, TestMultipleWantlists) {
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
   1-A : 2-B 3-C 4-D
   2-B : 1-A 4-D
   3-C : 5-E
@@ -98,7 +98,7 @@ TEST(InternalParser, TestMultipleWantlists) {
 
 TEST(InternalParserItemsTest, TestOfficialItems) {
   // TODO(gioannidis) replace with constexpr.
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
 0002-SOC ==> "Shadows over Camelot" (from username2)
@@ -111,15 +111,18 @@ TEST(InternalParserItemsTest, TestOfficialItems) {
 
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
-  EXPECT_EQ(parser.get_item_count(), 7);
-  EXPECT_THAT(parser.get_parser_result().users(), SizeIs(5));
+
+  const auto& result = parser.get_parser_result();
+  EXPECT_EQ(result.item_count(), 7);  // Non-dummy items.
+  EXPECT_EQ(result.items_size(), 7);  // All items.
+  EXPECT_THAT(result.users(), SizeIs(5));
 }
 
 // Includes empty lines with all spaces. Note that although the ItemParser
 // returns an error when an empty line is given, the InternalParser filters out
 // empty lines before passing them to the ItemParser.
 TEST(InternalParserItemsTest, TestColonsSpaces) {
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
 !BEGIN-OFFICIAL-NAMES
 
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
@@ -133,14 +136,17 @@ TEST(InternalParserItemsTest, TestColonsSpaces) {
 
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
-  EXPECT_EQ(parser.get_item_count(), 5);
-  EXPECT_THAT(parser.get_parser_result().users(), SizeIs(4));
+
+  const auto& result = parser.get_parser_result();
+  EXPECT_EQ(result.item_count(), 5);  // Non-dummy items.
+  EXPECT_EQ(result.items_size(), 5);  // All items.
+  EXPECT_THAT(result.users(), SizeIs(4));
 }
 
 // One of the items is a dummy item and should be ignored.
 // TODO(gioannidis) move to negative tests.
 TEST(InternalParserItemsTest, DISABLED_TestDummyNames) {
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
 0002-SOC ==> "Shadows over Camelot" (from username2)
@@ -151,14 +157,17 @@ TEST(InternalParserItemsTest, DISABLED_TestDummyNames) {
 
   InternalParser parser;
   EXPECT_OK(parser.ParseText(input_data));
-  EXPECT_EQ(parser.get_item_count(), 4);
-  EXPECT_THAT(parser.get_parser_result().users(), SizeIs(4));
+
+  const auto& result = parser.get_parser_result();
+  EXPECT_EQ(result.item_count(), 4);  // Non-dummy items.
+  EXPECT_EQ(result.items_size(), 5);  // All items.
+  EXPECT_THAT(result.users(), SizeIs(4));
 }
 
 // Tests that we can specify new usernames in wantlists, even if they have not
 // been declared in the official names.
 TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
 0002-SOC ==> "Shadows over Camelot" (from username2)
@@ -175,29 +184,46 @@ TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
 
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
-  EXPECT_EQ(parser.get_item_count(), 6);
-  EXPECT_THAT(parser.get_parser_result().users(), SizeIs(5));
+
+  const auto& result = parser.get_parser_result();
+  EXPECT_EQ(result.item_count(), 6);  // Non-dummy items.
+  EXPECT_EQ(result.items_size(), 6);  // All items.
+  EXPECT_THAT(result.users(), SizeIs(5));
 }
 
 TEST(InternalParser, TestDuplicateItems) {
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
       (user1) A : B C D E F G Z
       (user2) B : A F Q F R A Z F C
       (user3) C : O F K Z E K K P F I K X K
   )";
+  // Number of wanted items, excluding duplicates.
+  static constexpr int32_t kWantedItems[] = {7, 6, 8};
+
+  // Number of all unique items: offered + unique
+  static constexpr int32_t kAllWantedItems = 15;
 
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
 
-  EXPECT_THAT(
-      parser.get_parser_result().wantlists(),
-      ElementsAre(Property("wanted items", &Wantlist::wanted_item, SizeIs(7)),
-                  Property("wanted items", &Wantlist::wanted_item, SizeIs(6)),
-                  Property("wanted items", &Wantlist::wanted_item, SizeIs(8))));
+  const auto& result = parser.get_parser_result();
+  EXPECT_EQ(result.item_count(), kAllWantedItems);  // Non-dummy items.
+  EXPECT_EQ(result.items_size(), kAllWantedItems);  // All items.
+  EXPECT_THAT(result.users(),
+              UnorderedElementsAre(StrCaseEq("user1"), StrCaseEq("user2"),
+                                   StrCaseEq("user3")));
+
+  EXPECT_THAT(result.wantlists(),
+              ElementsAre(Property("wanted items", &Wantlist::wanted_item,
+                                   SizeIs(kWantedItems[0])),
+                          Property("wanted items", &Wantlist::wanted_item,
+                                   SizeIs(kWantedItems[1])),
+                          Property("wanted items", &Wantlist::wanted_item,
+                                   SizeIs(kWantedItems[2]))));
 
   // Verifies all missing items and their frequencies.
   // Note that the order of duplicate items is irrelevant.
-  const auto& duplicates = parser.get_parser_result().duplicate_wanted_items();
+  const auto& duplicates = result.duplicate_wanted_items();
   EXPECT_THAT(
       duplicates,
       UnorderedElementsAre(
@@ -230,7 +256,7 @@ TEST(InternalParser, TestDuplicateItems) {
 
 // Offered items must have an official name, if official names have been given.
 TEST(InternalParserNegativeTest, TestMissingOfficialOfferedItemName) {
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-A
 0002-B
@@ -251,7 +277,7 @@ TEST(InternalParserNegativeTest, TestMissingOfficialOfferedItemName) {
 
 // Checks against declaring a double wantlist for an item.
 TEST(InternalParserNegativeTest, TestDoubleWantlist) {
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
       0001-A : 0002-B 0003-C
       0002-B : 0003-C 0001-A
       0004-D : 0001-A
@@ -269,7 +295,7 @@ TEST(InternalParserNegativeTest, TestDoubleWantlist) {
 
 // Checks against declaring a double wantlist for a dummy item.
 TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
-  const std::string input_data = R"(
+  static constexpr char input_data[] = R"(
       0001-A : 0002-B 0003-C
       0002-B : 0003-C 0001-A
       0004-D : 0001-A
