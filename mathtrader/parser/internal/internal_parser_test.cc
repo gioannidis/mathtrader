@@ -31,6 +31,7 @@
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
+using ::mathtrader::parser::ParserResult;
 using ::mathtrader::parser::internal::InternalParser;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -67,7 +68,10 @@ TEST(InternalParser, TestSingleWantlist) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 1);
-  EXPECT_THAT(parser.get_parser_result().wantlists(),
+
+  const ParserResult& result = parser.get_parser_result();
+  EXPECT_EQ(result.items_size(), 4);
+  EXPECT_THAT(result.wantlists(),
               ElementsAre(AllOf(Property(&Wantlist::offered_item,
                                          Property(&Item::id, StrEq("1-A"))),
                                 Property(&Wantlist::wanted_item, SizeIs(3)))));
@@ -93,6 +97,7 @@ TEST(InternalParser, TestMultipleWantlists) {
 // Test suite: official items
 
 TEST(InternalParserItemsTest, TestOfficialItems) {
+  // TODO(gioannidis) replace with constexpr.
   const std::string input_data = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
@@ -238,11 +243,7 @@ TEST(InternalParserNegativeTest, TestMissingOfficialOfferedItemName) {
 0003-C : 0001-A)";
 
   InternalParser parser;
-  absl::Status status = parser.ParseText(input_data);
-
-  // Verifies that 3 official items were read.
-  EXPECT_EQ(parser.get_item_count(), 3);
-  EXPECT_THAT(parser.get_parser_result().users(), IsEmpty());
+  const absl::Status status = parser.ParseText(input_data);
   EXPECT_THAT(status,
               AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("0004-D"))));
@@ -260,7 +261,7 @@ TEST(InternalParserNegativeTest, TestDoubleWantlist) {
       0006-F : 0001-A)";
 
   InternalParser parser;
-  absl::Status status = parser.ParseText(input_data);
+  const absl::Status status = parser.ParseText(input_data);
   EXPECT_THAT(status,
               AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("0002-B"))));
@@ -278,7 +279,7 @@ TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
       (abcd) %003-C : 0001-A)";
 
   InternalParser parser;
-  absl::Status status = parser.ParseText(input_data);
+  const absl::Status status = parser.ParseText(input_data);
   EXPECT_THAT(status,
               AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("%003-C"))));

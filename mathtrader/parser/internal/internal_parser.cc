@@ -116,10 +116,6 @@ absl::Status InternalParser::ParseLine(absl::string_view line) {
         status.code(),
         absl::StrFormat("(line %d) %s", line_count_, status.message()));
   }
-
-  // Sets the final item count.
-  parser_result_.set_item_count(items_.size());
-
   return absl::OkStatus();
 }
 
@@ -143,8 +139,8 @@ absl::Status InternalParser::ParseItem(absl::string_view line) {
   if (!item.ok()) {
     return item.status();
 
-  } else if (const std::string id = item->id();
-             !gtl::InsertIfNotPresent(&items_, id, *item)) {
+  } else if (const std::string& id = item->id(); !gtl::InsertIfNotPresent(
+                 parser_result_.mutable_items(), id, *item)) {
     // Failed to insert the item; already exists.
     return absl::InvalidArgumentError(absl::StrFormat(
         "Duplicate declaration of official item %s not allowed.", id));
@@ -253,7 +249,7 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
 // Identifies and removes missing items from a wantlist, reporting them to
 // `missing_items`.
 void RemoveMissingItems(
-    const absl::flat_hash_map<std::string, Item>& official_items,
+    const google::protobuf::Map<std::string, Item>& official_items,
     Wantlist* wantlist,
     absl::flat_hash_map<std::string, int32_t>* missing_items) {
   CHECK_NOTNULL(wantlist);
@@ -334,17 +330,22 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
   if (util::IsDummyItem(raw_offered_id)) {
     // Registers the offered dummy item id. Must succeed, as this is the first
     // wantlist of the item.
-    CHECK(gtl::InsertIfNotPresent(&dummy_items_, offered_id));
+    CHECK(gtl::InsertIfNotPresent(parser_result_.mutable_items(), offered_id,
+                                  offered_item));
 
   } else if (!has_official_names_) {
-    // Registers the non-dummy offered item. Must succeed, as this is the first
-    // wantlist of the item and no official names have been previously declared.
-    CHECK(gtl::InsertIfNotPresent(&items_, offered_id, offered_item));
+    // Registers the non-dummy offered item, because no official names have been
+    // defined. It is possible that the offered item exists if it has been
+    // previously defined as a wanted item in another wantlist.
+    gtl::InsertIfNotPresent(parser_result_.mutable_items(), offered_id,
+                            offered_item);
 
   } else {
     // Verifies that the non-dummy offered item exists, because official names
     // have been already declared.
-    if (const Item* existing_item = gtl::FindOrNull(items_, offered_id);
+    // TODO(gioannidis) replace with `contains`.
+    if (const Item* existing_item =
+            gtl::FindOrNull(parser_result_.items(), offered_id);
         !existing_item) {
       return absl::InvalidArgumentError(absl::StrFormat(
           "Missing official name for offered item %s.", offered_id));
@@ -355,7 +356,13 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
   if (has_official_names_) {
     // Note: `wantlist` is StatusOr, so we dereference the union first and then
     // pass by pointer.
-    RemoveMissingItems(items_, &(*wantlist), &missing_items_);
+    RemoveMissingItems(parser_result_.items(), &(*wantlist), &missing_items_);
+  } else {
+    // Registers all wanted items, since no official names have been given.
+    for (const Item& wanted_item : wantlist->wanted_item()) {
+      gtl::InsertIfNotPresent(parser_result_.mutable_items(), wanted_item.id(),
+                              wanted_item);
+    }
   }
 
   // Identifies and removes duplicate items that have an official name. This
@@ -371,6 +378,11 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
 
 // Propagates data from the data members to the parser_result.
 void InternalParser::FinalizeParserResult() {
+  // Sets the final item count. Counts non-dummy items.
+  parser_result_.set_item_count(std::count_if(
+      parser_result_.items().cbegin(), parser_result_.items().cend(),
+      [](const auto& map_pair) { return !map_pair.second.is_dummy(); }));
+
   // Moves the usernames to parser_result.
   while (!users_.empty()) {
     auto internal_node = users_.extract(users_.begin());
