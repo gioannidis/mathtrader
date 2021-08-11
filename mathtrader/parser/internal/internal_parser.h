@@ -60,12 +60,6 @@ class InternalParser {
   // Returns the number of parsed lines.
   const int64_t get_line_count() const { return line_count_; }
 
-  // Returns the number of trading items. If official names have been given,
-  // returns the number of trading items with an official name, ignoring missing
-  // wanted items.
-  ABSL_DEPRECATED("Use get_parser_result.item_count() instead")
-  const int64_t get_item_count() const { return parser_result_.item_count(); }
-
  private:
   // Defines the state of the parser and the context it should expect to parse.
   enum class ParserState {
