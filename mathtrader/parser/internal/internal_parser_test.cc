@@ -143,27 +143,6 @@ TEST(InternalParserItemsTest, TestColonsSpaces) {
   EXPECT_THAT(result.users(), SizeIs(4));
 }
 
-// One of the items is a dummy item and should be ignored.
-// TODO(gioannidis) move to negative tests.
-TEST(InternalParserItemsTest, DISABLED_TestDummyNames) {
-  static constexpr char input_data[] = R"(
-!BEGIN-OFFICIAL-NAMES
-0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
-0002-SOC ==> "Shadows over Camelot" (from username2)
-0024-AGMI ==> "Adventure Games: Monochrome Inc." (from username3)
-%0025-AN7WCS ==> "Alt Name: 7 Wonders coaster set" (from username3)
-0026-TIMSTO ==> "T.I.M.E Stories" (from username4)
-!END-OFFICIAL-NAMES)";
-
-  InternalParser parser;
-  EXPECT_OK(parser.ParseText(input_data));
-
-  const auto& result = parser.get_parser_result();
-  EXPECT_EQ(result.item_count(), 4);  // Non-dummy items.
-  EXPECT_EQ(result.items_size(), 5);  // All items.
-  EXPECT_THAT(result.users(), SizeIs(4));
-}
-
 // Tests that we can specify new usernames in wantlists, even if they have not
 // been declared in the official names.
 TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
@@ -309,5 +288,20 @@ TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
   EXPECT_THAT(status,
               AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("%003-C"))));
+}
+
+// One of the items is a dummy item and should be ignored.
+TEST(InternalParserNegativeTest, TestDummyNames) {
+  static constexpr char input_data[] = R"(
+!BEGIN-OFFICIAL-NAMES
+0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
+0002-SOC ==> "Shadows over Camelot" (from username2)
+0024-AGMI ==> "Adventure Games: Monochrome Inc." (from username3)
+%0025-AN7WCS ==> "Alt Name: 7 Wonders coaster set" (from username3)
+0026-TIMSTO ==> "T.I.M.E Stories" (from username4)
+!END-OFFICIAL-NAMES)";
+
+  InternalParser parser;
+  EXPECT_TRUE(absl::IsInvalidArgument(parser.ParseText(input_data)));
 }
 }  // namespace
