@@ -52,7 +52,7 @@ class InternalParser {
   ABSL_MUST_USE_RESULT absl::Status ParseText(absl::string_view data);
 
   // Returns the parsed ParserResult.
-  const ParserResult& get_parser_result() const { return parser_result_; }
+  const ParserResult& parser_result() const { return parser_result_; }
 
   // Returns a mutable pointer to the parsed ParserResult.
   ParserResult* mutable_parser_result() { return &parser_result_; }

@@ -59,7 +59,7 @@ TEST(InternalParser, TestOnlyComments) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 5);
-  EXPECT_THAT(parser.get_parser_result().wantlists(), IsEmpty());
+  EXPECT_THAT(parser.parser_result().wantlists(), IsEmpty());
 }
 
 TEST(InternalParser, TestSingleWantlist) {
@@ -69,7 +69,7 @@ TEST(InternalParser, TestSingleWantlist) {
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 1);
 
-  const ParserResult& result = parser.get_parser_result();
+  const ParserResult& result = parser.parser_result();
   EXPECT_EQ(result.items_size(), 4);
   EXPECT_THAT(result.wantlists(),
               ElementsAre(AllOf(Property(&Wantlist::offered_item,
@@ -88,7 +88,7 @@ TEST(InternalParser, TestMultipleWantlists) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_GE(parser.get_line_count(), 4);
-  EXPECT_THAT(parser.get_parser_result().wantlists(), SizeIs(4));
+  EXPECT_THAT(parser.parser_result().wantlists(), SizeIs(4));
 
   // Tests the mutable interface.
   EXPECT_THAT(parser.mutable_parser_result()->wantlists(), SizeIs(4));
@@ -112,7 +112,7 @@ TEST(InternalParserItemsTest, TestOfficialItems) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
 
-  const auto& result = parser.get_parser_result();
+  const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), 7);  // Non-dummy items.
   EXPECT_EQ(result.items_size(), 7);  // All items.
   EXPECT_THAT(result.users(), SizeIs(5));
@@ -137,7 +137,7 @@ TEST(InternalParserItemsTest, TestColonsSpaces) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
 
-  const auto& result = parser.get_parser_result();
+  const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), 5);  // Non-dummy items.
   EXPECT_EQ(result.items_size(), 5);  // All items.
   EXPECT_THAT(result.users(), SizeIs(4));
@@ -164,7 +164,7 @@ TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
 
-  const auto& result = parser.get_parser_result();
+  const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), 6);  // Non-dummy items.
   EXPECT_EQ(result.items_size(), 6);  // All items.
   EXPECT_THAT(result.users(), SizeIs(5));
@@ -185,7 +185,7 @@ TEST(InternalParser, TestDuplicateItems) {
   InternalParser parser;
   EXPECT_TRUE(parser.ParseText(input_data).ok());
 
-  const auto& result = parser.get_parser_result();
+  const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), kAllWantedItems);  // Non-dummy items.
   EXPECT_EQ(result.items_size(), kAllWantedItems);  // All items.
   EXPECT_THAT(result.users(),
