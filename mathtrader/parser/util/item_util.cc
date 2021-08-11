@@ -35,7 +35,7 @@ using ::mathtrader::common::Item;
 // username of its owner in order to disambiguify it from similarly-named dummy
 // items of other users. Sets the `is_dummy` field and copies the original id
 // to the `unmodified_id` field. Does nothing if the item is non-dummy.
-// Returns `InvalidArgumentError` if a dummy item has no username.
+// Returns `NotFoundError` if a dummy item has no username.
 absl::Status ProcessIfDummy(std::string_view username, Item* item) {
   CHECK_NOTNULL(item);
   if (IsDummyItem(item)) {
@@ -44,7 +44,7 @@ absl::Status ProcessIfDummy(std::string_view username, Item* item) {
     item->set_is_dummy(true);
 
     if (username.empty()) {
-      return absl::InvalidArgumentError(absl::StrFormat(
+      return absl::NotFoundError(absl::StrFormat(
           "Missing or empty username for item %s. (Tip: this usually indicates "
           "that the username is missing from the wantlist.)",
           item->id()));

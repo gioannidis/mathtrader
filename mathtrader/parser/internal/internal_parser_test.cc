@@ -250,7 +250,7 @@ TEST(InternalParserNegativeTest, TestMissingOfficialOfferedItemName) {
   InternalParser parser;
   const absl::Status status = parser.ParseText(input_data);
   EXPECT_THAT(status,
-              AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
+              AllOf(ResultOf(absl::IsNotFound, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("0004-D"))));
 }
 
@@ -268,7 +268,7 @@ TEST(InternalParserNegativeTest, TestDoubleWantlist) {
   InternalParser parser;
   const absl::Status status = parser.ParseText(input_data);
   EXPECT_THAT(status,
-              AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
+              AllOf(ResultOf(absl::IsAlreadyExists, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("0002-B"))));
 }
 
@@ -286,7 +286,7 @@ TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
   InternalParser parser;
   const absl::Status status = parser.ParseText(input_data);
   EXPECT_THAT(status,
-              AllOf(ResultOf(absl::IsInvalidArgument, IsTrue()),
+              AllOf(ResultOf(absl::IsAlreadyExists, IsTrue()),
                     Property(&absl::Status::message, HasSubstr("%003-C"))));
 }
 

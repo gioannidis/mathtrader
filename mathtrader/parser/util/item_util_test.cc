@@ -91,13 +91,13 @@ TEST(ProcessIfDummyTest, TestDummy) {
 TEST(ProcessIfDummyTest, DummyItemIdWithoutUsername) {
   Item item;
   item.set_id(R"(%dummyId)");
-  EXPECT_TRUE(absl::IsInvalidArgument(ProcessIfDummy(&item)));
+  EXPECT_TRUE(absl::IsNotFound(ProcessIfDummy(&item)));
 }
 
 TEST(ProcessIfDummyTest, DummyItemPropertyWithoutUsername) {
   Item item;
   item.set_is_dummy(true);
-  EXPECT_TRUE(absl::IsInvalidArgument(ProcessIfDummy(&item)));
+  EXPECT_TRUE(absl::IsNotFound(ProcessIfDummy(&item)));
 }
 
 TEST(ProcessIfDummyDeathTest, NullItem) {

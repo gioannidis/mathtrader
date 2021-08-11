@@ -142,7 +142,7 @@ absl::Status InternalParser::ParseItem(absl::string_view line) {
   } else if (const std::string& id = item->id(); !gtl::InsertIfNotPresent(
                  parser_result_.mutable_items(), id, *item)) {
     // Failed to insert the item; already exists.
-    return absl::InvalidArgumentError(absl::StrFormat(
+    return absl::AlreadyExistsError(absl::StrFormat(
         "Duplicate declaration of official item %s not allowed.", id));
   }
 
@@ -319,7 +319,7 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
           wantlist_of_item_.emplace(offered_id, line_count_);
       !inserted) {
     // Reports the line number of the existing wantlist.
-    return absl::InvalidArgumentError(absl::StrFormat(
+    return absl::AlreadyExistsError(absl::StrFormat(
         "Cannot declare multiple wantlists for item %s. Previous wantlist "
         "declared in line %d.",
         raw_offered_id, it->second));
@@ -347,7 +347,7 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
     if (const Item* existing_item =
             gtl::FindOrNull(parser_result_.items(), offered_id);
         !existing_item) {
-      return absl::InvalidArgumentError(absl::StrFormat(
+      return absl::NotFoundError(absl::StrFormat(
           "Missing official name for offered item %s.", offered_id));
     }
   }
