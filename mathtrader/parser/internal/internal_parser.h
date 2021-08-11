@@ -130,17 +130,6 @@ class InternalParser {
   // Tracks the users with offered items and/or with declared official items.
   absl::flat_hash_set<std::string> users_;
 
-  // Tracks the ids of the trading items, excluding dummy items. If official
-  // items have been given, tracks only the ids of items with an official name.
-  ABSL_DEPRECATED("Use parser_result.items() instead")
-  absl::flat_hash_map<std::string, common::Item> items_;
-
-  // Tracks the ids of the dummy items. Used to verify that a wantlist has been
-  // given for a dummy item, i.e., that it has been encountered as an official
-  // item, before it is specified as a wanted item.
-  ABSL_DEPRECATED("Use parser_result.items() instead")
-  absl::flat_hash_set<std::string> dummy_items_;
-
   // Tracks the line number of each offered item's wantlist. Used to check
   // against double wantlists.
   absl::flat_hash_map<std::string, int32_t> wantlist_of_item_;
