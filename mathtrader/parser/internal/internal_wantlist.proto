@@ -15,35 +15,17 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Proto definition for a wantlist.
+// Defines Wantlist extensions that are internal to the MathParser.
 
 syntax = "proto2";
 
-package mathtrader.common;
+package mathtrader.parser.internal;
 
-import "mathtrader/common/item.proto";
+import "mathtrader/common/wantlist.proto";
 
-// Message encapsulating a wantlist. One item is offered in exchange for any
-// one of the wanted items.
-// Next id: 5
-message Wantlist {
-  optional Item offered_item = 1 [deprecated = true];
-  repeated Item wanted_item = 2 [deprecated = true];
-
-  // The offered item id.
-  optional string offered = 3;
-
-  // Encapsulates additional fields defined by a wanted item, apart from the id.
-  // Next id: 3
-  message WantedItem {
-    optional string id = 1;
-
-    // Expresses user preference. Lower priority indicates higher preference.
-    optional int32 priority = 2;
+message InternalWantlist {
+  extend common.Wantlist {
+    // The username extracted from the wantlist.
+    optional string username = 100;
   }
-
-  // The wanted items.
-  repeated WantedItem wanted = 4;
-
-  extensions 100 to 199;
 }

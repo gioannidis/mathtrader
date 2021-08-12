@@ -49,6 +49,18 @@ cc_test(
     ],
 )
 
+# Rules to build the internal wantlist extensions.
+proto_library(
+    name = "internal_wantlist_proto",
+    srcs = ["internal_wantlist.proto"],
+    deps = ["//mathtrader/common:wantlist_proto"],
+)
+
+cc_proto_library(
+    name = "internal_wantlist_cc_proto",
+    deps = [":internal_wantlist_proto"],
+)
+
 # Rules to build the stateless module that parses wantlists.
 cc_library(
     name = "wantlist_parser",
