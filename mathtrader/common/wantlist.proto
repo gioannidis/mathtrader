@@ -25,7 +25,23 @@ import "mathtrader/common/item.proto";
 
 // Message encapsulating a wantlist. One item is offered in exchange for any
 // one of the wanted items.
+// Next id: 5
 message Wantlist {
-  optional Item offered_item = 1;
-  repeated Item wanted_item = 2;
+  optional Item offered_item = 1 [deprecated = true];
+  repeated Item wanted_item = 2 [deprecated = true];
+
+  // The offered item id.
+  optional string offered = 3;
+
+  // Encapsulates additional fields defined by a wanted item, apart from the id.
+  // Next id: 3
+  message WantedItem {
+    optional string id = 1;
+
+    // Expresses user preference. Lower priority indicates higher preference.
+    optional int32 priority = 2;
+  }
+
+  // The wanted items.
+  repeated WantedItem wanted = 4;
 }
