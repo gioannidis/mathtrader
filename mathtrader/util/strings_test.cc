@@ -17,8 +17,11 @@
 
 #include "mathtrader/util/str_toupper.h"
 
+#include <string>
+
 #include "gtest/gtest.h"
 
+namespace {
 using ::mathtrader::util::StrToUpper;
 
 TEST(StrToUpperTest, TestAllLowerChars) {
@@ -35,6 +38,19 @@ TEST(StrToUpperTest, TestMixedChars) {
 }
 
 TEST(StrToUpperTest, TestNonAlphaChars) {
-  EXPECT_EQ(StrToUpper("qwerty!@#$%^&*()uiop"),
-            "QWERTY!@#$%^&*()UIOP");
+  EXPECT_EQ(StrToUpper("qwerty!@#$%^&*()uiop"), "QWERTY!@#$%^&*()UIOP");
 }
+
+TEST(StrToUpperTest, TestWithMutable) {
+  static constexpr char kOriginalString[] = "abCdeFGHiJKlm!@#$nOp";
+  std::string str = kOriginalString;
+  StrToUpper(&str);
+  EXPECT_EQ(str, "ABCDEFGHIJKLM!@#$NOP");
+}
+
+TEST(StrToUpperTest, TestWithNullMutable) {
+  std::string* const str = nullptr;
+  StrToUpper(str);
+  EXPECT_EQ(str, nullptr);
+}
+}  // namespace

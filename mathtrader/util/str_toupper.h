@@ -29,6 +29,9 @@ namespace mathtrader::util {
 //    CHECK_EQ(toupper("abCDeFGh"), "ABCDEFGH");
 std::string StrToUpper(std::string str);
 
+// As above, but operates directly on a mutable string. Does nothing on null.
+void StrToUpper(std::string* str);
+
 }  // namespace mathtrader::util
 
 #endif  // MATHTRADER_UTIL_STR_TOUPPER_H_
