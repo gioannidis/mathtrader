@@ -20,6 +20,7 @@
 #ifndef MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_
 #define MATHTRADER_PARSER_UTIL_ITEM_UTIL_H_
 
+#include <string>
 #include <string_view>
 
 #include "absl/base/attributes.h"
@@ -48,11 +49,16 @@ inline bool IsDummyItem(const common::Item* item) {
   return (item && IsDummyItem(*item));
 }
 
-// Processes the item if it is a dummy. Makes the id unique by appending the
-// username of its owner in order to disambiguify it from similarly-named dummy
-// items of other users. Sets the `is_dummy` field and copies the original id
-// to the `original_id` field. Does nothing if the item is non-dummy.
-// Returns `NotFoundError` if a dummy item has no username.
+// Processes the item id if represents a dummy item. Makes the id unique by
+// appending the username of its owner in order to disambiguify it from
+// similarly-named dummy items of other users. Does nothing if the item is
+// non-dummy. Returns `NotFoundError` if a dummy item has no username.
+ABSL_MUST_USE_RESULT absl::Status ProcessIfDummy(std::string_view username,
+                                                 std::string* item_id);
+
+// As above, but operates on an item.  Sets the `is_dummy` field and copies the
+// original id to the `original_id` field. Does nothing if the item is
+// non-dummy. Returns `NotFoundError` if a dummy item has no username.
 ABSL_MUST_USE_RESULT absl::Status ProcessIfDummy(std::string_view username,
                                                  common::Item* item);
 

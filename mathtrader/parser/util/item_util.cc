@@ -17,6 +17,7 @@
 
 #include "mathtrader/parser/util/item_util.h"
 
+#include <string>
 #include <string_view>
 
 #include "absl/status/status.h"
@@ -29,30 +30,50 @@
 namespace mathtrader::parser::util {
 namespace {
 using ::mathtrader::common::Item;
+
+// Processes the item id, assuming that it already represents a dummy id.
+absl::Status InternalProcessDummy(std::string_view username,
+                                  std::string* item_id) {
+  CHECK_NOTNULL(item_id);
+  if (username.empty()) {
+    return absl::NotFoundError(absl::StrFormat(
+        "Missing or empty username for item %s. (Tip: this usually indicates "
+        "that the username is missing from the wantlist.)",
+        *item_id));
+  }
+  absl::StrAppend(item_id, "-", username);
+  return absl::OkStatus();
+}
 }  // namespace
 
-// Processes the item if it is a dummy. Makes the id unique by appending the
-// username of its owner in order to disambiguify it from similarly-named dummy
-// items of other users. Sets the `is_dummy` field and copies the original id
-// to the `unmodified_id` field. Does nothing if the item is non-dummy.
-// Returns `NotFoundError` if a dummy item has no username.
+// Processes the item id if represents a dummy item. Makes the id unique by
+// appending the username of its owner in order to disambiguify it from
+// similarly-named dummy items of other users. Does nothing if the item is
+// non-dummy. Returns `NotFoundError` if a dummy item has no username.
+absl::Status ProcessIfDummy(std::string_view username, std::string* item_id) {
+  CHECK_NOTNULL(item_id);
+  if (!IsDummyItem(*item_id)) {
+    // Skips non-dummy items.
+    return absl::OkStatus();
+  }
+  return InternalProcessDummy(username, item_id);
+}
+
+// As above, but operates on an item.  Sets the `is_dummy` field and copies the
+// original id to the `original_id` field. Does nothing if the item is
+// non-dummy. Returns `NotFoundError` if a dummy item has no username.
 absl::Status ProcessIfDummy(std::string_view username, Item* item) {
   CHECK_NOTNULL(item);
-  if (IsDummyItem(item)) {
-    // Sets the field, in case the item has a dummy id, but the field is not yet
-    // set.
-    item->set_is_dummy(true);
-
-    if (username.empty()) {
-      return absl::NotFoundError(absl::StrFormat(
-          "Missing or empty username for item %s. (Tip: this usually indicates "
-          "that the username is missing from the wantlist.)",
-          item->id()));
-    }
-    item->set_unmodified_id(item->id());
-    absl::StrAppend(item->mutable_id(), "-", username);
+  if (!IsDummyItem(*item)) {
+    // Skips non-dummy items.
+    return absl::OkStatus();
   }
-  return absl::OkStatus();
+
+  // Caches the unmodified id before processing.
+  item->set_unmodified_id(item->id());
+  item->set_is_dummy(true);
+
+  return InternalProcessDummy(username, item->mutable_id());
 }
 
 absl::Status ProcessIfDummy(Item* item) {

@@ -57,7 +57,18 @@ TEST(IsDummyItemTest, TestItems) {
   }
 }
 
-TEST(ProcessIfDummyTest, TestNonDummy) {
+TEST(ProcessIfDummyTest, TestNonDummyUsername) {
+  static constexpr char kItemId[] = R"(someItemId")";
+  static constexpr char kUsername[] = "randomUser";
+
+  std::string item_id = kItemId;
+
+  // Does not change the original item id, since it's not a dummy.
+  ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
+  EXPECT_EQ(item_id, kItemId);
+}
+
+TEST(ProcessIfDummyTest, TestNonDummyItem) {
   static constexpr char kItemId[] = R"(someItemId")";
   static constexpr char kUsername[] = "randomUser";
 
@@ -70,6 +81,17 @@ TEST(ProcessIfDummyTest, TestNonDummy) {
   ASSERT_TRUE(ProcessIfDummy(&item).ok());
   EXPECT_EQ(item.id(), kItemId);
   EXPECT_FALSE(item.has_unmodified_id());
+}
+
+TEST(ProcessIfDummyTest, TestDummyUsername) {
+  static constexpr char kItemId[] = R"(%someItemId")";
+  static constexpr char kUsername[] = "randomUser";
+
+  std::string item_id = kItemId;
+
+  // Mutates the original item id, since it's a dummy.
+  ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
+  EXPECT_THAT(item_id, AllOf(StartsWith(kItemId), EndsWith(kUsername)));
 }
 
 TEST(ProcessIfDummyTest, TestDummy) {
@@ -105,7 +127,14 @@ TEST(ProcessIfDummyDeathTest, NullItem) {
 }
 
 TEST(ProcessIfDummyDeathTest, NullItemWithUsername) {
-  EXPECT_DEATH(ProcessIfDummy("someUsername", nullptr).IgnoreError(),
+  Item* const item = nullptr;
+  EXPECT_DEATH(ProcessIfDummy("someUsername", item).IgnoreError(),
+               "Must be non NULL");
+}
+
+TEST(ProcessIfDummyDeathTest, NullUsername) {
+  std::string* const item_id = nullptr;
+  EXPECT_DEATH(ProcessIfDummy("someUsername", item_id).IgnoreError(),
                "Must be non NULL");
 }
 }  // namespace
