@@ -355,8 +355,8 @@ TEST(WantlistParserNegativeTest, TestInvalidCharsInSuffix) {
 TEST(WantlistParserNegativeTest, DISABLED_TestDummyOfferedAndWantedItems) {
   WantlistParser parser;
   const std::vector<std::string> items = {
-      "(username) %0001-MKBG",   "0002-TTAANSOC", "0003-PANDE",
-      "%0004-SCYTHE", "0005-PUERIC",
+      "(username) %0001-MKBG", "0002-TTAANSOC", "0003-PANDE",
+      "%0004-SCYTHE",          "0005-PUERIC",
   };
 
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
