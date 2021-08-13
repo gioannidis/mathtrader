@@ -51,6 +51,19 @@ absl::Status InternalProcessDummy(std::string_view username,
 }
 }  // namespace
 
+// Creates an item from a given id and an optional username. Processes the item
+// if dummy. Dies if no username is given for a dummy item.
+Item MakeItem(std::string_view id, std::string_view username) {
+  Item item;
+  item.set_id(std::string(id));
+
+  if (!username.empty()) {
+    item.set_username(std::string(username));
+  }
+  CHECK(ProcessIfDummy(&item).ok());
+  return item;
+}
+
 // Processes the item id if represents a dummy item. Makes the id unique by
 // appending the username of its owner in order to disambiguify it from
 // similarly-named dummy items of other users. Does nothing if the item is

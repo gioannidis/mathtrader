@@ -29,10 +29,13 @@
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::parser::util::IsDummyItem;
+using ::mathtrader::parser::util::MakeItem;
 using ::mathtrader::parser::util::ProcessIfDummy;
 using ::testing::AllOf;
 using ::testing::EndsWith;
 using ::testing::StartsWith;
+
+// Test suite: `IsDummyItem` function.
 
 TEST(IsDummyItemTest, TestStrings) {
   EXPECT_FALSE(IsDummyItem("0012-PANDE"));
@@ -57,6 +60,42 @@ TEST(IsDummyItemTest, TestItems) {
     EXPECT_TRUE(IsDummyItem(&dummy));
   }
 }
+
+// Test suite: `MakeItem` function.
+
+TEST(MakeItemTest, NonDummyItem) {
+  static constexpr char kItemId[] = R"(someItemId")";
+
+  const Item item = MakeItem(kItemId);
+  EXPECT_EQ(item.id(), kItemId);
+  EXPECT_FALSE(item.is_dummy());
+  EXPECT_FALSE(item.has_unmodified_id());
+  EXPECT_FALSE(item.has_username());
+}
+
+TEST(MakeItemTest, NonDummyItemWithUsername) {
+  static constexpr char kItemId[] = R"(someItemId")";
+  static constexpr char kUsername[] = "randomUser";
+
+  const Item item = MakeItem(kItemId, kUsername);
+  EXPECT_EQ(item.id(), kItemId);
+  EXPECT_FALSE(item.is_dummy());
+  EXPECT_FALSE(item.has_unmodified_id());
+  EXPECT_EQ(item.username(), kUsername);
+}
+
+TEST(MakeItemTest, DummyItemWithUsername) {
+  static constexpr char kItemId[] = R"(%someItemId")";
+  static constexpr char kUsername[] = "randomUser";
+
+  const Item item = MakeItem(kItemId, kUsername);
+  EXPECT_THAT(item.id(), AllOf(StartsWith(kItemId), EndsWith(kUsername)));
+  EXPECT_TRUE(item.is_dummy());
+  EXPECT_EQ(item.unmodified_id(), kItemId);
+  EXPECT_EQ(item.username(), kUsername);
+}
+
+// Test suite: `ProcessIfDummy` function.
 
 TEST(ProcessIfDummyTest, TestNonDummyId) {
   static constexpr char kItemId[] = R"(someItemId")";

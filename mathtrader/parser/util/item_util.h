@@ -49,6 +49,10 @@ inline bool IsDummyItem(const common::Item* item) {
   return (item && IsDummyItem(*item));
 }
 
+// Creates an item from a given id and an optional username. Processes the item
+// if dummy. Dies if no username is given for a dummy item.
+common::Item MakeItem(std::string_view id, std::string_view username = "");
+
 // Processes the item id if represents a dummy item. Makes the id unique by
 // appending the username of its owner in order to disambiguify it from
 // similarly-named dummy items of other users. Does nothing if the item is
