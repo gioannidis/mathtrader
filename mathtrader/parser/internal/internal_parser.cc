@@ -155,25 +155,6 @@ absl::Status InternalParser::ParseItem(absl::string_view line) {
 }
 
 namespace {
-// Retrieves the id of an item, which belongs to a given username (optional).
-// If the item is a dummy, it appends the username of its owner to the item id,
-// in order to disambiguify it from similarly-named dummy items. In this case, a
-// username must exist.
-std::string GetProperItemId(const Item& item, const std::string& username) {
-  // The item id to return.
-  std::string id = item.id();
-  if (util::IsDummyItem(id)) {
-    // Retrieves the username and the line id where the username was first
-    // defined. At this point, it is guaranteed that these operations succeed.
-    CHECK(!username.empty());
-
-    // Appends the line number as a unique id.
-    id.push_back('-');
-    id += username;
-  }
-  return id;
-}
-
 // Retrieves the `unmodified_id` field if set, otherwise `id`.
 const std::string& GetUnmodifiedId(const Item& item) {
   return (item.has_unmodified_id() ? item.unmodified_id() : item.id());
@@ -310,8 +291,7 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
   const absl::string_view raw_offered_id = offered_item.id();
 
   // The "proper" id of the offered item; username is appended if dummy.
-  const std::string offered_id =
-      GetProperItemId(offered_item, offered_item.username());
+  const std::string& offered_id = offered_item.id();
 
   // Registers the wantlist and verifies that no other wantlist has been
   // declared.

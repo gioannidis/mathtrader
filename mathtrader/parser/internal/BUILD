@@ -107,6 +107,7 @@ cc_library(
     hdrs = ["internal_parser.h"],
     visibility = ["//mathtrader/parser:__pkg__"],
     deps = [
+        ":internal_wantlist_cc_proto",
         ":item_parser",
         ":wantlist_parser",
         "//mathtrader/common:item_cc_proto",
