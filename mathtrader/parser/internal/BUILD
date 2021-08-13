@@ -17,7 +17,8 @@
 
 # Rules to build the stateless module that parses official item names.
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_proto//proto:defs.bzl", "proto_library")
 
 # Rules to build the stateless module that parses official item names.
 cc_library(
@@ -67,6 +68,7 @@ cc_library(
     srcs = ["wantlist_parser.cc"],
     hdrs = ["wantlist_parser.h"],
     deps = [
+        ":internal_wantlist_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser/util:item_util",
@@ -84,9 +86,11 @@ cc_test(
     size = "small",
     srcs = ["wantlist_parser_test.cc"],
     deps = [
+        ":internal_wantlist_cc_proto",
         ":wantlist_parser",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
+        "//mathtrader/util:strings",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],

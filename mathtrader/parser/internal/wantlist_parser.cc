@@ -32,6 +32,7 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/parser/internal/internal_wantlist.pb.h"
 #include "mathtrader/parser/util/item_util.h"
 #include "mathtrader/util/str_toupper.h"
 
@@ -148,9 +149,9 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
   re2::StringPiece text_piece = text;
   Item* offered_item = nullptr;
   {
-    std::string username;  // optional
     std::string item_id;
-    std::string colon;  // optional
+    std::string colon;     // optional
+    std::string username;  // optional
 
     // Matches and consumes the wantlist prefix containing the username
     // (optional), the offered item and a separating colon (optional).
@@ -183,20 +184,26 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
           "Specifying a colon ':' after the first wanted item is not allowed.");
     }
 
-    // Sets the offered item.
+    // Sets the offered item id.
     offered_item = wantlist.mutable_offered_item();
     offered_item->set_id(item_id);
+    wantlist.set_offered(std::move(item_id));
 
     // Sets the wantlist username, if specified. Should be done before
     // processing a potentially dummy item.
     if (!username.empty()) {
       offered_item->set_username(username);
+      wantlist.SetExtension(InternalWantlist::username, std::move(username));
     } else {
       // TODO(gioannidis) return if usernames are required.
     }
 
-    // Processes the item if dummy, returning on error.
+    // Processes the item id if dummy.
     if (const absl::Status status = util::ProcessIfDummy(offered_item);
+        !status.ok()) {
+      return status;
+    }
+    if (const absl::Status status = util::ProcessIfDummy(username, &item_id);
         !status.ok()) {
       return status;
     }
@@ -227,14 +234,23 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
       continue;
     }
     Item* wanted_item = wantlist.add_wanted_item();
+    Wantlist::WantedItem* wanted = wantlist.add_wanted();
 
     // Makes the wanted item id case-insensitive.
     {
       auto wanted_item_id = static_cast<std::string>(token);
       wanted_item->set_id(StrToUpper(std::move(wanted_item_id)));
     }
+    wanted->set_id(std::move(std::string(token)));
+    StrToUpper(wanted->mutable_id());
 
-    // Processes the item if dummy, returning on error.
+    // Processes the item id if dummy, returning on error.
+    if (const absl::Status status = util::ProcessIfDummy(
+            /*username=*/wantlist.GetExtension(InternalWantlist::username),
+            /*item_id=*/wanted->mutable_id());
+        !status.ok()) {
+      return status;
+    }
     if (const absl::Status status =
             util::ProcessIfDummy(offered_item->username(), wanted_item);
         !status.ok()) {
@@ -243,6 +259,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
     const int32_t priority = ComputePriority(rank);
     wanted_item->set_priority(priority);
+    wanted->set_priority(priority);
     rank += kSmallStep;
   }
   return wantlist;

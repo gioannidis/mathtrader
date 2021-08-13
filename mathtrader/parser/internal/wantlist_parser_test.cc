@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -30,24 +31,32 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/parser/internal/internal_wantlist.pb.h"
+#include "mathtrader/parser/util/item_util.h"
 
 namespace {
-
-using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
+using ::mathtrader::parser::internal::InternalWantlist;
 using ::mathtrader::parser::internal::WantlistParser;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
-using ::testing::IsEmpty;
 using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::Property;
+using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::StrCaseEq;
 using ::testing::StrEq;
+
+using WantedItem = ::mathtrader::common::Wantlist::WantedItem;
+
+// Internal alias to resolve overloaded function in `ResultOf` matchers.
+bool IsDummyItem(std::string_view item_id) {
+  return mathtrader::parser::util::IsDummyItem(item_id);
+}
 
 // Matches the username extension of the `arg` Item, ignoring case.
 MATCHER_P(UsernameStrCaseEq, username, "") {
@@ -75,15 +84,12 @@ TEST(WantlistParserTest, TestNoItems) {
         << text << " error: " << wantlist.status().message();
 
     // For each wantlist checks:
-    // * Offered item:
-    //    * id
-    //    * No priority.
+    // * Offered item id.
     // * No wanted items.
-    EXPECT_THAT(*wantlist,
-                AllOf(Property(&Wantlist::offered_item,
-                               AllOf(Property(&Item::id, StrEq("0001-PANDE")),
-                                     Property(&Item::has_priority, IsFalse()))),
-                      Property(&Wantlist::wanted_item, IsEmpty())));
+    // * No username.
+    EXPECT_EQ(wantlist->offered(), "0001-PANDE");
+    EXPECT_EQ(wantlist->wanted_size(), 0);
+    EXPECT_FALSE(wantlist->HasExtension(InternalWantlist::username));
   }
 }
 
@@ -101,15 +107,13 @@ TEST(WantlistParserTest, TestNoItemsWithUsername) {
         << wantlist.status().message() << " (" << text << ")";
 
     // For each wantlist checks:
-    // * Offered item:
-    //    * id
-    //    * username
+    // * Offered item id.
     // * No wanted items.
-    EXPECT_THAT(*wantlist,
-                AllOf(Property(&Wantlist::offered_item,
-                               AllOf(Property(&Item::id, StrEq("0001-PANDE")),
-                                     UsernameStrCaseEq("user"))),
-                      Property(&Wantlist::wanted_item, IsEmpty())));
+    // * Username.
+    EXPECT_EQ(wantlist->offered(), "0001-PANDE");
+    EXPECT_EQ(wantlist->wanted_size(), 0);
+    EXPECT_THAT(wantlist->GetExtension(InternalWantlist::username),
+                StrCaseEq("user"));
   }
 }
 
@@ -123,23 +127,24 @@ TEST(WantlistParserTest, TestWantlist) {
   const auto wantlist = parser.ParseWantlist(absl::StrJoin(items, " "));
   ASSERT_TRUE(wantlist.ok());
 
-  // Checks offered item.
-  EXPECT_THAT(wantlist->offered_item(),
-              AllOf(Property(&Item::id, StrEq(items[0])),
-                    Property(&Item::is_dummy, IsFalse()),
-                    Property(&Item::has_priority, IsFalse())));
+  // Checks offered item id.
+  EXPECT_EQ(wantlist->offered(), items[0]);
+  EXPECT_FALSE(IsDummyItem(wantlist->offered()));
 
   // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(),
-              AllOf(SizeIs(Eq(4)), Each(Property(&Item::is_dummy, IsFalse()))));
+  EXPECT_THAT(
+      wantlist->wanted(),
+      AllOf(SizeIs(Eq(4)),
+            Each(Property(&WantedItem::id, ResultOf(IsDummyItem, IsFalse())))));
 
   // Verifies priorities and item names.
   EXPECT_THAT(
-      wantlist->wanted_item(),
-      ElementsAre(AllOf(PriorityEq(1), Property(&Item::id, StrEq(items[1]))),
-                  AllOf(PriorityEq(2), Property(&Item::id, StrEq(items[2]))),
-                  AllOf(PriorityEq(3), Property(&Item::id, StrEq(items[3]))),
-                  AllOf(PriorityEq(4), Property(&Item::id, StrEq(items[4])))));
+      wantlist->wanted(),
+      ElementsAre(
+          AllOf(PriorityEq(1), Property(&WantedItem::id, StrEq(items[1]))),
+          AllOf(PriorityEq(2), Property(&WantedItem::id, StrEq(items[2]))),
+          AllOf(PriorityEq(3), Property(&WantedItem::id, StrEq(items[3]))),
+          AllOf(PriorityEq(4), Property(&WantedItem::id, StrEq(items[4])))));
 }
 
 // Tests a small wantlist with username and colon.
@@ -154,22 +159,25 @@ TEST(WantlistParserTest, TestWantlistWithUsernameAndColon) {
   ASSERT_TRUE(wantlist.ok());
 
   // Checks offered item.
-  EXPECT_THAT(wantlist->offered_item(),
-              AllOf(Property(&Item::id, StrEq(items[1])),
-                    Property(&Item::is_dummy, IsFalse()),
-                    UsernameStrCaseEq("username")));
+  EXPECT_EQ(wantlist->offered(), items[1]);
+  EXPECT_FALSE(IsDummyItem(wantlist->offered()));
+  EXPECT_THAT(wantlist->GetExtension(InternalWantlist::username),
+              StrCaseEq("username"));
 
   // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(),
-              AllOf(SizeIs(Eq(4)), Each(Property(&Item::is_dummy, IsFalse()))));
+  EXPECT_THAT(
+      wantlist->wanted(),
+      AllOf(SizeIs(Eq(4)),
+            Each(Property(&WantedItem::id, ResultOf(IsDummyItem, IsFalse())))));
 
   // Verifies priorities and item names.
   EXPECT_THAT(
-      wantlist->wanted_item(),
-      ElementsAre(AllOf(PriorityEq(1), Property(&Item::id, StrEq(items[3]))),
-                  AllOf(PriorityEq(2), Property(&Item::id, StrEq(items[4]))),
-                  AllOf(PriorityEq(3), Property(&Item::id, StrEq(items[5]))),
-                  AllOf(PriorityEq(4), Property(&Item::id, StrEq(items[6])))));
+      wantlist->wanted(),
+      ElementsAre(
+          AllOf(PriorityEq(1), Property(&WantedItem::id, StrEq(items[3]))),
+          AllOf(PriorityEq(2), Property(&WantedItem::id, StrEq(items[4]))),
+          AllOf(PriorityEq(3), Property(&WantedItem::id, StrEq(items[5]))),
+          AllOf(PriorityEq(4), Property(&WantedItem::id, StrEq(items[6])))));
 }
 
 // Test suite: dummy items
@@ -186,11 +194,13 @@ TEST(WantlistParserDummyItemsTest, TestDummyOfferedItem) {
   ASSERT_TRUE(wantlist.ok()) << wantlist.status().message();
 
   // Checks offered item.
-  EXPECT_THAT(wantlist->offered_item(), Property(&Item::is_dummy, IsTrue()));
+  EXPECT_TRUE(IsDummyItem(wantlist->offered()));
 
   // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(),
-              AllOf(SizeIs(Eq(4)), Each(Property(&Item::is_dummy, IsFalse()))));
+  EXPECT_THAT(
+      wantlist->wanted(),
+      AllOf(SizeIs(Eq(4)),
+            Each(Property(&WantedItem::id, ResultOf(IsDummyItem, IsFalse())))));
 }
 
 // Dummy wanted items: all.
@@ -205,11 +215,13 @@ TEST(WantlistParserDummyItemsTest, TesAllDummyWantedItems) {
   ASSERT_TRUE(wantlist.ok());
 
   // Checks offered item.
-  EXPECT_THAT(wantlist->offered_item(), Property(&Item::is_dummy, IsFalse()));
+  EXPECT_FALSE(IsDummyItem(wantlist->offered()));
 
   // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(),
-              AllOf(SizeIs(Eq(4)), Each(Property(&Item::is_dummy, IsTrue()))));
+  EXPECT_THAT(
+      wantlist->wanted(),
+      AllOf(SizeIs(Eq(4)),
+            Each(Property(&WantedItem::id, ResultOf(IsDummyItem, IsTrue())))));
 }
 
 // Dummy wanted items: some.
@@ -224,14 +236,15 @@ TEST(WantlistParserDummyItemsTest, TesSomeDummyWantedItems) {
   ASSERT_TRUE(wantlist.ok());
 
   // Checks offered item.
-  EXPECT_THAT(wantlist->offered_item(), Property(&Item::is_dummy, IsFalse()));
+  EXPECT_FALSE(IsDummyItem(wantlist->offered()));
 
-  // Verifies wantlist size and that all items are non-dummies.
-  EXPECT_THAT(wantlist->wanted_item(),
-              ElementsAre(Property(&Item::is_dummy, IsTrue()),
-                          Property(&Item::is_dummy, IsFalse()),
-                          Property(&Item::is_dummy, IsFalse()),
-                          Property(&Item::is_dummy, IsTrue())));
+  // Verifies that no wanted item is dummy.
+  EXPECT_THAT(
+      wantlist->wanted(),
+      ElementsAre(Property(&WantedItem::id, ResultOf(IsDummyItem, IsTrue())),
+                  Property(&WantedItem::id, ResultOf(IsDummyItem, IsFalse())),
+                  Property(&WantedItem::id, ResultOf(IsDummyItem, IsFalse())),
+                  Property(&WantedItem::id, ResultOf(IsDummyItem, IsTrue()))));
 }
 
 // Test suite: negative tests
