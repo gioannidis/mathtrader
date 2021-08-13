@@ -18,6 +18,7 @@
 #include "mathtrader/parser/util/item_util.h"
 
 #include <string>
+#include <string_view>
 
 #include "absl/status/status.h"
 #include "gmock/gmock.h"
@@ -57,7 +58,7 @@ TEST(IsDummyItemTest, TestItems) {
   }
 }
 
-TEST(ProcessIfDummyTest, TestNonDummyUsername) {
+TEST(ProcessIfDummyTest, TestNonDummyId) {
   static constexpr char kItemId[] = R"(someItemId")";
   static constexpr char kUsername[] = "randomUser";
 
@@ -83,7 +84,7 @@ TEST(ProcessIfDummyTest, TestNonDummyItem) {
   EXPECT_FALSE(item.has_unmodified_id());
 }
 
-TEST(ProcessIfDummyTest, TestDummyUsername) {
+TEST(ProcessIfDummyTest, TestDummyId) {
   static constexpr char kItemId[] = R"(%someItemId")";
   static constexpr char kUsername[] = "randomUser";
 
@@ -92,6 +93,40 @@ TEST(ProcessIfDummyTest, TestDummyUsername) {
   // Mutates the original item id, since it's a dummy.
   ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
   EXPECT_THAT(item_id, AllOf(StartsWith(kItemId), EndsWith(kUsername)));
+}
+
+// As above, but tests consecutive processing.
+TEST(ProcessIfDummyTest, TestDummyIdMultipleProcessing) {
+  static constexpr char kItemId[] = R"(%someItemId")";
+  static constexpr char kUsername[] = "randomUser";
+
+  std::string item_id = kItemId;
+
+  // Mutates the original item id, since it's a dummy.
+  ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
+  EXPECT_THAT(item_id, AllOf(StartsWith(kItemId), EndsWith(kUsername)));
+
+  // Copies the item_id before subsequent processing.
+  const std::string item_id_copy = item_id;
+  ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
+  EXPECT_EQ(item_id, item_id_copy);
+
+  ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
+  EXPECT_EQ(item_id, item_id_copy);
+}
+
+TEST(ProcessIfDummyTest, TestDummyIdIdenticalToUsername) {
+  static constexpr std::string_view kItemId = R"(%someItemId")";
+  const std::string_view kUsername = kItemId;
+
+  auto item_id = std::string(kItemId);
+
+  // Mutates the original item id, since it's a dummy.
+  ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
+  EXPECT_THAT(item_id, AllOf(StartsWith(kItemId), EndsWith(kUsername)));
+
+  // Verifies that the item_id was actually mutated.
+  EXPECT_GT(item_id.size(), kItemId.size());
 }
 
 TEST(ProcessIfDummyTest, TestDummy) {

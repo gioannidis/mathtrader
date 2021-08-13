@@ -41,7 +41,12 @@ absl::Status InternalProcessDummy(std::string_view username,
         "that the username is missing from the wantlist.)",
         *item_id));
   }
-  absl::StrAppend(item_id, "-", username);
+
+  // Appends the username to the item_id if it is not already there. Applies the
+  // operation if the username and the item_id are identical.
+  if (!absl::EndsWith(*item_id, username) || (*item_id == username)) {
+    absl::StrAppend(item_id, "-", username);
+  }
   return absl::OkStatus();
 }
 }  // namespace
