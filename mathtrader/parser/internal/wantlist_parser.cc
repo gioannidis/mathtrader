@@ -174,14 +174,20 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
       return status;
     }
 
-    // Makes the id and username case-insensitive.
-    item_id = StrToUpper(item_id);
-    username = StrToUpper(username);
-
     // Checks if colons are specified after wanted items.
     if (text_piece.find(':') != std::string::npos) {
       return absl::InvalidArgumentError(
           "Specifying a colon ':' after the first wanted item is not allowed.");
+    }
+
+    // Makes the id and username case-insensitive.
+    item_id = StrToUpper(item_id);
+    username = StrToUpper(username);
+
+    // Processes the offered id if dummy.
+    if (const absl::Status status = util::ProcessIfDummy(username, &item_id);
+        !status.ok()) {
+      return status;
     }
 
     // Sets the offered item id.
@@ -200,10 +206,6 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
     // Processes the item id if dummy.
     if (const absl::Status status = util::ProcessIfDummy(offered_item);
-        !status.ok()) {
-      return status;
-    }
-    if (const absl::Status status = util::ProcessIfDummy(username, &item_id);
         !status.ok()) {
       return status;
     }

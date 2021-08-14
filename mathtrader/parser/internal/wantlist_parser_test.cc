@@ -39,8 +39,10 @@ using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::internal::InternalWantlist;
 using ::mathtrader::parser::internal::WantlistParser;
 using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
+using ::testing::EndsWith;
 using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::IsFalse;
@@ -48,6 +50,7 @@ using ::testing::IsTrue;
 using ::testing::Property;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
+using ::testing::StartsWith;
 using ::testing::StrCaseEq;
 using ::testing::StrEq;
 
@@ -58,15 +61,37 @@ bool IsDummyItem(std::string_view item_id) {
   return mathtrader::parser::util::IsDummyItem(item_id);
 }
 
-// Matches the username extension of the `arg` Item, ignoring case.
+// Matches the username, ignoring case.
 MATCHER_P(UsernameStrCaseEq, username, "") {
   return ExplainMatchResult(StrCaseEq(username), arg.username(),
                             result_listener);
 }
 
-// Matches the priority extension of the `arg` Item.
+// Matches the priority value.
 MATCHER_P(PriorityEq, priority, "") {
   return ExplainMatchResult(Eq(priority), arg.priority(), result_listener);
+}
+
+// Verifies that the id argument has been properly annotated with the username,
+// if dummy.
+MATCHER_P(IsModifiedIfDummy, username, "") {
+  return ExplainMatchResult(AnyOf(ResultOf(IsDummyItem, IsFalse()),
+                                  AllOf(StartsWith(arg), EndsWith(username))),
+                            arg, result_listener);
+}
+
+// Matches a wantlist whose offered item or wanted items have been properly
+// annotated with the username, if dummy.
+MATCHER(HasModifiedDummyIds, "") {
+  const std::string_view username =
+      arg.GetExtension(InternalWantlist::username);
+  return ExplainMatchResult(
+      AllOf(Property("offered id", &Wantlist::offered,
+                     IsModifiedIfDummy(username)),
+            Property("wanted item", &Wantlist::wanted,
+                     Each(Property("wanted id", &WantedItem::id,
+                                   IsModifiedIfDummy(username))))),
+      arg, result_listener);
 }
 
 // Tests an empty wantlist without username. Verifies that we ignore spaces.
@@ -201,6 +226,9 @@ TEST(WantlistParserDummyItemsTest, TestDummyOfferedItem) {
       wantlist->wanted(),
       AllOf(SizeIs(Eq(4)),
             Each(Property(&WantedItem::id, ResultOf(IsDummyItem, IsFalse())))));
+
+  // Checks username annotation.
+  EXPECT_THAT(*wantlist, HasModifiedDummyIds());
 }
 
 // Dummy wanted items: all.
@@ -222,6 +250,9 @@ TEST(WantlistParserDummyItemsTest, TesAllDummyWantedItems) {
       wantlist->wanted(),
       AllOf(SizeIs(Eq(4)),
             Each(Property(&WantedItem::id, ResultOf(IsDummyItem, IsTrue())))));
+
+  // Checks username annotation.
+  EXPECT_THAT(*wantlist, HasModifiedDummyIds());
 }
 
 // Dummy wanted items: some.
@@ -245,6 +276,9 @@ TEST(WantlistParserDummyItemsTest, TesSomeDummyWantedItems) {
                   Property(&WantedItem::id, ResultOf(IsDummyItem, IsFalse())),
                   Property(&WantedItem::id, ResultOf(IsDummyItem, IsFalse())),
                   Property(&WantedItem::id, ResultOf(IsDummyItem, IsTrue()))));
+
+  // Checks username annotation.
+  EXPECT_THAT(*wantlist, HasModifiedDummyIds());
 }
 
 // Test suite: negative tests
