@@ -41,7 +41,9 @@ using ::testing::MatchesRegex;
 using ::testing::Pair;
 using ::testing::Property;
 using ::testing::SizeIs;
+using ::testing::StartsWith;
 using ::testing::StrCaseEq;
+using ::testing::UnorderedElementsAre;
 
 using MissingItem = mathtrader::parser::ParserResult::MissingItem;
 
@@ -87,7 +89,8 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
   EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
 }
 
-// Wantlists define some missing items. They should be removed.
+// Tests that missing items are properly removed from wantlists. These are
+// wanted items without an official name.
 TEST(MathParserTest, TestMissingItems) {
   static constexpr char kInputData[] = R"(
 !BEGIN-OFFICIAL-NAMES
@@ -123,6 +126,45 @@ TEST(MathParserTest, TestMissingItems) {
 
   // Checks that there are no duplicate items. 'missing-item' should be deleted
   // first, so no errors are generated, even if it appears 2+ times in a list.
+  EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
+}
+
+// Tests that missing items are properly removed from wantlists. These are
+// wanted items without an official name.
+TEST(MathParserTest, TestMissingItemsWithoutOfficialNames) {
+  static constexpr char kInputData[] = R"(
+(SomeUsername1) 0001-20GIFT : 0002-SOC 0003-AGMI 0004-AN7WCS
+(SomeUsername2) 0002-SOC : 0001-20GIFT 0006-AN6P-COPY1 0003-AGMI
+(SomeUsername3) 0003-AGMI : 0001-20GIFT 0005-TIMSTO %DUMMY 0002-SOC
+(SomeUsername3) %DUMMY : 0006-AN6P-COPY1 0007-AN6P-COPY2 0001-20GIFT
+(SomeUsername4) 0004-AN7WCS : 0001-20GIFT %DUMMY 0003-AGMI 0002-SOC
+)";
+
+  const auto result = MathParser::ParseText(kInputData);
+  ASSERT_TRUE(result.ok()) << result.status().message();
+
+  // Verifies the wantlists size after removing the missing wanted items.
+  EXPECT_THAT(
+      result->wantlists(),
+      ElementsAre(Property("wanted items", &Wantlist::wanted, SizeIs(3)),
+                  Property("wanted items", &Wantlist::wanted,
+                           SizeIs(2)),  // removed: 0006
+                  Property("wanted items", &Wantlist::wanted,
+                           SizeIs(3)),  // removed: 0005
+                  Property("wanted items", &Wantlist::wanted,
+                           SizeIs(1)),  // removed: 0006, 0007
+                  Property("wanted items", &Wantlist::wanted,
+                           SizeIs(3))));  // removed: %DUMMY
+
+  EXPECT_THAT(
+      result->missing_items(),
+      UnorderedElementsAre(
+          Property("id", &MissingItem::item_id, StrCaseEq("0005-TIMSTO")),
+          Property("id", &MissingItem::item_id, StrCaseEq("0006-AN6P-COPY1")),
+          Property("id", &MissingItem::item_id, StrCaseEq("0007-AN6P-COPY2")),
+          Property("id", &MissingItem::item_id, StartsWith(R"(%DUMMY)"))));
+
+  // Checks that there are no duplicate items.
   EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
 }
 }  // namespace

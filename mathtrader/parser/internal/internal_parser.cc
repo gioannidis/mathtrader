@@ -330,30 +330,6 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
     }
   }
 
-  // Registers all dummy wanted items if not already present. A dummy item is
-  // allowed to appear first as a wanted item and subsequently as an offered
-  // item, because some dummy lists are auto-generated, e.g., when multiple
-  // COPY items are given.
-  for (const Wantlist::WantedItem& wanted_item : wantlist->wanted()) {
-    const std::string_view wanted_id = wanted_item.id();
-    if (util::IsDummyItem(wanted_id)) {
-      gtl::InsertIfNotPresent(parser_result_.mutable_items(),
-                              std::string(wanted_id),
-                              util::MakeItem(std::string(wanted_id), username));
-    }
-  }
-
-  // Creates and registers all wanted items. Since no official names have been
-  // given, it is possible that some wanted items are declared now for the first
-  // time.
-  if (!has_official_names_) {
-    for (const Wantlist::WantedItem& wanted : wantlist->wanted()) {
-      const std::string& id = wanted.id();
-      gtl::InsertIfNotPresent(parser_result_.mutable_items(), id,
-                              util::MakeItem(id, username));
-    }
-  }
-
   // Finally, clears any internal extensions.
   wantlist->ClearExtension(InternalWantlist::username);
 

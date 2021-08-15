@@ -38,6 +38,7 @@ using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::IsTrue;
+using ::testing::Key;
 using ::testing::Property;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
@@ -61,6 +62,8 @@ TEST(InternalParser, TestOnlyComments) {
   EXPECT_THAT(parser.parser_result().wantlists(), IsEmpty());
 }
 
+// Tests a single wantlist without official names. All wanted items are missing,
+// because they have no respective wantlists.
 TEST(InternalParser, TestSingleWantlist) {
   static constexpr char input_data[] = R"(1-A : 2-B 3-C 4-D)";
 
@@ -69,10 +72,15 @@ TEST(InternalParser, TestSingleWantlist) {
   EXPECT_EQ(parser.get_line_count(), 1);
 
   const ParserResult& result = parser.parser_result();
-  EXPECT_EQ(result.items_size(), 4);
+
+  // Only non-missing items are registered in the item map. In this case, it is
+  // the offered item.
+  EXPECT_THAT(result.items(), ElementsAre(Key("1-A")));
+
+  // There is a single empty wantlist.
   EXPECT_THAT(result.wantlists(),
               ElementsAre(AllOf(Property(&Wantlist::offered, StrEq("1-A")),
-                                Property(&Wantlist::wanted, SizeIs(3)))));
+                                Property(&Wantlist::wanted, IsEmpty()))));
 }
 
 TEST(InternalParser, TestMultipleWantlists) {
@@ -168,10 +176,28 @@ TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
 }
 
 TEST(InternalParser, TestDuplicateItems) {
+  // Defines official names for all items to avoid reporting any missing items.
   static constexpr char input_data[] = R"(
-      (user1) A : B C D E F G Z
-      (user2) B : A F Q F R A Z F C
-      (user3) C : O F K Z E K K P F I K X K
+!BEGIN-OFFICIAL-NAMES
+A
+B
+C
+D
+E
+F
+G
+I
+K
+O
+P
+Q
+R
+X
+Z
+!END-OFFICIAL-NAMES
+(user1) A : B C D E F G Z
+(user2) B : A F Q F R A Z F C
+(user3) C : O F K Z E K K P F I K X K
   )";
   // Number of wanted items, excluding duplicates.
   static constexpr int32_t kWantedItems[] = {7, 6, 8};
@@ -180,7 +206,7 @@ TEST(InternalParser, TestDuplicateItems) {
   static constexpr int32_t kAllWantedItems = 15;
 
   InternalParser parser;
-  EXPECT_TRUE(parser.ParseText(input_data).ok());
+  ASSERT_TRUE(parser.ParseText(input_data).ok());
 
   const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), kAllWantedItems);  // Non-dummy items.
