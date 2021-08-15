@@ -24,6 +24,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ortools/base/map_util.h"
 
 #include "mathtrader/assignment/assignment.pb.h"
 #include "mathtrader/common/item.pb.h"
@@ -55,6 +56,13 @@ int64_t count2d(std::vector<std::vector<T>> vector_2d) {
   return num_elements;
 }
 
+// Creates an item from an id.
+Item MakeItem(std::string_view id) {
+  Item item;
+  item.set_id(std::string(id));
+  return item;
+}
+
 // Builds the ParserResult proto out of the wantlist vector.
 ParserResult BuildParserResult(const WantlistVector& wantlists) {
   ParserResult parser_result;
@@ -62,13 +70,23 @@ ParserResult BuildParserResult(const WantlistVector& wantlists) {
     Wantlist* const wantlist = parser_result.add_wantlists();
 
     // Sets the offered item as the first element of the vector.
-    wantlist->mutable_offered_item()->set_id(wantlist_vector[0]);
+    const std::string& offered_id = wantlist_vector[0];
+    wantlist->set_offered(offered_id);
+
+    // Also populates the items map.
+    gtl::InsertIfNotPresent(parser_result.mutable_items(), offered_id,
+                            MakeItem(offered_id));
 
     // Sets each wanted item and its priority.
     for (unsigned i = 1; i < wantlist_vector.size(); ++i) {
-      Item* const wanted_item = wantlist->add_wanted_item();
-      wanted_item->set_id(wantlist_vector[i]);
+      Wantlist::WantedItem* const wanted_item = wantlist->add_wanted();
+      const std::string& wanted_id = wantlist_vector[i];
+      wanted_item->set_id(wanted_id);
       wanted_item->set_priority(i);
+
+      // Also populates the items map.
+      gtl::InsertIfNotPresent(parser_result.mutable_items(), wanted_id,
+                              MakeItem(wanted_id));
     }
   }
   return parser_result;

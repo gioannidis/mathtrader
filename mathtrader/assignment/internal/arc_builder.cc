@@ -70,29 +70,14 @@ void AddArc(std::string_view tail, std::string_view head, int64_t cost,
   AddArc(tail, head, /*capacity=*/1, cost, arcs);
 }
 
-// Same as above, but operates on the item ids, which are converted to the
-// respective Offered/Wanted item ids. Arcs between items have unit capacity.
-void AddArc(const Item& offered, const Item& wanted, int64_t cost,
-            ArcMap* arcs) {
-  AddArc(offered.id(), wanted.id(), cost, arcs);
-}
-
-// Same as above, but takes the arc "cost" from the wanted item's priority.
-// Dies if the `wanted` item has no priority extension.
-// The cost is set to zero if the offered item is dummy.
-void AddArc(const Item& offered, const Item& wanted, ArcMap* arcs) {
-  CHECK(wanted.priority());
-  const int64_t cost = (!offered.is_dummy() ? wanted.priority() : 0);
-  AddArc(offered, wanted, cost, arcs);
-}
-
 // Generates an ItemSet with all offered items that have a non-empty wantlist.
 // Dies if any duplicate offered items are detected.
 ItemSet GetOfferedItems(const ParserResult& input) {
   ItemSet item_set;
   for (const Wantlist& wantlist : input.wantlists()) {
-    if (wantlist.wanted_item_size()) {
-      const Item& offered_item = wantlist.offered_item();
+    if (wantlist.wanted_size()) {
+      const Item& offered_item =
+          gtl::FindOrDie(input.items(), wantlist.offered());
       gtl::InsertOrDie(&item_set, offered_item.id());
     }
   }
@@ -111,7 +96,7 @@ ItemSet GetCandidateItems(const ParserResult& input) {
 
   // Then, finds the intersection between offered and wanted items.
   for (const Wantlist& wantlist : input.wantlists()) {
-    for (const Item& wanted_item : wantlist.wanted_item()) {
+    for (const Wantlist::WantedItem& wanted_item : wantlist.wanted()) {
       const std::string_view id = wanted_item.id();
       if (offered_items.contains(id)) {
         // This is a valid candidate item, i.e., is an offered and wanted item
@@ -144,17 +129,17 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
 
   // Generates arcs between offered and wanted items.
   for (const Wantlist& wantlist : parser_result.wantlists()) {
-    const Item& offered_item = wantlist.offered_item();
+    const std::string& offered_id = wantlist.offered();
 
     // Skips offered items that are never wanted or with an empty wantlist.
-    if (!candidate_items.contains(offered_item.id())) {
+    if (!candidate_items.contains(offered_id)) {
       continue;
     }
 
     // Adds an Arc for wanted items that are also being offered.
-    for (const Item& wanted_item : wantlist.wanted_item()) {
-      if (candidate_items.contains(wanted_item.id())) {
-        AddArc(offered_item, wanted_item, &arc_map);
+    for (const Wantlist::WantedItem& wanted : wantlist.wanted()) {
+      if (candidate_items.contains(wanted.id())) {
+        AddArc(offered_id, wanted.id(), wanted.priority(), &arc_map);
       }
     }
   }

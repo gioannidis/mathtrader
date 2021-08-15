@@ -58,5 +58,6 @@ cc_test(
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "@com_google_googletest//:gtest_main",
+        "@com_google_or_tools//ortools/base:map_util",
     ],
 )
