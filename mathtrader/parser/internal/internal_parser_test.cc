@@ -95,7 +95,6 @@ TEST(InternalParser, TestMultipleWantlists) {
 // Test suite: official items
 
 TEST(InternalParserItemsTest, TestOfficialItems) {
-  // TODO(gioannidis) replace with constexpr.
   static constexpr char input_data[] = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
