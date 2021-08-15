@@ -20,14 +20,13 @@
 #include "mathtrader/parser/internal/internal_parser.h"
 
 #include <algorithm>
-#include <cctype>
+#include <cstdint>
 #include <string>
 #include <utility>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "ortools/base/logging.h"
@@ -36,7 +35,6 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/internal/internal_wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 #include "mathtrader/parser/util/item_util.h"
 
@@ -69,98 +67,6 @@ absl::string_view StripPrefix(absl::string_view line) {
     line.remove_prefix(kPrefixOption.size());
   }
   return line;
-}
-}  // namespace
-
-absl::Status InternalParser::ParseLine(absl::string_view line) {
-  // Skips lines that should be ignored. Use of PartialMatch is recommended over
-  // FullMatch as it deals better with unicode characters in comment lines, such
-  // as the pound (GBP) character.
-  if (re2::RE2::PartialMatch(line, kIgnoreLineRegex)) {
-    return absl::OkStatus();
-  }
-
-  // Strips the prefix of the line, if it's a special line, e.g., option.
-  absl::string_view stripped_line = StripPrefix(line);
-
-  // The return status.
-  absl::Status status = absl::OkStatus();
-
-  if (IsOptionLine(line)) {
-    status.Update(ParseOption(stripped_line));
-  } else if (IsDirectiveLine(line)) {
-    status.Update(ParseDirective(stripped_line));
-  } else if (!line.empty()) {
-    // Empty lines or comments are ignored.
-    // Any other line: dependent on current state.
-    switch (state_) {
-      case ParserState::kOptionParsing: {
-        state_ = ParserState::kWantlistParsing;
-        status.Update(ParseWantlist(line));
-        break;
-      }
-      case ParserState::kWantlistParsing: {
-        status.Update(ParseWantlist(line));
-        break;
-      }
-      case ParserState::kItemParsing: {
-        status.Update(ParseItem(line));
-        break;
-      }
-      default: {
-        return absl::InternalError(
-            absl::StrFormat("Internal error during Parser::State %d.", state_));
-      }
-    }
-  }
-  // In case of an error, append the line number where the error occurred.
-  if (!status.ok()) {
-    return absl::Status(
-        status.code(),
-        absl::StrFormat("(line %d) %s", line_count_, status.message()));
-  }
-  return absl::OkStatus();
-}
-
-// Parses an option. Multiple options can be specified per line.
-// Example usage:
-//
-//    ParseOption("#!OPTION-1 OPTION-2 OPTION-3=value");
-absl::Status InternalParser::ParseOption(absl::string_view line) {
-  return absl::OkStatus();
-}
-
-// Parses a line defining an official item name and adds it to the items_ set.
-// Mandatory captures: item id.
-// Optional captures: username, official name, copies.
-// Returns an error if it fails to capture an item id.
-// Example usage:
-//
-//    ParseItem(R"(0001-MKBG ==> "Mage Knight: Board Game" (by user))");
-absl::Status InternalParser::ParseItem(absl::string_view line) {
-  const auto item = items_parser_.ParseItem(line);
-  if (!item.ok()) {
-    return item.status();
-
-  } else if (const std::string& id = item->id(); !gtl::InsertIfNotPresent(
-                 parser_result_.mutable_items(), id, *item)) {
-    // Failed to insert the item; already exists.
-    return absl::AlreadyExistsError(absl::StrFormat(
-        "Duplicate declaration of official item %s not allowed.", id));
-  }
-
-  // Registers the username.
-  if (absl::string_view username = item->username(); !username.empty()) {
-    gtl::InsertIfNotPresent(&users_, static_cast<std::string>(username));
-  }
-
-  return absl::OkStatus();
-}
-
-namespace {
-// Retrieves the `unmodified_id` field if set, otherwise `id`.
-const std::string& GetUnmodifiedId(const Item& item) {
-  return (item.has_unmodified_id() ? item.unmodified_id() : item.id());
 }
 
 // Identifies and removes duplicate items from a wantlist, reporting them to
@@ -262,79 +168,88 @@ void RemoveMissingItems(
 }
 }  // namespace
 
-// Parses a wantlist, generates a Wantlist message and adds it to the
-// wantlists_ member.
-// Example usage:
-//
-//    ParseWantlist("0001-MKBG : 0002-PANDE 0003-TTAANSOC 0004-SCYTHE");
-absl::Status InternalParser::ParseWantlist(absl::string_view line) {
-  auto wantlist = wantlist_parser_.ParseWantlist(line);
-  if (!wantlist.ok()) {
-    return wantlist.status();
-  }
-  const std::string& offered_id = wantlist->offered();
-  const std::string& username =
-      wantlist->GetExtension(InternalWantlist::username);
-
-  // Registers the username, if it has been given. An empty username is possible
-  // if no official names where previously given and this is the first wantlist
-  // for this username.
-  if (!username.empty()) {
-    gtl::InsertIfNotPresent(&users_, username);
+absl::Status InternalParser::ParseLine(absl::string_view line) {
+  // Skips lines that should be ignored. Use of PartialMatch is recommended over
+  // FullMatch as it deals better with unicode characters in comment lines, such
+  // as the pound (GBP) character.
+  if (re2::RE2::PartialMatch(line, kIgnoreLineRegex)) {
+    return absl::OkStatus();
   }
 
-  // Registers the wantlist and verifies that no other wantlist has been
-  // declared.
-  if (const auto& [it, inserted] =
-          wantlist_of_item_.emplace(offered_id, line_count_);
-      !inserted) {
-    // Reports the line number of the existing wantlist.
-    const Item& duplicate = gtl::FindOrDie(parser_result_.items(), offered_id);
-    return absl::AlreadyExistsError(absl::StrFormat(
-        "Cannot declare multiple wantlists for item %s%s. Previous wantlist "
-        "declared in line %d.",
-        GetUnmodifiedId(duplicate),
-        // Displays the user offering the item if available; otherwise empty.
-        duplicate.has_username()
-            ? absl::StrCat(" from user: ", duplicate.username())
-            : "",
-        it->second));
-  }
+  // Strips the prefix of the line, if it's a special line, e.g., option.
+  absl::string_view stripped_line = StripPrefix(line);
 
-  // Handles the offered item:
-  // * Dummy: creates and registers.
-  // * Non-dummy without official names: creates and registers.
-  // TODO(gioannidis) merge these two cases if possible.
-  // * Non-dummy with official names: checks if official name has been given.
-  if (util::IsDummyItem(offered_id)) {
-    // Creates and registers the offered dummy item id. It may be already
-    // present, if the dummy item has been listed as a wanted item in a previous
-    // wantlist.
-    gtl::InsertIfNotPresent(parser_result_.mutable_items(), offered_id,
-                            util::MakeItem(offered_id, username));
+  // The return status.
+  absl::Status status = absl::OkStatus();
 
-  } else if (!has_official_names_) {
-    // Creates and registers the non-dummy offered item. Because no official
-    // names have been, it is allowed for the offered item to be previously
-    // undeclared. It is possible that the offered item exists if it has been
-    // previously defined as a wanted item in another wantlist.
-    // Overwrites username if it exists, which may be empty.
-    // TODO(gioannidis) if it overwrites, ensure that we update an empty name.
-    gtl::InsertOrUpdate(parser_result_.mutable_items(), offered_id,
-                        util::MakeItem(offered_id, username));
-  } else {
-    // Verifies that the non-dummy offered item exists, because official names
-    // have been already declared.
-    if (!parser_result_.items().contains(offered_id)) {
-      return absl::NotFoundError(absl::StrFormat(
-          "Missing official name for offered item %s.", offered_id));
+  if (IsOptionLine(line)) {
+    status.Update(ParseOption(stripped_line));
+  } else if (IsDirectiveLine(line)) {
+    status.Update(ParseDirective(stripped_line));
+  } else if (!line.empty()) {
+    // Empty lines or comments are ignored.
+    // Any other line: dependent on current state.
+    switch (state_) {
+      case ParserState::kOptionParsing: {
+        state_ = ParserState::kWantlistParsing;
+        status.Update(ParseWantlist(line));
+        break;
+      }
+      case ParserState::kWantlistParsing: {
+        status.Update(ParseWantlist(line));
+        break;
+      }
+      case ParserState::kItemParsing: {
+        status.Update(ParseItem(line));
+        break;
+      }
+      default: {
+        return absl::InternalError(
+            absl::StrFormat("Internal error during Parser::State %d.", state_));
+      }
     }
   }
+  // In case of an error, append the line number where the error occurred.
+  if (!status.ok()) {
+    return absl::Status(
+        status.code(),
+        absl::StrFormat("(line %d) %s", line_count_, status.message()));
+  }
+  return absl::OkStatus();
+}
 
-  // Finally, clears any internal extensions.
-  wantlist->ClearExtension(InternalWantlist::username);
+// Parses an option. Multiple options can be specified per line.
+// Example usage:
+//
+//    ParseOption("#!OPTION-1 OPTION-2 OPTION-3=value");
+absl::Status InternalParser::ParseOption(absl::string_view line) {
+  return absl::OkStatus();
+}
 
-  (*parser_result_.add_wantlists()) = std::move(*wantlist);
+// Parses a line defining an official item name and adds it to the items_ set.
+// Mandatory captures: item id.
+// Optional captures: username, official name, copies.
+// Returns an error if it fails to capture an item id.
+// Example usage:
+//
+//    ParseItem(R"(0001-MKBG ==> "Mage Knight: Board Game" (by user))");
+absl::Status InternalParser::ParseItem(absl::string_view line) {
+  const auto item = items_parser_.ParseItem(line);
+  if (!item.ok()) {
+    return item.status();
+
+  } else if (const std::string& id = item->id(); !gtl::InsertIfNotPresent(
+                 parser_result_.mutable_items(), id, *item)) {
+    // Failed to insert the item; already exists.
+    return absl::AlreadyExistsError(absl::StrFormat(
+        "Duplicate declaration of official item %s not allowed.", id));
+  }
+
+  // Registers the username.
+  if (absl::string_view username = item->username(); !username.empty()) {
+    gtl::InsertIfNotPresent(&users_, static_cast<std::string>(username));
+  }
+
   return absl::OkStatus();
 }
 
