@@ -39,9 +39,6 @@ message Arc {
 // the `arcs` field. Each item can always be assigned to itself, representing
 // the item not being traded.
 message Assignment {
-  // Encapsulates the trading items that appear in the `arcs` field.
-  map<string, common.Item> items = 1 [deprecated = true];
-
   // Represent valid matchings between offered and wanted items.
-  repeated Arc arcs = 2;
+  repeated Arc arcs = 1;
 }
