@@ -30,9 +30,9 @@ cc_library(
 )
 
 cc_test(
-    name = "strings_test",
+    name = "str_toupper_test",
     size = "small",
-    srcs = ["strings_test.cc"],
+    srcs = ["str_toupper_test.cc"],
     deps = [
         ":strings",
         "@com_google_googletest//:gtest_main",
