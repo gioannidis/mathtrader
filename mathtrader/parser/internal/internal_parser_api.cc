@@ -41,7 +41,7 @@ absl::Status InternalParser::ParseFile(std::string_view filename) {
   // Takes ownership of the file and reads its lines one-by-one.
   line_count_ = 0;
   for (std::string_view line : FileLines(static_cast<std::string>(filename),
-                                          FileLineIterator::DEFAULT)) {
+                                         FileLineIterator::DEFAULT)) {
     ++line_count_;
     if (absl::Status status = ParseLine(line); !status.ok()) {
       return status;
