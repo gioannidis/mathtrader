@@ -163,7 +163,7 @@ const std::string& GetUnmodifiedId(const Item& item) {
 }
 
 // Identifies and removes duplicate items from a wantlist, reporting them to
-// parser_result. The unmodified ids are reported.
+// parser_result.
 void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
   CHECK_NOTNULL(wantlist);
   CHECK_NOTNULL(parser_result);
@@ -205,8 +205,7 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
       wanted_items->end());  // 2nd argument of `erase()`.
 
   // Populates the `parser_result` with the duplicate items that appear 2+ times
-  // in the wantlist. Extracts the nodes from `duplicates` to avoid copying the
-  // unmodified id.
+  // in the wantlist.
   for (const std::string& duplicate_id : duplicates) {
     // The offered item and the duplicate wanted item must both exist, because
     // the wantlist has been fully parsed by this point.
@@ -219,7 +218,6 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
     auto* const duplicate_item = parser_result->add_duplicate_wanted_items();
     duplicate_item->set_offered_item_id(offered_item.id());
     duplicate_item->set_wanted_item_id(wanted_item.id());
-    duplicate_item->set_username(offered_item.username());
 
     // Retrieves the frequency from the `frequencies` map and sets it.
     const int32_t frequency = gtl::FindOrDie(frequencies, duplicate_id);

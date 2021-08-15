@@ -26,6 +26,7 @@
 #include "absl/status/statusor.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
@@ -90,6 +91,17 @@ MATCHER(HasIdAsKey, "") {
   return ExplainMatchResult(
       Property("actual item id", &Item::id, Eq(arg.first)), arg.second,
       result_listener);
+}
+
+// Matches a `DuplicateItem` arg whose owner is `username`, ignoring case. The
+// item is retrieved from item_map.
+MATCHER_P2(WantlistOwnerOfDuplicateStrCaseEq, username, item_map, "") {
+  const Item* item = gtl::FindOrNull(item_map, arg.offered_item_id());
+  if (!item) {
+    return ExplainMatchResult(testing::NotNull(), item, result_listener);
+  }
+  return ExplainMatchResult(StrCaseEq(username), item->username(),
+                            result_listener);
 }
 
 // Runs a number of checks against the given ParserResult.
@@ -165,8 +177,8 @@ TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
 
   // Verifies that all duplicate items originate from the same user.
   const auto& duplicates = result->duplicate_wanted_items();
-  EXPECT_THAT(duplicates, Each(Property(&DuplicateItem::username,
-                                        StrCaseEq("tigersareawesome"))));
+  EXPECT_THAT(duplicates, Each(WantlistOwnerOfDuplicateStrCaseEq(
+                              "tigersareawesome", result->items())));
 
   // Checks one duplicate item.
   EXPECT_THAT(

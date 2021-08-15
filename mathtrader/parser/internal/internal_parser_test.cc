@@ -207,25 +207,21 @@ TEST(InternalParser, TestDuplicateItems) {
           AllOf(
               Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
               Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
-              Property("owner", &DuplicateItem::username, StrCaseEq("user2")),
               Property("frequency", &DuplicateItem::frequency, Eq(3))),
 
           AllOf(
               Property("wanted", &DuplicateItem::wanted_item_id, StrEq("A")),
               Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
-              Property("owner", &DuplicateItem::username, StrCaseEq("user2")),
               Property("frequency", &DuplicateItem::frequency, Eq(2))),
 
           AllOf(
               Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
               Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
-              Property("owner", &DuplicateItem::username, StrCaseEq("user3")),
               Property("frequency", &DuplicateItem::frequency, Eq(2))),
 
           AllOf(
               Property("wanted", &DuplicateItem::wanted_item_id, StrEq("K")),
               Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
-              Property("owner", &DuplicateItem::username, StrCaseEq("user3")),
               Property("frequency", &DuplicateItem::frequency, Eq(5)))));
 }
 
