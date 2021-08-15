@@ -28,7 +28,6 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
 #include "ortools/base/logging.h"
 #include "ortools/base/map_util.h"
 #include "re2/re2.h"
@@ -44,23 +43,23 @@ using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
 
 // Prefix for directive lines.
-constexpr absl::string_view kPrefixDirective = "!";
+constexpr std::string_view kPrefixDirective = "!";
 // Prefix for option lines.
-constexpr absl::string_view kPrefixOption = "#!";
+constexpr std::string_view kPrefixOption = "#!";
 
 // Checks whether this line is a directive line.
-bool IsDirectiveLine(absl::string_view line) {
+bool IsDirectiveLine(std::string_view line) {
   return absl::StartsWith(line, kPrefixDirective);
 }
 
 // Checks whether this line is an option line.
-bool IsOptionLine(absl::string_view line) {
+bool IsOptionLine(std::string_view line) {
   return absl::StartsWith(line, kPrefixOption);
 }
 
 // Removes special line prefixes so that they can be subsequently parsed.
 // Note that the argument must outlive the result.
-absl::string_view StripPrefix(absl::string_view line) {
+std::string_view StripPrefix(std::string_view line) {
   if (IsDirectiveLine(line)) {
     line.remove_prefix(kPrefixDirective.size());
   } else if (IsOptionLine(line)) {
@@ -168,7 +167,7 @@ void RemoveMissingItems(
 }
 }  // namespace
 
-absl::Status InternalParser::ParseLine(absl::string_view line) {
+absl::Status InternalParser::ParseLine(std::string_view line) {
   // Skips lines that should be ignored. Use of PartialMatch is recommended over
   // FullMatch as it deals better with unicode characters in comment lines, such
   // as the pound (GBP) character.
@@ -177,7 +176,7 @@ absl::Status InternalParser::ParseLine(absl::string_view line) {
   }
 
   // Strips the prefix of the line, if it's a special line, e.g., option.
-  absl::string_view stripped_line = StripPrefix(line);
+  std::string_view stripped_line = StripPrefix(line);
 
   // The return status.
   absl::Status status = absl::OkStatus();
@@ -222,7 +221,7 @@ absl::Status InternalParser::ParseLine(absl::string_view line) {
 // Example usage:
 //
 //    ParseOption("#!OPTION-1 OPTION-2 OPTION-3=value");
-absl::Status InternalParser::ParseOption(absl::string_view line) {
+absl::Status InternalParser::ParseOption(std::string_view line) {
   return absl::OkStatus();
 }
 
@@ -233,7 +232,7 @@ absl::Status InternalParser::ParseOption(absl::string_view line) {
 // Example usage:
 //
 //    ParseItem(R"(0001-MKBG ==> "Mage Knight: Board Game" (by user))");
-absl::Status InternalParser::ParseItem(absl::string_view line) {
+absl::Status InternalParser::ParseItem(std::string_view line) {
   const auto item = items_parser_.ParseItem(line);
   if (!item.ok()) {
     return item.status();
@@ -246,7 +245,7 @@ absl::Status InternalParser::ParseItem(absl::string_view line) {
   }
 
   // Registers the username.
-  if (absl::string_view username = item->username(); !username.empty()) {
+  if (std::string_view username = item->username(); !username.empty()) {
     gtl::InsertIfNotPresent(&users_, static_cast<std::string>(username));
   }
 

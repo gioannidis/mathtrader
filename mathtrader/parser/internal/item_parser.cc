@@ -24,7 +24,6 @@
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
 #include "ortools/base/logging.h"
 
 #include "mathtrader/common/item.pb.h"
@@ -86,7 +85,7 @@ ItemParser::ItemParser() : kOfficialItemRegex(kOfficialItemRegexStr) {
 
 // Parses the input text and returns an Item on success. If it fails, returns an
 // InvalidArgumentError.
-absl::StatusOr<Item> ItemParser::ParseItem(absl::string_view text) const {
+absl::StatusOr<Item> ItemParser::ParseItem(std::string_view text) const {
   // Mandatory match: item id.
   std::string item_id;
 

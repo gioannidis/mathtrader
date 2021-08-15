@@ -24,7 +24,6 @@
 
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
@@ -46,7 +45,7 @@ const std::string& GetUnmodifiedId(const Item& item) {
 // Example usage:
 //
 //    ParseWantlist("0001-MKBG : 0002-PANDE 0003-TTAANSOC 0004-SCYTHE");
-absl::Status InternalParser::ParseWantlist(absl::string_view line) {
+absl::Status InternalParser::ParseWantlist(std::string_view line) {
   auto wantlist = wantlist_parser_.ParseWantlist(line);
   if (!wantlist.ok()) {
     return wantlist.status();

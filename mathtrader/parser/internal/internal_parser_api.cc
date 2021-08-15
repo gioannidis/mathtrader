@@ -24,7 +24,6 @@
 
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
-#include "absl/strings/string_view.h"
 #include "ortools/base/filelineiter.h"
 
 namespace mathtrader::parser::internal {
@@ -38,10 +37,10 @@ constexpr char kIgnoreLineRegexStr[] = R"(^#[^!]|^\s*$)";
 InternalParser::InternalParser() : kIgnoreLineRegex(kIgnoreLineRegexStr) {}
 
 // Opens and parses the given want file. Dies if the file is empty or not found.
-absl::Status InternalParser::ParseFile(absl::string_view filename) {
+absl::Status InternalParser::ParseFile(std::string_view filename) {
   // Takes ownership of the file and reads its lines one-by-one.
   line_count_ = 0;
-  for (absl::string_view line : FileLines(static_cast<std::string>(filename),
+  for (std::string_view line : FileLines(static_cast<std::string>(filename),
                                           FileLineIterator::DEFAULT)) {
     ++line_count_;
     if (absl::Status status = ParseLine(line); !status.ok()) {
@@ -57,14 +56,14 @@ absl::Status InternalParser::ParseFile(absl::string_view filename) {
 }
 
 // Identical to `Parse`, but operates on a string.
-absl::Status InternalParser::ParseText(absl::string_view data) {
+absl::Status InternalParser::ParseText(std::string_view data) {
   if (data.empty()) {
     return absl::InvalidArgumentError("Empty data.");
   }
 
-  std::vector<absl::string_view> lines = absl::StrSplit(data, '\n');
+  std::vector<std::string_view> lines = absl::StrSplit(data, '\n');
   line_count_ = 0;
-  for (absl::string_view line : lines) {
+  for (std::string_view line : lines) {
     ++line_count_;
     if (absl::Status status = ParseLine(line); !status.ok()) {
       return status;

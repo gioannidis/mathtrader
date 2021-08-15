@@ -20,7 +20,6 @@
 #include "mathtrader/parser/internal/internal_parser.h"
 
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
 #include "ortools/base/map_util.h"
 
 namespace mathtrader::parser::internal {
@@ -36,11 +35,11 @@ constexpr char kDirectiveOfficialNamesEnd[] = "END-OFFICIAL-NAMES";
 // Example usage:
 //
 //    ParseDirective("!DIRECTIVE-1");
-absl::Status InternalParser::ParseDirective(absl::string_view line) {
-  static constexpr absl::string_view kInternalErrorMsg =
+absl::Status InternalParser::ParseDirective(std::string_view line) {
+  static constexpr std::string_view kInternalErrorMsg =
       "Internal error when processing directive %s.";
 
-  const absl::string_view directive = line;
+  const std::string_view directive = line;
 
   // Registers the directive to identify double declarations. Returns error if
   // already inserted.

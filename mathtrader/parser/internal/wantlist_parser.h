@@ -23,7 +23,6 @@
 #include <cstdint>
 
 #include "absl/status/statusor.h"
-#include "absl/strings/string_view.h"
 #include "re2/re2.h"
 
 #include "mathtrader/common/wantlist.pb.h"
@@ -51,11 +50,11 @@ class WantlistParser {
   // returns an InvalidArgumentError. Does not check whether the offered or any
   // of the wanted items correspond to an actual official item, if official item
   // names have been given.
-  absl::StatusOr<common::Wantlist> ParseWantlist(absl::string_view text) const;
+  absl::StatusOr<common::Wantlist> ParseWantlist(std::string_view text) const;
 
   // Returns the internal string that is used to build the regex that parses the
   // wantlists.
-  static absl::string_view get_regex_str();
+  static std::string_view get_regex_str();
 
  private:
   // `kSmallStep` and `kBigStep` denote the default and the additional

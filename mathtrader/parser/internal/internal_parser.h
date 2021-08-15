@@ -28,7 +28,6 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/string_view.h"
 #include "re2/re2.h"
 
 #include "mathtrader/common/item.pb.h"
@@ -46,10 +45,10 @@ class InternalParser {
   InternalParser& operator=(const InternalParser&) = delete;
 
   // Opens and parses the given want file.
-  ABSL_MUST_USE_RESULT absl::Status ParseFile(absl::string_view filename);
+  ABSL_MUST_USE_RESULT absl::Status ParseFile(std::string_view filename);
 
   // Identical to `ParseFile`, but operates directly on the data string.
-  ABSL_MUST_USE_RESULT absl::Status ParseText(absl::string_view data);
+  ABSL_MUST_USE_RESULT absl::Status ParseText(std::string_view data);
 
   // Returns the parsed ParserResult.
   const ParserResult& parser_result() const { return parser_result_; }
@@ -69,19 +68,19 @@ class InternalParser {
   };
 
   // Defines the result of a line parsing: a wantlist or an official item.
-  ABSL_MUST_USE_RESULT absl::Status ParseLine(absl::string_view line);
+  ABSL_MUST_USE_RESULT absl::Status ParseLine(std::string_view line);
 
   // Parses a directive. Exactly one directive can be specified per line.
   // Example usage:
   //
   //    ParseOption("#!OPTION-1 OPTION-2 OPTION-3=value");
-  ABSL_MUST_USE_RESULT absl::Status ParseDirective(absl::string_view line);
+  ABSL_MUST_USE_RESULT absl::Status ParseDirective(std::string_view line);
 
   // Parses an option. Multiple options can be specified per line.
   // Example usage:
   //
   //    ParseOption("#!OPTION-1 OPTION-2 OPTION-3=value");
-  ABSL_MUST_USE_RESULT absl::Status ParseOption(absl::string_view line);
+  ABSL_MUST_USE_RESULT absl::Status ParseOption(std::string_view line);
 
   // Parses a line defining an official item name and adds it to the items_ set.
   // Mandatory captures: item id.
@@ -90,14 +89,14 @@ class InternalParser {
   // Example usage:
   //
   //    ParseItem(R"(0001-MKBG ==> "Mage Knight: Board Game" (by user))");
-  ABSL_MUST_USE_RESULT absl::Status ParseItem(absl::string_view line);
+  ABSL_MUST_USE_RESULT absl::Status ParseItem(std::string_view line);
 
   // Parses a wantlist, generates a Wantlist message and adds it to the
   // wantlists_ member.
   // Example usage:
   //
   //    ParseWantlist("0001-MKBG : 0002-PANDE 0003-TTAANSOC 0004-SCYTHE");
-  ABSL_MUST_USE_RESULT absl::Status ParseWantlist(absl::string_view line);
+  ABSL_MUST_USE_RESULT absl::Status ParseWantlist(std::string_view line);
 
   // Propagates data from the data members to the parser_result.
   void FinalizeParserResult();

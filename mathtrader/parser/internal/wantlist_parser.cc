@@ -43,7 +43,7 @@ using ::mathtrader::util::StrToUpper;
 
 // Internal regex that matches wantlist prefix, capturing offered item id and
 // optionally the username.
-constexpr absl::string_view kWantlistPrefixRegexStr
+constexpr std::string_view kWantlistPrefixRegexStr
     // Prefix matching at the beginning of the text.
     = "^"
 
@@ -72,11 +72,11 @@ void UpdateOnError(char c, int count, int max_count, absl::Status* status) {
 // Checks a wantlist text for integrity errors and forbidden characters.
 // @text  Entire wantlist, including username.
 // @wantlist  Suffix of @text, which excludes the username.
-ABSL_MUST_USE_RESULT absl::Status CheckWantlist(absl::string_view text,
-                                                absl::string_view wantlist) {
+ABSL_MUST_USE_RESULT absl::Status CheckWantlist(std::string_view text,
+                                                std::string_view wantlist) {
   static constexpr int kMaxColonCount = 1;
   static constexpr int kMaxParenthesisCount = 1;
-  static constexpr absl::string_view kForbiddenChars =
+  static constexpr std::string_view kForbiddenChars =
       R"tag(`~!@#$^&*=+(){}[]\|;'",.<>/?)tag";
 
   {
@@ -140,7 +140,7 @@ WantlistParser::WantlistParser(int32_t small_step, int32_t big_step)
 }
 
 absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
-    absl::string_view text) const {
+    std::string_view text) const {
   // Creates the wantlist to return, currently empty.
   Wantlist wantlist;
 
@@ -165,7 +165,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
     // Checks the integrity of the wantlist, excluding the username. Must be
     // called before converting the username to case-insensitive, if applicable.
-    const absl::string_view text_without_username =
+    const std::string_view text_without_username =
         text.substr(text.find(username) + username.size() + 1);
     if (absl::Status status = CheckWantlist(text, text_without_username);
         !status.ok()) {
@@ -203,7 +203,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
   // and strings containing only whitespaces. The rest of the text should
   // contain the wanted items or the `kBigStepChar`.
   const std::string wanted_items(text_piece);
-  std::vector<absl::string_view> tokens =
+  std::vector<std::string_view> tokens =
       absl::StrSplit(wanted_items, ' ', absl::SkipWhitespace());
 
   // Empty wantlists, without wanted items, are allowed.
@@ -216,7 +216,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
   // Parses the tokens and adds a wanted item, except if a `kBigStepChar` is
   // seen, where it further increases the next item's rank.
-  for (absl::string_view token : tokens) {
+  for (std::string_view token : tokens) {
     if (token.size() == 1 && token[0] == kBigStepChar) {
       // Not a wanted item, but a "big step" character.
       rank += kBigStep;
@@ -247,7 +247,7 @@ int32_t WantlistParser::ComputePriority(int32_t rank) const { return rank; }
 
 // Returns the internal string that is used to build the regex that parses the
 // wantlists.
-absl::string_view WantlistParser::get_regex_str() {
+std::string_view WantlistParser::get_regex_str() {
   return kWantlistPrefixRegexStr;
 }
 }  // namespace mathtrader::parser::internal

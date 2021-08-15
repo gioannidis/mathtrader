@@ -25,7 +25,6 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/string_view.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -102,7 +101,7 @@ TEST(WantlistParserTest, TestNoItems) {
   const std::vector<std::string> texts = {
       "0001-PANDE", "0001-PANDE:", "0001-PANDE :", "  0001-PANDE  :  "};
 
-  for (absl::string_view text : texts) {
+  for (std::string_view text : texts) {
     const auto wantlist = parser.ParseWantlist(text);
 
     ASSERT_TRUE(wantlist.ok())
@@ -125,7 +124,7 @@ TEST(WantlistParserTest, TestNoItemsWithUsername) {
       "(user) 0001-PANDE", "(user) 0001-PANDE:", "(user) 0001-PANDE :",
       "  (user)   0001-PANDE    :   "};
 
-  for (absl::string_view text : texts) {
+  for (std::string_view text : texts) {
     const auto wantlist = parser.ParseWantlist(text);
 
     ASSERT_TRUE(wantlist.ok())
@@ -357,7 +356,7 @@ TEST(WantlistParserNegativeTest, TestColonAfterWantedItemWithUsername) {
 TEST(WantlistParserNegativeTest, TestUsernameInvalidChars) {
   WantlistParser parser;
   // Invalid characters. Defining them as string_view to avoid the '\0'.
-  static constexpr absl::string_view kInvalidChars = R"tag(():)tag";
+  static constexpr std::string_view kInvalidChars = R"tag(():)tag";
 
   for (char c : kInvalidChars) {
     std::string username = "user";
@@ -387,7 +386,7 @@ TEST(WantlistParserNegativeTest, TestInvalidCharsInSuffix) {
     std::string text = "0001-A : 0002-B";
     text += c;
     const auto status = parser.ParseWantlist(text).status();
-    const absl::string_view message = status.message();
+    const std::string_view message = status.message();
 
     EXPECT_TRUE(absl::IsInvalidArgument(status)) << text;
 
@@ -457,7 +456,7 @@ TEST(WantlistParserRegexTest, SimpleTest) {
       "1-A : 2-B 3-C 4-D",
       "(user) 1-A : 2-B 3-C 4-D",
   };
-  for (absl::string_view wantlist : wantlists) {
+  for (std::string_view wantlist : wantlists) {
     EXPECT_TRUE(re2::RE2::PartialMatch(wantlist, *re))
         << "Failed to match"
         << " wantlist: '" << wantlist << "'";
@@ -495,7 +494,7 @@ TEST(WantlistParserRegexTest, SimpleCapturingTest) {
   EXPECT_EQ(expected_colon.size(), wantlists.size());
 
   int i = 0;
-  for (absl::string_view wantlist : wantlists) {
+  for (std::string_view wantlist : wantlists) {
     EXPECT_TRUE(
         re2::RE2::PartialMatch(wantlist, *re, &username, &offered_item, &colon))
         << "Failed to match wantlist: '" << wantlist << "'";
