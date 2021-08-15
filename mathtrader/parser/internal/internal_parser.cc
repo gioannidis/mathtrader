@@ -60,7 +60,6 @@ bool IsOptionLine(absl::string_view line) {
 
 // Removes special line prefixes so that they can be subsequently parsed.
 // Note that the argument must outlive the result.
-// TODO(gioannidis) Replace with absl::ConsumePrefix.
 absl::string_view StripPrefix(absl::string_view line) {
   if (IsDirectiveLine(line)) {
     line.remove_prefix(kPrefixDirective.size());
@@ -239,29 +238,26 @@ void RemoveMissingItems(
   // Checks if a wanted item is missing and, if so, records it as a missing
   // item in `parser_result_`.
   wanted_items->erase(
-      std::remove_if(wanted_items->begin(), wanted_items->end(),
+      std::remove_if(
+          wanted_items->begin(), wanted_items->end(),
 
-                     // Lambda: decides whether an item should be erased.
-                     [&official_items,
-                      missing_items](const Wantlist::WantedItem& wanted_item) {
-                       const std::string& id = wanted_item.id();
-                       if (util::IsDummyItem(id)) {
-                         // Does not erase the item, because it is dummy.
-                         return false;
+          // Lambda: decides whether an item should be erased.
+          [&official_items,
+           missing_items](const Wantlist::WantedItem& wanted_item) {
+            const std::string& id = wanted_item.id();
 
-                         // Checks whether the item has an official name.
-                         // TODO(gioannidis) merge these two cases.
-                       } else if (official_items.contains(id)) {
-                         // Does not erase the item, because it has been found.
-                         return false;
-                       }
-                       // Initializes the frequency of the missing item to zero
-                       // or retrieves it if present.
-                       int32_t& frequency = gtl::LookupOrInsert(
-                           missing_items, id, /*frequency=*/0);
-                       ++frequency;
-                       return true;
-                     }),
+            // Does not erase the item if it is dummy or if it has
+            // an official name.
+            if (util::IsDummyItem(id) || official_items.contains(id)) {
+              return false;
+            }
+            // Initializes the frequency of the missing item to zero
+            // or retrieves it if present.
+            int32_t& frequency =
+                gtl::LookupOrInsert(missing_items, id, /*frequency=*/0);
+            ++frequency;
+            return true;
+          }),
       wanted_items->end());  // 2nd argument of `erase()`.
 }
 }  // namespace
