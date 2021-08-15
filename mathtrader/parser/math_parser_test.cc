@@ -31,11 +31,14 @@ namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::MathParser;
+using ::testing::_;
 using ::testing::AllOf;
+using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::IsFalse;
 using ::testing::MatchesRegex;
+using ::testing::Pair;
 using ::testing::Property;
 using ::testing::SizeIs;
 using ::testing::StrCaseEq;
@@ -47,13 +50,13 @@ using MissingItem = mathtrader::parser::ParserResult::MissingItem;
 TEST(MathParserTest, TestOfficialItemsAndWantlists) {
   static constexpr char kInputData[] = R"(
 !BEGIN-OFFICIAL-NAMES
-0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from SomeUsername1)
-0002-SOC ==> "Shadows over Camelot" (from SomeUsername2)
-0003-AGMI ==> "Adventure Games: Monochrome Inc." (from SomeUsername3)
-0004-AN7WCS ==> "Alt Name: 7 Wonders coaster set" (from SomeUsername3)
-0005-TIMSTO ==> "T.I.M.E Stories" (from SomeUsername4)
-0006-AN6P-COPY1 ==> "Alt Name: $62 PayPal/Zelle/Amazon" (from SomeUsername5) [copy 1 of 3]
-0007-AN6P-COPY2 ==> "Alt Name: $62 PayPal/Zelle/Amazon" (from SomeUsername5) [copy 2 of 3]
+0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from Abcd1)
+0002-SOC ==> "Shadows over Camelot" (from Abcd2)
+0003-AGMI ==> "Adventure Games: Monochrome Inc." (from Abcd3)
+0004-AN7WCS ==> "Alt Name: 7 Wonders coaster set" (from Abcd3)
+0005-TIMSTO ==> "T.I.M.E Stories" (from Abcd4)
+0006-AN6P-COPY1 ==> "Alt Name: $62 PayPal/Zelle/Amazon" (from Abcd5) [copy 1 of 3]
+0007-AN6P-COPY2 ==> "Alt Name: $62 PayPal/Zelle/Amazon" (from Abcd5) [copy 2 of 3]
 !END-OFFICIAL-NAMES
 
 (Abcd1) 0001-20GIFT : 0002-SOC 0003-AGMI 0004-AN7WCS
@@ -66,21 +69,18 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
   const auto result = MathParser::ParseText(kInputData);
   ASSERT_TRUE(result.ok()) << result.status().message();
 
-  // Verifies for all wantlists:
-  // * No offered items are dummies.
-  // * The offered items' usernames match "Abcd[0-9]", ignoring case.
-  // * Have 3 wanted items.
-  // * Have no dummy wanted items.
+  // Verifies that:
+  // * All usernames match "Abcd[0-9]", ignoring case.
+  // * No offered item is dummy.
   EXPECT_THAT(
-      result->wantlists(),
-      Each(AllOf(
-          Property("offered item", &Wantlist::offered_item,
-                   AllOf(Property("dummy", &Item::is_dummy, IsFalse()),
-                         Property("username", &Item::username,
-                                  MatchesRegex(R"([Aa][Bb][Cc][Dd][0-9])")))),
-          Property("wanted items", &Wantlist::wanted_item,
-                   AllOf(SizeIs(3), Each(Property("dummy", &Item::is_dummy,
-                                                  IsFalse())))))));
+      result->items(),
+      Each(Pair(_, AllOf(Property(&Item::username,
+                                  MatchesRegex(R"([Aa][Bb][Cc][Dd][0-9])")),
+                         Property("dummy", &Item::is_dummy, IsFalse())))));
+
+  // Verifies that all wantlists have 3 wanted items.
+  EXPECT_THAT(result->wantlists(),
+              Each(Property(&Wantlist::wanted, SizeIs(3))));
 
   // Checks that there are no missing or duplicate items.
   EXPECT_EQ(result->missing_items_size(), 0);
@@ -113,7 +113,7 @@ TEST(MathParserTest, TestMissingItems) {
   // Verifies that all wantlists have 3 wanted items. The 'missing-item' should
   // have been removed.
   EXPECT_THAT(result->wantlists(),
-              Each(Property(&Wantlist::wanted_item, SizeIs(3))));
+              Each(Property(&Wantlist::wanted, SizeIs(3))));
 
   // Checks that there is a 'missing-item' that has appeared 4 times.
   EXPECT_THAT(result->missing_items(),

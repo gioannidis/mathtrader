@@ -29,7 +29,6 @@
 #endif
 
 namespace {
-using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::ParserResult;
 using ::mathtrader::parser::internal::InternalParser;
@@ -72,9 +71,8 @@ TEST(InternalParser, TestSingleWantlist) {
   const ParserResult& result = parser.parser_result();
   EXPECT_EQ(result.items_size(), 4);
   EXPECT_THAT(result.wantlists(),
-              ElementsAre(AllOf(Property(&Wantlist::offered_item,
-                                         Property(&Item::id, StrEq("1-A"))),
-                                Property(&Wantlist::wanted_item, SizeIs(3)))));
+              ElementsAre(AllOf(Property(&Wantlist::offered, StrEq("1-A")),
+                                Property(&Wantlist::wanted, SizeIs(3)))));
 }
 
 TEST(InternalParser, TestMultipleWantlists) {
@@ -192,13 +190,13 @@ TEST(InternalParser, TestDuplicateItems) {
               UnorderedElementsAre(StrCaseEq("user1"), StrCaseEq("user2"),
                                    StrCaseEq("user3")));
 
-  EXPECT_THAT(result.wantlists(),
-              ElementsAre(Property("wanted items", &Wantlist::wanted_item,
-                                   SizeIs(kWantedItems[0])),
-                          Property("wanted items", &Wantlist::wanted_item,
-                                   SizeIs(kWantedItems[1])),
-                          Property("wanted items", &Wantlist::wanted_item,
-                                   SizeIs(kWantedItems[2]))));
+  EXPECT_THAT(
+      result.wantlists(),
+      ElementsAre(
+          Property("wanted items", &Wantlist::wanted, SizeIs(kWantedItems[0])),
+          Property("wanted items", &Wantlist::wanted, SizeIs(kWantedItems[1])),
+          Property("wanted items", &Wantlist::wanted,
+                   SizeIs(kWantedItems[2]))));
 
   // Verifies all missing items and their frequencies.
   // Note that the order of duplicate items is irrelevant.

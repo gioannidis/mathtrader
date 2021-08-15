@@ -36,6 +36,7 @@ using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::MathParser;
 using ::mathtrader::parser::ParserResult;
+using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Contains;
@@ -46,6 +47,7 @@ using ::testing::ExplainMatchResult;
 using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::MatchesRegex;
+using ::testing::Pair;
 using ::testing::Property;
 using ::testing::SizeIs;
 using ::testing::StartsWith;
@@ -99,17 +101,12 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
   // Verifies the number of wantlists.
   EXPECT_EQ(wantlists.size(), wantlist_count);
 
-  // Verifies the id format of offered items.
-  EXPECT_THAT(wantlists,
-              Each(Property(&Wantlist::offered_item, IsValidItemId())));
+  // Verifies the id format of all items.
+  EXPECT_THAT(parser_result->items(), Each(Pair(_, IsValidItemId())));
 
   // Verifies the longest wantlist.
-  EXPECT_THAT(wantlists, Contains(Property(&Wantlist::wanted_item,
-                                           SizeIs(longest_wantlist))));
-
-  // Verifies the id format of wanted items.
   EXPECT_THAT(wantlists,
-              Each(Property(&Wantlist::wanted_item, Each(IsValidItemId()))));
+              Contains(Property(&Wantlist::wanted, SizeIs(longest_wantlist))));
 
   // Verifies the number of missing items.
   if (missing_item_count) {
@@ -160,11 +157,12 @@ TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
                                         StrCaseEq("tigersareawesome"))));
 
   // Checks one duplicate item.
-  EXPECT_THAT(duplicates,
-              Contains(AllOf(
-                  Property(&DuplicateItem::wanted_item_id, StrEq("%8153405")),
-                  Property(&DuplicateItem::offered_item_id, StrEq("8177732")),
-                  Property(&DuplicateItem::frequency, Eq(3)))));
+  EXPECT_THAT(
+      duplicates,
+      Contains(AllOf(
+          Property(&DuplicateItem::wanted_item_id, StartsWith("%8153405")),
+          Property(&DuplicateItem::offered_item_id, StrEq("8177732")),
+          Property(&DuplicateItem::frequency, Eq(3)))));
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021US) {
