@@ -83,6 +83,15 @@ MATCHER(IsValidItemId, "") {
       arg, result_listener);
 }
 
+// Matches a (id_string, Item) pair, where id_string = Item::id. Essentially
+// matches a map pair where the index is the item's id.
+MATCHER(HasIdAsKey, "") {
+  *result_listener << "whose property `map key` is \"" << arg.first << "\", ";
+  return ExplainMatchResult(
+      Property("actual item id", &Item::id, Eq(arg.first)), arg.second,
+      result_listener);
+}
+
 // Runs a number of checks against the given ParserResult.
 void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
                     int32_t user_count, int32_t item_count,
@@ -95,6 +104,9 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
 
   // Verifies the number of items.
   EXPECT_EQ(parser_result->item_count(), item_count);
+
+  // Verifies that the item map is well-formed.
+  EXPECT_THAT(parser_result->items(), Each(HasIdAsKey()));
 
   const auto& wantlists = parser_result->wantlists();
 
