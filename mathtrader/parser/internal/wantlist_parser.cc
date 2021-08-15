@@ -38,7 +38,6 @@
 
 namespace mathtrader::parser::internal {
 namespace {
-using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::util::StrToUpper;
 
@@ -147,7 +146,6 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
   // Converts string_view to StringPiece, so that RE2 can consume its prefix.
   re2::StringPiece text_piece = text;
-  Item* offered_item = nullptr;
   {
     std::string item_id;
     std::string colon;     // optional
@@ -191,26 +189,15 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     }
 
     // Sets the offered item id.
-    offered_item = wantlist.mutable_offered_item();
-    offered_item->set_id(item_id);
     wantlist.set_offered(std::move(item_id));
 
-    // Sets the wantlist username, if specified. Should be done before
-    // processing a potentially dummy item.
+    // Sets the wantlist username, if specified.
     if (!username.empty()) {
-      offered_item->set_username(username);
       wantlist.SetExtension(InternalWantlist::username, std::move(username));
     } else {
       // TODO(gioannidis) return if usernames are required.
     }
-
-    // Processes the item id if dummy.
-    if (const absl::Status status = util::ProcessIfDummy(offered_item);
-        !status.ok()) {
-      return status;
-    }
   }
-  CHECK_NOTNULL(offered_item);
 
   // Splits the rest of text using spaces as delimiter, skipping empty strings
   // and strings containing only whitespaces. The rest of the text should
@@ -235,15 +222,10 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
       rank += kBigStep;
       continue;
     }
-    Item* wanted_item = wantlist.add_wanted_item();
     Wantlist::WantedItem* wanted = wantlist.add_wanted();
 
     // Makes the wanted item id case-insensitive.
-    {
-      auto wanted_item_id = static_cast<std::string>(token);
-      wanted_item->set_id(StrToUpper(std::move(wanted_item_id)));
-    }
-    wanted->set_id(std::move(std::string(token)));
+    wanted->set_id(std::string(token));
     StrToUpper(wanted->mutable_id());
 
     // Processes the item id if dummy, returning on error.
@@ -253,14 +235,8 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
         !status.ok()) {
       return status;
     }
-    if (const absl::Status status =
-            util::ProcessIfDummy(offered_item->username(), wanted_item);
-        !status.ok()) {
-      return status;
-    }
 
     const int32_t priority = ComputePriority(rank);
-    wanted_item->set_priority(priority);
     wanted->set_priority(priority);
     rank += kSmallStep;
   }
