@@ -238,26 +238,24 @@ void RemoveMissingItems(
   // Checks if a wanted item is missing and, if so, records it as a missing
   // item in `parser_result_`.
   wanted_items->erase(
-      std::remove_if(
-          wanted_items->begin(), wanted_items->end(),
+      std::remove_if(wanted_items->begin(), wanted_items->end(),
 
-          // Lambda: decides whether an item should be erased.
-          [&official_items,
-           missing_items](const Wantlist::WantedItem& wanted_item) {
-            const std::string& id = wanted_item.id();
+                     // Lambda: decides whether an item should be erased.
+                     [&official_items,
+                      missing_items](const Wantlist::WantedItem& wanted_item) {
+                       const std::string& id = wanted_item.id();
 
-            // Does not erase the item if it is dummy or if it has
-            // an official name.
-            if (util::IsDummyItem(id) || official_items.contains(id)) {
-              return false;
-            }
-            // Initializes the frequency of the missing item to zero
-            // or retrieves it if present.
-            int32_t& frequency =
-                gtl::LookupOrInsert(missing_items, id, /*frequency=*/0);
-            ++frequency;
-            return true;
-          }),
+                       // Does not erase the item if it has an official name.
+                       if (official_items.contains(id)) {
+                         return false;
+                       }
+                       // Initializes the frequency of the missing item to zero
+                       // or retrieves it if present.
+                       int32_t& frequency = gtl::LookupOrInsert(
+                           missing_items, id, /*frequency=*/0);
+                       ++frequency;
+                       return true;
+                     }),
       wanted_items->end());  // 2nd argument of `erase()`.
 }
 }  // namespace
@@ -345,27 +343,16 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
     }
   }
 
-  // Removes all non-dummy wanted items without official name.
-  if (has_official_names_) {
-    // Note: `wantlist` is StatusOr, so we dereference the union first and then
-    // pass by pointer.
-    RemoveMissingItems(parser_result_.items(), &(*wantlist), &missing_items_);
-  } else {
-    // Creates and registers all wanted items. Since no official names have been
-    // given, it is possible that some wanted items are declared now for the
-    // first time.
+  // Creates and registers all wanted items. Since no official names have been
+  // given, it is possible that some wanted items are declared now for the first
+  // time.
+  if (!has_official_names_) {
     for (const Wantlist::WantedItem& wanted : wantlist->wanted()) {
       const std::string& id = wanted.id();
       gtl::InsertIfNotPresent(parser_result_.mutable_items(), id,
                               util::MakeItem(id, username));
     }
   }
-
-  // Identifies and removes duplicate items that have an official name. This
-  // should be done after items without an official named have been removed, so
-  // as to reduce redundant errors. Note: `wantlist` is StatusOr, so we
-  // dereference the union first and then pass by pointer.
-  RemoveDuplicateItems(&(*wantlist), &parser_result_);
 
   // Finally, clears any internal extensions.
   wantlist->ClearExtension(InternalWantlist::username);
@@ -380,6 +367,23 @@ void InternalParser::FinalizeParserResult() {
   parser_result_.set_item_count(std::count_if(
       parser_result_.items().cbegin(), parser_result_.items().cend(),
       [](const auto& map_pair) { return !map_pair.second.is_dummy(); }));
+
+  // Executes consistency checks and removes offending items.
+  // mutable_wantlists() is a pointer, so we dereference it to iterate the
+  // mutable elements.
+  for (Wantlist& wantlist : *parser_result_.mutable_wantlists()) {
+    // Removes missing items from all wantlists. This is executed after all
+    // wantlists have been processed to cover the following cases:
+    // * No official names; wanted items without corresponding wantlists.
+    // * Dummy items without being offered in a wantlist.
+    RemoveMissingItems(parser_result_.items(), &wantlist, &missing_items_);
+
+    // Identifies and removes duplicate items that have an official name. This
+    // should be done after items without an official named have been removed,
+    // because all wanted items are assumed to be present in
+    // `parser_result.items()`.
+    RemoveDuplicateItems(&wantlist, &parser_result_);
+  }
 
   // Moves the usernames to parser_result.
   while (!users_.empty()) {
