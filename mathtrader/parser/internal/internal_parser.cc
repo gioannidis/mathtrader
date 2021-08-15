@@ -310,7 +310,6 @@ absl::Status InternalParser::ParseWantlist(absl::string_view line) {
     // Creates and registers the offered dummy item id. It may be already
     // present, if the dummy item has been listed as a wanted item in a previous
     // wantlist.
-    // TODO(gioannidis) At the end check if every dummy item has a wantlist.
     gtl::InsertIfNotPresent(parser_result_.mutable_items(), offered_id,
                             util::MakeItem(offered_id, username));
 
