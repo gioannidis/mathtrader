@@ -43,6 +43,7 @@ message ParserResult {
   optional int32 item_count = 3;
 
   // Encapsulates a missing item: a wanted item with no official name.
+  // Next id: 3
   message MissingItem {
     optional string item_id = 1;
     optional int32 frequency = 2;  // occurences across the entire input
@@ -56,14 +57,14 @@ message ParserResult {
   // wantlist. Both offered and wanted ids are properly annotated in case they
   // represent dummy items. Additional information, e.g., username, can be
   // retrieved from the `items` field.
+  // Next id: 4
   message DuplicateWantedItem {
     optional string wanted_item_id = 1;
     optional string offered_item_id = 2;
-    optional string username = 3 [deprecated = true];
 
     // How many times the wanted item is defined in the wantlist. Expected:
     // frequency > 1.
-    optional int32 frequency = 4;
+    optional int32 frequency = 3;
   }
 
   // Tracks duplicate wanted items in wantlists.
