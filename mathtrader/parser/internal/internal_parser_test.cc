@@ -268,9 +268,9 @@ TEST(InternalParserNegativeTest, TestMissingOfficialOfferedItemName) {
 
   InternalParser parser;
   const absl::Status status = parser.ParseText(input_data);
-  EXPECT_THAT(status,
-              AllOf(ResultOf(absl::IsNotFound, IsTrue()),
-                    Property(&absl::Status::message, HasSubstr("0004-D"))));
+  EXPECT_THAT(status, AllOf(ResultOf(absl::IsNotFound, IsTrue()),
+                            Property("error message", &absl::Status::message,
+                                     HasSubstr("0004-D"))));
 }
 
 // Checks against declaring a double wantlist for an item.
@@ -286,9 +286,9 @@ TEST(InternalParserNegativeTest, TestDoubleWantlist) {
 
   InternalParser parser;
   const absl::Status status = parser.ParseText(input_data);
-  EXPECT_THAT(status,
-              AllOf(ResultOf(absl::IsAlreadyExists, IsTrue()),
-                    Property(&absl::Status::message, HasSubstr("0002-B"))));
+  EXPECT_THAT(status, AllOf(ResultOf(absl::IsAlreadyExists, IsTrue()),
+                            Property("error message", &absl::Status::message,
+                                     HasSubstr("0002-B"))));
 }
 
 // Checks against declaring a double wantlist for a dummy item.
@@ -304,9 +304,9 @@ TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
 
   InternalParser parser;
   const absl::Status status = parser.ParseText(input_data);
-  EXPECT_THAT(status,
-              AllOf(ResultOf(absl::IsAlreadyExists, IsTrue()),
-                    Property(&absl::Status::message, HasSubstr("%003-C"))));
+  EXPECT_THAT(status, AllOf(ResultOf(absl::IsAlreadyExists, IsTrue()),
+                            Property("error message", &absl::Status::message,
+                                     HasSubstr("%003-C"))));
 }
 
 // One of the items is a dummy item and should be ignored.
