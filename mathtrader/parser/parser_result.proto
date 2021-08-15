@@ -51,13 +51,15 @@ message ParserResult {
   // Tracks the missing items across the entire parser input.
   repeated MissingItem missing_items = 4;
 
-  // Encapsulates an that has been repeated multiple times in a given wantlist.
-  // Each wantlist is identified by the offered item id. The username is also
-  // provided, because multiple users may define the same dummy item.
+  // Encapsulates an item that has been repeatedly declared as a wanted item in
+  // a wantlist. The `offered_item_id` uniquely identifies the offending
+  // wantlist. Both offered and wanted ids are properly annotated in case they
+  // represent dummy items. Additional information, e.g., username, can be
+  // retrieved from the `items` field.
   message DuplicateWantedItem {
     optional string wanted_item_id = 1;
     optional string offered_item_id = 2;
-    optional string username = 3;
+    optional string username = 3 [deprecated = true];
 
     // How many times the wanted item is defined in the wantlist. Expected:
     // frequency > 1.
