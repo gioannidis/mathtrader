@@ -85,11 +85,14 @@ automatically integrated by the build system.
 
 * [Abseil](https://abseil.io) common libraries.
   libraries, used to solve the math trade problem.
-* [Google Logging](https://github.com/google/glog) Library.
 * [GoogleTest](http://google.github.io/googletest/) testing and mocking
   framework.
 * [OR-Tools](https://developers.google.com/optimization/) optimization
 * [RE2](https://github.com/google/re2) regular expression library.
+
+*Note: earlier versions would also depend on the
+[Google Logging](https://github.com/google/glog) Library, until it was replaced
+by the OR-Tools provided implementation.*
 
 ## Compiling
 

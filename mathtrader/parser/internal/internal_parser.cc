@@ -30,6 +30,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "ortools/base/logging.h"
 #include "ortools/base/map_util.h"
 #include "re2/re2.h"
 

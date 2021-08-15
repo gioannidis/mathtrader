@@ -33,7 +33,7 @@ cc_library(
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "@com_google_glog//:glog",
+        "@com_google_or_tools//ortools/base",
         "@com_google_re2//:re2",
     ],
 )
@@ -76,7 +76,7 @@ cc_library(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "@com_google_glog//:glog",
+        "@com_google_or_tools//ortools/base",
         "@com_google_re2//:re2",
     ],
 )
@@ -120,7 +120,7 @@ cc_library(
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",
-        "@com_google_glog//:glog",
+        "@com_google_or_tools//ortools/base",
         "@com_google_or_tools//ortools/base:filelineiter",
         "@com_google_or_tools//ortools/base:map_util",
         "@com_google_re2//:re2",

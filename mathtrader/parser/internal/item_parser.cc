@@ -25,7 +25,7 @@
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "glog/logging.h"
+#include "ortools/base/logging.h"
 
 #include "mathtrader/common/offered_item.pb.h"
 #include "mathtrader/common/item.pb.h"
