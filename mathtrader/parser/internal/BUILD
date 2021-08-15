@@ -73,6 +73,7 @@ cc_library(
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser/util:item_util",
         "//mathtrader/util:strings",
+        "@com_google_absl//absl/base",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
         "@com_google_absl//absl/strings",

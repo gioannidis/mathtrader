@@ -34,6 +34,7 @@
 #include "ortools/base/map_util.h"
 #include "re2/re2.h"
 
+#include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/internal/internal_wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"

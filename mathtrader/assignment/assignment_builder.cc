@@ -19,6 +19,7 @@
 
 #include "mathtrader/assignment/assignment.pb.h"
 #include "mathtrader/assignment/internal/arc_builder.h"
+#include "mathtrader/parser/parser_result.pb.h"
 
 namespace mathtrader::assignment {
 // Processes the OLWLG-generated wantlists and builds the Assignment.
