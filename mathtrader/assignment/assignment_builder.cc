@@ -29,7 +29,7 @@ Assignment AssignmentBuilder::BuildAssignment(
   Assignment assignment;
 
   // Builds all the arcs representing the offered-wanted item relationships.
-  internal::ArcBuilder::BuildArcs(parser_result, &assignment);
+  internal::ArcBuilder::BuildArcs(parser_result, assignment);
 
   return assignment;
 }

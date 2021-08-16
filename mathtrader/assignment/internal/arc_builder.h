@@ -79,7 +79,7 @@ class ArcBuilder {
   // arc betwen the source/sink and each item, updating the source and sink
   // production fields.
   static void BuildArcs(const parser::ParserResult& parser_result,
-                        Assignment* assignment);
+                        Assignment& assignment);  // NOLINT(runtime/references)
 };
 }  // namespace mathtrader::assignment::internal
 #endif  // MATHTRADER_ASSIGNMENT_INTERNAL_ARC_BUILDER_H_

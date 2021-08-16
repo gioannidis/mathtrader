@@ -70,10 +70,9 @@ std::string_view StripPrefix(std::string_view line) {
 
 // Identifies and removes duplicate items from a wantlist, reporting them to
 // parser_result.
-void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
-  CHECK_NOTNULL(wantlist);
-  CHECK_NOTNULL(parser_result);
-
+void RemoveDuplicateItems(
+    Wantlist& wantlist,             // NOLINT(runtime/references)
+    ParserResult& parser_result) {  // NOLINT(runtime/references)
   // Tracks the frequency of each wanted item in the wantlist.
   // key: item ID in wantlist.
   // mapped: frequency
@@ -85,7 +84,7 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
 
   // Erases items that occur 2+ times in the wantlist. Updates `frequencies` for
   // all items and `duplicates` for repeated items.
-  auto* const wanted_items = wantlist->mutable_wanted();
+  auto* const wanted_items = wantlist.mutable_wanted();
   wanted_items->erase(
       std::remove_if(
           wanted_items->begin(), wanted_items->end(),
@@ -116,12 +115,12 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
     // The offered item and the duplicate wanted item must both exist, because
     // the wantlist has been fully parsed by this point.
     const Item& offered_item =
-        gtl::FindOrDie(parser_result->items(), wantlist->offered());
+        gtl::FindOrDie(parser_result.items(), wantlist.offered());
     const Item& wanted_item =
-        gtl::FindOrDie(parser_result->items(), duplicate_id);
+        gtl::FindOrDie(parser_result.items(), duplicate_id);
 
     // Creates a new duplicate wanted item.
-    auto* const duplicate_item = parser_result->add_duplicate_wanted_items();
+    auto* const duplicate_item = parser_result.add_duplicate_wanted_items();
     duplicate_item->set_offered_item_id(offered_item.id());
     duplicate_item->set_wanted_item_id(wanted_item.id());
 
@@ -136,11 +135,10 @@ void RemoveDuplicateItems(Wantlist* wantlist, ParserResult* parser_result) {
 // `missing_items`.
 void RemoveMissingItems(
     const google::protobuf::Map<std::string, Item>& official_items,
-    Wantlist* wantlist,
-    absl::flat_hash_map<std::string, int32_t>* missing_items) {
-  CHECK_NOTNULL(wantlist);
-  CHECK_NOTNULL(missing_items);
-  auto* const wanted_items = wantlist->mutable_wanted();
+    Wantlist& wantlist,                         // NOLINT(runtime/references)
+    absl::flat_hash_map<std::string, int32_t>&  // NOLINT(runtime/references)
+        missing_items) {
+  auto* const wanted_items = wantlist.mutable_wanted();
 
   // Checks if a wanted item is missing and, if so, records it as a missing
   // item in `parser_result_`.
@@ -149,7 +147,7 @@ void RemoveMissingItems(
 
                      // Lambda: decides whether an item should be erased.
                      [&official_items,
-                      missing_items](const Wantlist::WantedItem& wanted_item) {
+                      &missing_items](const Wantlist::WantedItem& wanted_item) {
                        const std::string& id = wanted_item.id();
 
                        // Does not erase the item if it has an official name.
@@ -159,7 +157,7 @@ void RemoveMissingItems(
                        // Initializes the frequency of the missing item to zero
                        // or retrieves it if present.
                        int32_t& frequency = gtl::LookupOrInsert(
-                           missing_items, id, /*frequency=*/0);
+                           &missing_items, id, /*frequency=*/0);
                        ++frequency;
                        return true;
                      }),
@@ -267,13 +265,13 @@ void InternalParser::FinalizeParserResult() {
     // wantlists have been processed to cover the following cases:
     // * No official names; wanted items without corresponding wantlists.
     // * Dummy items without being offered in a wantlist.
-    RemoveMissingItems(parser_result_.items(), &wantlist, &missing_items_);
+    RemoveMissingItems(parser_result_.items(), wantlist, missing_items_);
 
     // Identifies and removes duplicate items that have an official name. This
     // should be done after items without an official named have been removed,
     // because all wanted items are assumed to be present in
     // `parser_result.items()`.
-    RemoveDuplicateItems(&wantlist, &parser_result_);
+    RemoveDuplicateItems(wantlist, parser_result_);
   }
 
   // Moves the usernames to parser_result.

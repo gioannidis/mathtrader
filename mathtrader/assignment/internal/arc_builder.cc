@@ -48,9 +48,7 @@ using ArcMap = absl::flat_hash_map<std::string, Arc>;
 // Adds an arc between two Items to the "arcs" set. Dies if the arc already
 // exists.
 void AddArc(std::string_view tail, std::string_view head, int64_t capacity,
-            int64_t cost, ArcMap* arcs) {
-  CHECK_NOTNULL(arcs);
-
+            int64_t cost, ArcMap& arcs) {  // NOLINT(runtime/references)
   // Creates and initializes an arc.
   Arc arc;
   arc.set_offered(std::string(tail));
@@ -61,12 +59,12 @@ void AddArc(std::string_view tail, std::string_view head, int64_t capacity,
   // Generates a unique arc_id to index the arc in the "arcs" set.
   std::string arc_id = absl::StrCat(tail, head);
 
-  gtl::InsertOrDie(arcs, std::move(arc_id), std::move(arc));
+  gtl::InsertOrDie(&arcs, std::move(arc_id), std::move(arc));
 }
 
 // Same as above, but adds an arc with a unit capacity.
 void AddArc(std::string_view tail, std::string_view head, int64_t cost,
-            ArcMap* arcs) {
+            ArcMap& arcs) {  // NOLINT(runtime/references)
   AddArc(tail, head, /*capacity=*/1, cost, arcs);
 }
 
@@ -119,8 +117,9 @@ ItemSet GetCandidateItems(const ParserResult& input) {
 // If both source and sink have been defined in `assignment`, also adds an
 // arc betwen the source/sink and each item, updating the source and sink
 // production fields.
-void ArcBuilder::BuildArcs(const ParserResult& parser_result,
-                           Assignment* assignment) {
+void ArcBuilder::BuildArcs(
+    const ParserResult& parser_result,
+    Assignment& assignment) {  // NOLINT(runtime/references)
   // Tracks duplicate arcs.
   ArcMap arc_map;
 
@@ -139,7 +138,7 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
     // Adds an Arc for wanted items that are also being offered.
     for (const Wantlist::WantedItem& wanted : wantlist.wanted()) {
       if (candidate_items.contains(wanted.id())) {
-        AddArc(offered_id, wanted.id(), wanted.priority(), &arc_map);
+        AddArc(offered_id, wanted.id(), wanted.priority(), arc_map);
       }
     }
   }
@@ -147,7 +146,7 @@ void ArcBuilder::BuildArcs(const ParserResult& parser_result,
   // Moves the arcs to the Assignment.
   while (!arc_map.empty()) {
     auto internal_node = arc_map.extract(arc_map.begin());
-    *assignment->add_arcs() = std::move(internal_node.mapped());
+    *assignment.add_arcs() = std::move(internal_node.mapped());
   }
 }
 }  // namespace mathtrader::assignment::internal

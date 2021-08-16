@@ -60,10 +60,10 @@ constexpr std::string_view kWantlistPrefixRegexStr
 
 // Conditionally updates a status ok with an error message if the maximum number
 // of characters has been exceeded.
-void UpdateOnError(char c, int count, int max_count, absl::Status* status) {
-  CHECK_NOTNULL(status);
+void UpdateOnError(char c, int count, int max_count,
+                   absl::Status& status) {  // NOLINT(runtime/references)
   if (count > max_count) {
-    status->Update(absl::InvalidArgumentError(absl::StrFormat(
+    status.Update(absl::InvalidArgumentError(absl::StrFormat(
         "Found %d '%c' characters in wantlist. Maximum allowed: %d", count, c,
         max_count)));
   }
@@ -115,9 +115,9 @@ ABSL_MUST_USE_RESULT absl::Status CheckWantlist(std::string_view text,
   }
 
   auto ret = absl::OkStatus();
-  UpdateOnError(':', colon_count, kMaxColonCount, &ret);
-  UpdateOnError('(', left_parenthesis_count, kMaxParenthesisCount, &ret);
-  UpdateOnError(')', right_parenthesis_count, kMaxParenthesisCount, &ret);
+  UpdateOnError(':', colon_count, kMaxColonCount, ret);
+  UpdateOnError('(', left_parenthesis_count, kMaxParenthesisCount, ret);
+  UpdateOnError(')', right_parenthesis_count, kMaxParenthesisCount, ret);
 
   // Checks number of matching parentheses.
   if (left_parenthesis_count != right_parenthesis_count) {
