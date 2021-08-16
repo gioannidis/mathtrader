@@ -46,7 +46,7 @@ using ::testing::StrCaseEq;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
-using DuplicateItem = mathtrader::parser::ParserResult::DuplicateWantedItem;
+using RemovedItem = ::mathtrader::parser::ParserResult::RemovedItem;
 
 // Tests a basic use-case.
 TEST(InternalParser, TestOnlyComments) {
@@ -225,29 +225,24 @@ Z
 
   // Verifies all missing items and their frequencies.
   // Note that the order of duplicate items is irrelevant.
-  const auto& duplicates = result.duplicate_wanted_items();
   EXPECT_THAT(
-      duplicates,
+      result.duplicate_items(),
       UnorderedElementsAre(
-          AllOf(
-              Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
-              Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
-              Property("frequency", &DuplicateItem::frequency, Eq(3))),
+          AllOf(Property("wanted", &RemovedItem::wanted_item_id, StrEq("F")),
+                Property("offered", &RemovedItem::offered_item_id, StrEq("B")),
+                Property("frequency", &RemovedItem::frequency, Eq(3))),
 
-          AllOf(
-              Property("wanted", &DuplicateItem::wanted_item_id, StrEq("A")),
-              Property("offered", &DuplicateItem::offered_item_id, StrEq("B")),
-              Property("frequency", &DuplicateItem::frequency, Eq(2))),
+          AllOf(Property("wanted", &RemovedItem::wanted_item_id, StrEq("A")),
+                Property("offered", &RemovedItem::offered_item_id, StrEq("B")),
+                Property("frequency", &RemovedItem::frequency, Eq(2))),
 
-          AllOf(
-              Property("wanted", &DuplicateItem::wanted_item_id, StrEq("F")),
-              Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
-              Property("frequency", &DuplicateItem::frequency, Eq(2))),
+          AllOf(Property("wanted", &RemovedItem::wanted_item_id, StrEq("F")),
+                Property("offered", &RemovedItem::offered_item_id, StrEq("C")),
+                Property("frequency", &RemovedItem::frequency, Eq(2))),
 
-          AllOf(
-              Property("wanted", &DuplicateItem::wanted_item_id, StrEq("K")),
-              Property("offered", &DuplicateItem::offered_item_id, StrEq("C")),
-              Property("frequency", &DuplicateItem::frequency, Eq(5)))));
+          AllOf(Property("wanted", &RemovedItem::wanted_item_id, StrEq("K")),
+                Property("offered", &RemovedItem::offered_item_id, StrEq("C")),
+                Property("frequency", &RemovedItem::frequency, Eq(5)))));
 }
 
 // Test suite: negative tests

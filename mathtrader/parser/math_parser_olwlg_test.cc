@@ -55,8 +55,7 @@ using ::testing::StartsWith;
 using ::testing::StrCaseEq;
 using ::testing::StrEq;
 
-using DuplicateItem = ParserResult::DuplicateWantedItem;
-using MissingItem = ParserResult::MissingItem;
+using RemovedItem = ::mathtrader::parser::ParserResult::RemovedItem;
 
 // ID of non-dummy items: NNNN-AAAA or NNNN-AAAA-COPYNN.
 // Examples:
@@ -93,9 +92,9 @@ MATCHER(HasIdAsKey, "") {
       result_listener);
 }
 
-// Matches a `DuplicateItem` arg whose owner is `username`, ignoring case. The
+// Matches a `RemovedItem` arg whose owner is `username`, ignoring case. The
 // item is retrieved from item_map.
-MATCHER_P2(WantlistOwnerOfDuplicateStrCaseEq, username, item_map, "") {
+MATCHER_P2(WantlistOwnerOfRemovedStrCaseEq, username, item_map, "") {
   const Item* item = gtl::FindOrNull(item_map, arg.offered_item_id());
   if (!item) {
     return ExplainMatchResult(testing::NotNull(), item, result_listener);
@@ -134,11 +133,11 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
 
   // Verifies the number of missing items.
   if (missing_item_count) {
-    EXPECT_THAT(
-        parser_result->missing_items(),
-        ElementsAre(AllOf(
-            Property(&MissingItem::item_id, StrCaseEq("missing-official")),
-            Property(&MissingItem::frequency, missing_item_count))));
+    EXPECT_THAT(parser_result->missing_items(),
+                ElementsAre(AllOf(
+                    Property(&RemovedItem::wanted_item_id,
+                             StrCaseEq("missing-official")),
+                    Property(&RemovedItem::frequency, missing_item_count))));
   }
 }
 
@@ -154,7 +153,7 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
   // Verifies that there are no repeated items. If a file does so, use the
   // overloaded ExpectWantlist(const absl::StatusOr<...> ...) and manually
   // check the repeated items afterwards.
-  EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
+  EXPECT_EQ(result->duplicate_items_size(), 0);
 }
 
 // Test suites: OLWLG trades.
@@ -173,20 +172,20 @@ TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
   // "https://bgg.activityclub.org/olwlg/283180-results-official.txt"
   // as follows:
   //    grep "is repeated" ${result_file} | uniq | wc -l
-  EXPECT_EQ(result->duplicate_wanted_items_size(), 28247);
+  EXPECT_EQ(result->duplicate_items_size(), 28247);
 
   // Verifies that all duplicate items originate from the same user.
-  const auto& duplicates = result->duplicate_wanted_items();
-  EXPECT_THAT(duplicates, Each(WantlistOwnerOfDuplicateStrCaseEq(
+  const auto& duplicates = result->duplicate_items();
+  EXPECT_THAT(duplicates, Each(WantlistOwnerOfRemovedStrCaseEq(
                               "tigersareawesome", result->items())));
 
   // Checks one duplicate item.
   EXPECT_THAT(
       duplicates,
-      Contains(AllOf(
-          Property(&DuplicateItem::wanted_item_id, StartsWith("%8153405")),
-          Property(&DuplicateItem::offered_item_id, StrEq("8177732")),
-          Property(&DuplicateItem::frequency, Eq(3)))));
+      Contains(
+          AllOf(Property(&RemovedItem::wanted_item_id, StartsWith("%8153405")),
+                Property(&RemovedItem::offered_item_id, StrEq("8177732")),
+                Property(&RemovedItem::frequency, Eq(3)))));
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021US) {

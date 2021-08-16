@@ -120,7 +120,7 @@ void RemoveDuplicateItems(
         gtl::FindOrDie(parser_result.items(), duplicate_id);
 
     // Creates a new duplicate wanted item.
-    auto* const duplicate_item = parser_result.add_duplicate_wanted_items();
+    auto* const duplicate_item = parser_result.add_duplicate_items();
     duplicate_item->set_offered_item_id(offered_item.id());
     duplicate_item->set_wanted_item_id(wanted_item.id());
 
@@ -282,11 +282,11 @@ void InternalParser::FinalizeParserResult() {
 
   // Moves the missing items to parser_result.
   while (!missing_items_.empty()) {
-    ParserResult_MissingItem* missing_item = parser_result_.add_missing_items();
+    auto* missing_item = parser_result_.add_missing_items();
 
     // Internal node: maps item_id -> frequency.
     auto internal_node = missing_items_.extract(missing_items_.begin());
-    missing_item->set_item_id(std::move(internal_node.key()));
+    missing_item->set_wanted_item_id(std::move(internal_node.key()));
     missing_item->set_frequency(internal_node.mapped());
   }
 }

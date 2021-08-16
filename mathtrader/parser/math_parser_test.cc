@@ -45,7 +45,7 @@ using ::testing::StartsWith;
 using ::testing::StrCaseEq;
 using ::testing::UnorderedElementsAre;
 
-using MissingItem = mathtrader::parser::ParserResult::MissingItem;
+using RemovedItem = ::mathtrader::parser::ParserResult::RemovedItem;
 
 // Base test case with official item names and wantlists. Each wantlist defines
 // three (3) non-dummy items.
@@ -86,7 +86,7 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
 
   // Checks that there are no missing or duplicate items.
   EXPECT_EQ(result->missing_items_size(), 0);
-  EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
+  EXPECT_EQ(result->duplicate_items_size(), 0);
 }
 
 // Tests that missing items are properly removed from wantlists. These are
@@ -120,13 +120,13 @@ TEST(MathParserTest, TestMissingItems) {
 
   // Checks that there is a 'missing-item' that has appeared 4 times.
   EXPECT_THAT(result->missing_items(),
-              ElementsAre(AllOf(
-                  Property(&MissingItem::item_id, StrCaseEq("missing-item")),
-                  Property(&MissingItem::frequency, Eq(4)))));
+              ElementsAre(AllOf(Property(&RemovedItem::wanted_item_id,
+                                         StrCaseEq("missing-item")),
+                                Property(&RemovedItem::frequency, Eq(4)))));
 
   // Checks that there are no duplicate items. 'missing-item' should be deleted
   // first, so no errors are generated, even if it appears 2+ times in a list.
-  EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
+  EXPECT_EQ(result->duplicate_items_size(), 0);
 }
 
 // Tests that missing items are properly removed from wantlists. These are
@@ -156,15 +156,17 @@ TEST(MathParserTest, TestMissingItemsWithoutOfficialNames) {
                   Property("wanted items", &Wantlist::wanted,
                            SizeIs(3))));  // removed: %DUMMY
 
-  EXPECT_THAT(
-      result->missing_items(),
-      UnorderedElementsAre(
-          Property("id", &MissingItem::item_id, StrCaseEq("0005-TIMSTO")),
-          Property("id", &MissingItem::item_id, StrCaseEq("0006-AN6P-COPY1")),
-          Property("id", &MissingItem::item_id, StrCaseEq("0007-AN6P-COPY2")),
-          Property("id", &MissingItem::item_id, StartsWith(R"(%DUMMY)"))));
+  EXPECT_THAT(result->missing_items(),
+              UnorderedElementsAre(Property("id", &RemovedItem::wanted_item_id,
+                                            StrCaseEq("0005-TIMSTO")),
+                                   Property("id", &RemovedItem::wanted_item_id,
+                                            StrCaseEq("0006-AN6P-COPY1")),
+                                   Property("id", &RemovedItem::wanted_item_id,
+                                            StrCaseEq("0007-AN6P-COPY2")),
+                                   Property("id", &RemovedItem::wanted_item_id,
+                                            StartsWith(R"(%DUMMY)"))));
 
   // Checks that there are no duplicate items.
-  EXPECT_EQ(result->duplicate_wanted_items_size(), 0);
+  EXPECT_EQ(result->duplicate_items_size(), 0);
 }
 }  // namespace
