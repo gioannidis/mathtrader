@@ -95,3 +95,11 @@ To be added.
 ## Running
 
 To be added.
+
+## Contributing
+
+Pull requests are welcome. Please take a look at the
+[technical notes][notes doc] for details on the style guide and automation
+tools.
+
+[notes doc]: mathtrader/technical_notes.md
