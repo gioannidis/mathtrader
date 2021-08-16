@@ -24,9 +24,14 @@ to reflect this change, raising a warning on non-mutable references. These
 warnings are suppressed in the code via the `NOLINT(runtime/references)`
 directive.
 
+### Protocol Buffers Style Guide
+
+The [Google Protobuf Style Guide][protostyle ref] is followed for all `.proto`
+files.
+
 ### Markdown Style Guide
 
-The [`mdformat` style guide][mdstyle ref] is followed on all Markdown documents,
+The [mdformat style guide][mdstyle ref] is followed for all Markdown documents,
 with the additional requirement of imposing a maximum character limit of 80
 characters per line. Long URLs are exempted from this requirement. It is
 recommended to define link references for long URLs to enhance readability.
@@ -48,3 +53,4 @@ The following tools are used to enforce the style guides:
 [mdformat ref]: https://pypi.org/project/mdformat/
 [mdstyle ref]: https://mdformat.readthedocs.io/en/stable/users/style.html
 [mutable ref]: https://github.com/google/styleguide/commit/7a7a2f510efe7d7fc5ea8fbed549ddb31fac8f3e
+[protostyle ref]: https://developers.google.com/protocol-buffers/docs/style
