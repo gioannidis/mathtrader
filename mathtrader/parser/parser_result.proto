@@ -28,6 +28,22 @@ import "mathtrader/common/wantlist.proto";
 // Message encapsulating the trade input.
 // Next id: 7
 message ParserResult {
+  // Encapsulates a wanted item that has been removed from a wantlist.
+  // Next id: 4
+  message RemovedItem {
+    // Id of removed wanted item.
+    optional string id = 1;
+
+    // Id of offered item. Identifies the wantlist where the `RemovedItem` was
+    // removed from.
+    optional string wantlist = 2;
+
+    // How many times the item was removed from the wantlist. Expected to be
+    // frequency >= 1. If the `wantlist` field is empty, then this refers to
+    // the removed instances across all wantlists.
+    optional int32 frequency = 3;
+  }
+
   // Encapsulates an item that has been repeatedly declared as a wanted item in
   // a wantlist. The `offered_item_id` uniquely identifies the offending
   // wantlist. Both offered and wanted ids are properly annotated in case they
