@@ -11,5 +11,5 @@ intended to be used as the public API for this purpose.
 This directory declares and implements:
 
 1. `InternalParser`: entry point to the code that parses OLWLG files.
-2. `ItemParser`: sub-module that parses lines declaring official item names.
-3. `WantlistParser`: sub-module that parses lines declaring wantlists.
+1. `ItemParser`: sub-module that parses lines declaring official item names.
+1. `WantlistParser`: sub-module that parses lines declaring wantlists.
