@@ -10,7 +10,7 @@ return. The goal of a Math Trading algorithm is to maximize the number of items
 that will be eventually traded.
 
 In this project we are approaching the real-world problem of
-[Math Trades on BoardGameGeek (BGG)](https://www.boardgamegeek.com/wiki/page/Math_Trades)
+[Math Trades on BoardGameGeek (BGG)][bgg ref].
 
 ## Introduction
 
@@ -19,22 +19,17 @@ In this project we are approaching the real-world problem of
 Math Trades have been taking place on BGG since the early 2000's. Various
 algorithms had been developed at the time, most applying a brute-force search,
 an approach which would only work for small datasets due to their exponential
-asymptotic behavior.
-[TradeGenie](https://www.boardgamegeek.com/wiki/page/TradeGenie), developed by
-[B. Perry](https://www.boardgamegeek.com/user/Kayvon), was a popular choice
-among the users.
+asymptotic behavior. [TradeGenie][tradegenie ref], developed by
+[B. Perry][user:perry ref], was a popular choice among the users.
 
-In 2008, [Chris Okasaki](https://www.boardgamegeek.com/user/cokasaki) developed
-an algorithm which would run in polynomial time, subsequently releasing the JAVA
-source code, dubbed as
-[TradeMaximizer](https://www.boardgamegeek.com/wiki/page/TradeMaximizer). This
-software has been used since then as the _de facto_ algorithm to resolve Math
-Trades on BGG.
+In 2008, [Chris Okasaki][user:okasaki ref] developed an algorithm which would
+run in polynomial time, subsequently releasing the JAVA source code, dubbed as
+[TradeMaximizer][trademaximizer ref]. This software has been used since then as
+the _de facto_ algorithm to resolve Math Trades on BGG.
 
 Since then, B. Perry implemented a compatible multithreaded C++ version of the
-software, [TradeThing](https://sourceforge.net/projects/tradething/files/).
-According to preliminary results, the performance of _TradeThing_ is quite
-comparable to _TradeMaximizer_'s.
+software, [TradeThing][tradething ref]. According to preliminary results, the
+performance of _TradeThing_ is quite comparable to _TradeMaximizer_'s.
 
 Subsequently, the **goal** of this project is not to be a
 yet-another-C++-adaption, but to explore and evaluate the following
@@ -69,24 +64,21 @@ The following packages are required to build the library:
 
 - C++ compiler with C++17 support.
   - `g++` compiler: version `8` or newer. Recommended: `10.2.1` or newer.
-- [`bazel`](https://bazel.build) version `4` or newer. Recommended: `4.1.0` or
-  newer.
+- [`bazel`][bazel ref] version `4` or newer. Recommended: `4.1.0` or newer.
 
 ### External Dependencies:
 
 `mathtrader` uses the following external libraries, which should be
 automatically integrated by the build system.
 
-- [Abseil](https://abseil.io) common libraries. libraries, used to solve the
-  math trade problem.
-- [GoogleTest](http://google.github.io/googletest/) testing and mocking
-  framework.
-- [OR-Tools](https://developers.google.com/optimization/) optimization
-- [RE2](https://github.com/google/re2) regular expression library.
+- [Abseil][abseil ref] common libraries. libraries, used to solve the math trade
+  problem.
+- [GoogleTest][gtest ref] testing and mocking framework.
+- [OR-Tools][ortools ref] optimization
+- [RE2][re2 ref] regular expression library.
 
-*Note: earlier versions would also depend on the
-[Google Logging](https://github.com/google/glog) Library, until it was replaced
-by the OR-Tools provided implementation.*
+*Note: earlier versions would also depend on the [Google Logging][glog ref]
+Library, until it was replaced by the OR-Tools provided implementation.*
 
 ## Compiling
 
@@ -102,4 +94,16 @@ Pull requests are welcome. Please take a look at the
 [technical notes][notes doc] for details on the style guide and automation
 tools.
 
+[abseil ref]: https://abseil.io
+[bazel ref]: https://bazel.build
+[bgg ref]: https://www.boardgamegeek.com/wiki/page/Math_Trades
+[glog ref]: https://github.com/google/glog
+[gtest ref]: http://google.github.io/googletest
 [notes doc]: mathtrader/technical_notes.md
+[ortools ref]: https://developers.google.com/optimization
+[re2 ref]: https://github.com/google/re2
+[tradegenie ref]: https://www.boardgamegeek.com/wiki/page/TradeGenie
+[trademaximizer ref]: https://www.boardgamegeek.com/wiki/page/TradeMaximizer
+[tradething ref]: https://sourceforge.net/projects/tradething/files/
+[user:okasaki ref]: https://www.boardgamegeek.com/user/cokasaki
+[user:perry ref]: https://www.boardgamegeek.com/user/Kayvon
