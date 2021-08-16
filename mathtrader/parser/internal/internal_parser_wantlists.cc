@@ -42,33 +42,20 @@ const std::string& GetUnmodifiedId(const Item& item) {
 
 // Registers the offered item in the given item map by creating the appropriate
 // Item from the given id and username (if applicable).
-// * Dummy: creates and registers.
-// * Non-dummy without official names: creates and registers.
-// TODO(gioannidis) merge these two cases if possible.
+// * Dummy: creates item and registers it in the map.
+// * Non-dummy without official names: as above.
 // * Non-dummy with official names: checks if official name has been given.
 ABSL_MUST_USE_RESULT absl::Status RegisterOfferedItem(
-    std::string_view offered_id, std::string_view username, bool must_exist,
+    std::string_view offered_id, std::string_view username, bool is_existing,
     google::protobuf::Map<std::string, Item>&
         item_map) {  // NOLINT(runtime/references)
-  if (util::IsDummyItem(offered_id)) {
-    // Creates and registers the offered dummy item id. It may be already
-    // present, if the dummy item has been listed as a wanted item in a previous
-    // wantlist.
-    gtl::InsertIfNotPresent(&item_map, std::string(offered_id),
-                            util::MakeItem(offered_id, username));
-
-  } else if (!must_exist) {
-    // Creates and registers the non-dummy offered item. Because no official
-    // names have been, it is allowed for the offered item to be previously
-    // undeclared. It is possible that the offered item exists if it has been
-    // previously defined as a wanted item in another wantlist.
-    // Overwrites username if it exists, which may be empty.
-    // TODO(gioannidis) if it overwrites, ensure that we update an empty name.
-    gtl::InsertOrUpdate(&item_map, std::string(offered_id),
-                        util::MakeItem(offered_id, username));
+  // Creates and registers non-dummy items if they are not expected to exist.
+  // Dummy items are always registered.
+  if (!is_existing || util::IsDummyItem(offered_id)) {
+    gtl::InsertOrDie(&item_map, std::string(offered_id),
+                     util::MakeItem(offered_id, username));
   } else {
-    // Verifies that the non-dummy offered item exists, because official names
-    // have been already declared.
+    // Verifies that the non-dummy offered item exists.
     if (!item_map.contains(offered_id)) {
       return absl::NotFoundError(absl::StrFormat(
           "Missing official name for offered item %s.", offered_id));
@@ -119,7 +106,7 @@ absl::Status InternalParser::ParseWantlist(std::string_view line) {
 
   // Registers the offered item.
   if (const absl::Status status = RegisterOfferedItem(
-          offered_id, username, /*must_exist=*/has_official_names_,
+          offered_id, username, /*is_existing=*/has_official_names_,
           *parser_result_.mutable_items());
       !status.ok()) {
     return status;
