@@ -26,7 +26,7 @@ import "mathtrader/common/item.proto";
 import "mathtrader/common/wantlist.proto";
 
 // Message encapsulating the trade input.
-// Next id: 7
+// Next id: 8
 message ParserResult {
   // Encapsulates a wanted item that has been removed from a wantlist.
   // Next id: 4
@@ -63,4 +63,7 @@ message ParserResult {
 
   // Tracks the missing items across the entire parser input.
   repeated RemovedItem missing_items = 5;
+
+  // Tracks non-dummy wanted items requested by their owner.
+  repeated RemovedItem owned_items = 7;
 }
