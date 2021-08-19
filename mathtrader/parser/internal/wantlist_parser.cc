@@ -183,7 +183,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
     username = StrToUpper(username);
 
     // Processes the offered id if dummy.
-    if (const absl::Status status = util::ProcessIfDummy(username, &item_id);
+    if (absl::Status status = util::ProcessIfDummy(username, &item_id);
         !status.ok()) {
       return status;
     }

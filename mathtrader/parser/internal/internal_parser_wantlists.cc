@@ -105,7 +105,7 @@ absl::Status InternalParser::ParseWantlist(std::string_view line) {
   }
 
   // Registers the offered item.
-  if (const absl::Status status = RegisterOfferedItem(
+  if (absl::Status status = RegisterOfferedItem(
           offered_id, username, /*is_existing=*/has_official_names_,
           *parser_result_.mutable_items());
       !status.ok()) {
