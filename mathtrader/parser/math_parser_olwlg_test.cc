@@ -23,6 +23,8 @@
 
 #include "mathtrader/parser/math_parser.h"
 
+#include <ostream>
+
 #include "absl/status/statusor.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -45,6 +47,7 @@ using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ExplainMatchResult;
+using ::testing::FieldsAre;
 using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::MatchesRegex;
@@ -56,7 +59,34 @@ using ::testing::StrCaseEq;
 using ::testing::StrEq;
 
 using RemovedItem = ::mathtrader::parser::ParserResult::RemovedItem;
+}  // namespace
 
+// Opens the same namespace that defines the protobuf Map in order to specialize
+// the PrintTo function. See: https://google.github.io/googletest/advanced.html
+namespace google::protobuf {
+void PrintTo(
+    const Map<std::basic_string<char>, mathtrader::common::Item>& item_map,
+    std::ostream* os) {
+  // The maximum number of items to print.
+  static constexpr int64_t kMaxPrintItems = 20;
+
+  int64_t item_count = 0;
+  for (const auto& [id, item] : item_map) {
+    // Skips printing items if we are over the threshold.
+    if (item_count > kMaxPrintItems) {
+      *os << "<... skipping over " << (item_map.size() - item_count)
+          << " items ...>" << std::endl;
+      break;
+    }
+    *os << "---" << std::endl
+        << "Key #" << item_count << ": \"" << id << "\"" << std::endl
+        << item.DebugString();
+    ++item_count;
+  }
+}
+}  // namespace google::protobuf
+
+namespace {
 // ID of non-dummy items: NNNN-AAAA or NNNN-AAAA-COPYNN.
 // Examples:
 //    "0001-MKGB", "0002-20GIFT"
@@ -118,6 +148,11 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
 
   // Verifies that the item map is well-formed.
   EXPECT_THAT(parser_result->items(), Each(HasIdAsKey()));
+
+  // Verifies that every item has a username.
+  EXPECT_THAT(
+      parser_result->items(),
+      Each(FieldsAre(_, Property("username", &Item::has_username, IsTrue()))));
 
   const auto& wantlists = parser_result->wantlists();
 
@@ -204,11 +239,45 @@ TEST(MathParserOlwlgCountryTest, TestJune2021Norway) {
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021UK) {
+  MathParser parser;
+  const auto result =
+      parser.ParseFile("mathtrader/parser/test_data/286149-officialwants.txt");
+
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
-  ExpectWantlist("mathtrader/parser/test_data/286149-officialwants.txt",
+  ExpectWantlist(result,
                  /*user_count=*/223, /*item_count=*/2990,
                  /*wantlist_count=*/9549, /*longest_wantlist=*/785,
                  /*missing_item_count=*/150);
+
+  // User who lists owned items as wanted.
+  static constexpr char kOwner[] = "MLBath";
+
+  // Verifies that the following items have been removed as they have been
+  // listed as wanted by their owner.
+  EXPECT_THAT(
+      result->owned_items(),
+      UnorderedElementsAre(
+          Property(&RemovedItem::wanted_item_id, StrCaseEq("8320574-COPY1")),
+          Property(&RemovedItem::wanted_item_id, StrCaseEq("8320574-COPY2"))));
+
+  // Verifies the offered item and the frequency of the removed items.
+  EXPECT_THAT(result->owned_items(),
+              Each(AllOf(Property(&RemovedItem::offered_item_id,
+                                  StartsWith("%8320574")),
+                         Property(&RemovedItem::frequency, Eq(1)))));
+
+  // Verifies that the above items are all owned by kOwner.
+  EXPECT_THAT(
+      result->items(),
+      Contains(
+          FieldsAre(_, AllOf(Property(&Item::username, StrCaseEq(kOwner)),
+                             Property(&Item::id,
+                                      MatchesRegex(
+                                          "(8320574-COPY[12])|(%8320574.*)")))))
+          .Times(3));
+
+  // No duplicate items.
+  EXPECT_EQ(result->duplicate_items_size(), 0);
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021Canada) {
