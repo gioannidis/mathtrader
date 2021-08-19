@@ -18,11 +18,10 @@
 #include "mathtrader/parser/internal/item_parser.h"
 
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "absl/status/statusor.h"
-#include "absl/strings/match.h"
-#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "ortools/base/logging.h"
 
@@ -37,50 +36,47 @@ using ::mathtrader::common::Item;
 using ::mathtrader::common::OfferedItem;
 using ::mathtrader::util::StrToUpper;
 
-// Internal regex that matches a text line defining an official item.
-constexpr char kOfficialItemRegexStr[]
-    // Prefix matching at the beginning of the text.
-    = "^"
+// Captures item id at the beginning of the text. Stops at a ':' character or at
+// a whitespace. Filters any leading whitespaces.
+static constexpr char kItemIdRegexStr[] = R"regex(^\s*([^:\s]+))regex";
 
-      // Captures item id. Stops at a ':' character or at a whitespace. Also
-      // filters leading and trailing whitespaces.
-      R"regex(\s*([^:\s]+)\s*)regex"
+// Captures official name within quotation marks. The quotation marks are not
+// captured. The official name itself is allowed to contain quotation marks or
+// whitespaces, which are captured.
+// Note: official names with unicode characters may not be properly parsed.
+static constexpr char kOfficialNameRegexStr[] = R"regex("(.+)")regex";
 
-      // Filters optional colon character.
-      R"regex(:?\s*)regex"
+// Captures optional username. Expected format:
+//    (from USERNAME)
+//
+// Only the USERNAME is captured. The expected username format is:
+//    WWWW...
+// Where:
+//    W = word character: A-Z, a-z, 0-9, underscore (_)
+//    Minimum: 4 characters
+//
+// Note: new usernames must begin with an alpha character, but older
+// usernames may not conform to this rule.
+// Note: we don't enforce the expected username format.
+static constexpr char kFromUsernameRegexStr[] = R"regex(\(from\s+(.+)\))regex";
 
-      // Optional arrow pointing at official name and/or username.
-      R"regex((?:==>)?\s*)regex"
-
-      // Optional: item number on some wantlists, e.g., "42.".
-      R"regex((?:\d+\.)?\s*)regex"
-
-      // Captures optional official name within quotation marks. The quotation
-      // marks are not captured. The official name itself is allowed to contain
-      // quotation marks or whitespaces, which are captured.
-      R"regex((?:"(.+)")?\s*)regex"
-
-      // Captures optional username. Expected format:
-      //    (from USERNAME)
-      //
-      // Only the USERNAME is captured. The expected username format is:
-      //    WWWW...
-      // Where:
-      //    W = word character: A-Z, a-z, 0-9, underscore (_)
-      //    Minimum: 4 characters
-      // Note: new usernames must begin with an alpha character, but older
-      // usernames may not conform to this rule.
-      R"regex((?:\(from\s+(.+)\))?\s*)regex"
-
-      // Captures optional copy ids. Expected format:
-      //    [copy 1 of 10]
-      R"regex((?:\[copy\s+(\d+)\s+of\s+(\d+)\])?)regex";
+// Captures optional copy ids. Expected format:
+//    [copy 1 of 10]
+static constexpr char kCopiesRegexStr[] =
+    R"regex(\[copy\s+(\d+)\s+of\s+(\d+)\])regex";
 }  // namespace
 
-// Constructs the parser and dies if the regular expression was not created
+// Constructs the parser and dies if the regular expressions were not created
 // properly.
-ItemParser::ItemParser() : kOfficialItemRegex(kOfficialItemRegexStr) {
-  CHECK(kOfficialItemRegex.ok()) << kOfficialItemRegex.error();
+ItemParser::ItemParser()
+    : kItemIdRegex(kItemIdRegexStr),
+      kOfficialNameRegex(kOfficialNameRegexStr),
+      kFromUsernameRegex(kFromUsernameRegexStr),
+      kCopiesRegex(kCopiesRegexStr) {
+  CHECK(kItemIdRegex.ok()) << kItemIdRegex.error();
+  CHECK(kOfficialNameRegex.ok()) << kOfficialNameRegex.error();
+  CHECK(kFromUsernameRegex.ok()) << kFromUsernameRegex.error();
+  CHECK(kCopiesRegex.ok()) << kCopiesRegex.error();
 }
 
 // Parses the input text and returns an Item on success. If it fails, returns an
@@ -89,20 +85,9 @@ absl::StatusOr<Item> ItemParser::ParseItem(std::string_view text) const {
   // Mandatory match: item id.
   std::string item_id;
 
-  // Optional matches: official name and username.
-  std::string official_name;
-  std::string username;
-
-  // Copy id and number of copies in string format. We use strings because they
-  // are optionally matched. If they don't, they are set to empty strings.
-  std::string copy_id_str;
-  std::string num_copies_str;
-
-  // Matches the text and returns an error on failure. The item_id must match;
-  // all other matches are optional.
-  if (!re2::RE2::PartialMatch(text, kOfficialItemRegex, &item_id,
-                              &official_name, &username, &copy_id_str,
-                              &num_copies_str)) {
+  // Captures the item id and returns an error on failure. The item id must be
+  // present.
+  if (!re2::RE2::PartialMatch(text, kItemIdRegex, &item_id)) {
     return absl::InvalidArgumentError("Could not extract official item id.");
   }
 
@@ -123,23 +108,34 @@ absl::StatusOr<Item> ItemParser::ParseItem(std::string_view text) const {
   // Sets the item-id, case-insensitive.
   item.set_id(StrToUpper(item_id));
 
-  // Sets any available official data.
-  if (!username.empty()) {
-    // Makes the username case-insensitive.
-    item.set_username(StrToUpper(username));
+  // Sets optional username.
+  {
+    std::string username;
+    if (re2::RE2::PartialMatch(text, kFromUsernameRegex, &username)) {
+      CHECK(!username.empty())
+          << "Username cannot be empty; indicates a regex error";
+
+      // Makes the username case-insensitive.
+      item.set_username(StrToUpper(username));
+    }
   }
-  if (!official_name.empty()) {
-    item.SetExtension(OfferedItem::official_name, official_name);
+
+  // Sets optional official name.
+  {
+    std::string official_name;
+    if (re2::RE2::PartialMatch(text, kOfficialNameRegex, &official_name)) {
+      item.SetExtension(OfferedItem::official_name, std::move(official_name));
+    }
   }
-  if (!copy_id_str.empty()) {
+
+  // Sets the optional copy id and number of copies.
+  {
     int64_t copy_id;
-    CHECK(absl::SimpleAtoi(copy_id_str, &copy_id));
-    item.SetExtension(OfferedItem::copy_id, copy_id);
-  }
-  if (!num_copies_str.empty()) {
     int64_t num_copies;
-    CHECK(absl::SimpleAtoi(num_copies_str, &num_copies));
-    item.SetExtension(OfferedItem::num_copies, num_copies);
+    if (re2::RE2::PartialMatch(text, kCopiesRegex, &copy_id, &num_copies)) {
+      item.SetExtension(OfferedItem::copy_id, copy_id);
+      item.SetExtension(OfferedItem::num_copies, num_copies);
+    }
   }
   return item;
 }

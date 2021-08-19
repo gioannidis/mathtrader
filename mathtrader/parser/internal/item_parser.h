@@ -20,6 +20,8 @@
 #ifndef MATHTRADER_PARSER_INTERNAL_ITEM_PARSER_H_
 #define MATHTRADER_PARSER_INTERNAL_ITEM_PARSER_H_
 
+#include <string_view>
+
 #include "absl/status/statusor.h"
 #include "re2/re2.h"
 
@@ -54,9 +56,17 @@ class ItemParser {
   absl::StatusOr<common::Item> ParseItem(std::string_view text) const;
 
  private:
-  // Matches a line declaring an official item. Note that is not declared as
-  // static, as the destructor of RE2 is not trivial.
-  const re2::RE2 kOfficialItemRegex;
+  // Matches the item id at the text prefix.
+  const re2::RE2 kItemIdRegex;
+
+  // Matches the official item name: "..."
+  const re2::RE2 kOfficialNameRegex;
+
+  // Matches: (from username)
+  const re2::RE2 kFromUsernameRegex;
+
+  // Matches: [copy X of Y]
+  const re2::RE2 kCopiesRegex;
 };
 }  // namespace mathtrader::parser::internal
 #endif  // MATHTRADER_PARSER_INTERNAL_ITEM_PARSER_H_
