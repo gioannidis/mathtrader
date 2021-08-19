@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "absl/container/flat_hash_map.h"
@@ -163,6 +164,81 @@ void RemoveMissingItems(
                      }),
       wanted_items->end());  // 2nd argument of `erase()`.
 }
+
+// Identifies and removes non-dummy owned items that are wanted in a wantlist,
+// reporting them to parser_result.
+void RemoveOwnedItems(
+    Wantlist& wantlist,             // NOLINT(runtime/references)
+    ParserResult& parser_result) {  // NOLINT(runtime/references)
+  // Key to identify a removed item:
+  using MapKey = std::pair<const std::string, const std::string>;
+
+  // Const-reference to in/out argument.
+  const ParserResult& const_parser_result = parser_result;
+
+  // Retrieves the username of an item id. Assumes that the item exists in
+  // `parser_result.items()`.
+  const auto GetUsername =
+      [&const_parser_result](const std::string& id) -> const std::string& {
+    const Item& item = gtl::FindOrDie(const_parser_result.items(), id);
+    return item.username();
+  };
+
+  // Tracks the frequency of each wanted item in the wantlist.
+  // key: pair of: <item ID in wantlist>, <offered item ID>
+  // mapped: frequency
+  // Note that frequencies are tracked per wantlist basis.
+  absl::flat_hash_map<MapKey, int32_t> frequencies;
+
+  // Owner of wantlist.
+  const std::string& offered_id = wantlist.offered();
+  const std::string_view owner_offered = GetUsername(std::string(offered_id));
+
+  // Does not delete any items if there is no username associated with the list.
+  if (owner_offered.empty()) {
+    return;
+  }
+
+  // Erases non-dummy items that are wanted by their owner.
+  auto* const wanted_items = wantlist.mutable_wanted();
+  wanted_items->erase(
+      std::remove_if(wanted_items->begin(), wanted_items->end(),
+
+                     // Lambda: decides whether an item should be erased.
+                     [owner_offered, offered_id, GetUsername,
+                      &frequencies](const Wantlist::WantedItem& wanted_item) {
+                       const std::string& id = wanted_item.id();
+
+                       // The owner of this wanted item.
+                       const std::string& owner_wanted = GetUsername(id);
+
+                       // Does not delete the item if it's not from the same
+                       // user or dummy.
+                       if (util::IsDummyItem(id) ||
+                           (owner_wanted != owner_offered)) {
+                         return false;
+                       }
+
+                       // Builds the map id: wanted + offered item id.
+                       const MapKey key = std::make_pair(id, offered_id);
+
+                       // Retrieves the item's frequency, if previously
+                       // defined, otherwise initializes it.
+                       int32_t& frequency = gtl::LookupOrInsert(
+                           &frequencies, std::move(key), /*frequency=*/0);
+                       ++frequency;
+                       return true;
+                     }),
+      wanted_items->end());  // 2nd argument of `erase()`.
+
+  for (const auto& [key, frequency] : frequencies) {
+    // Creates a new owned wanted item.
+    auto* const owned_item = parser_result.add_owned_items();
+    owned_item->set_offered_item_id(offered_id);
+    owned_item->set_wanted_item_id(key.first);
+    owned_item->set_frequency(frequency);
+  }
+}
 }  // namespace
 
 absl::Status InternalParser::ParseLine(std::string_view line) {
@@ -272,6 +348,9 @@ void InternalParser::FinalizeParserResult() {
     // because all wanted items are assumed to be present in
     // `parser_result.items()`.
     RemoveDuplicateItems(wantlist, parser_result_);
+
+    // Identifies and removes wanted items from the same user.
+    RemoveOwnedItems(wantlist, parser_result_);
   }
 
   // Moves the usernames to parser_result.
@@ -281,6 +360,7 @@ void InternalParser::FinalizeParserResult() {
   }
 
   // Moves the missing items to parser_result.
+  // TODO(gioannidis) populate them in RemoveMissingItems.
   while (!missing_items_.empty()) {
     auto* missing_item = parser_result_.add_missing_items();
 
