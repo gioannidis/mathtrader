@@ -20,6 +20,14 @@ workspace(name = "gioannidis_mathtrader")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+# Integration of clang-tidy with bazel.
+http_archive(
+    name = "bazel_clang_tidy",
+    sha256 = "8e1f43cd7c7c55cddeaedf94edc52ed41dd1b60c591eaa4d9ff977575b81cf6b",
+    strip_prefix = "bazel_clang_tidy-1c3a983c054a41be73ac128e3d842a940850b5fe",
+    urls = ["https://github.com/erenon/bazel_clang_tidy/archive/1c3a983c054a41be73ac128e3d842a940850b5fe.tar.gz"],
+)
+
 http_archive(
     name = "rules_proto",
     sha256 = "e0cab008a9cdc2400a1d6572167bf9c5afc72e19ee2b862d18581051efab42c9",
@@ -32,6 +40,16 @@ load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_
 rules_proto_dependencies()
 
 rules_proto_toolchains()
+
+# TODO(gioannidis) remove when `rules_proto` pulls `rules_cc` dependencies at
+# any point after 2019-08-21.
+# See: https://github.com/erenon/bazel_clang_tidy/issues/8
+http_archive(
+    name = "rules_cc",
+    sha256 = "3cde212ccda3ba152897e7fd354c42eba275878b6d98fe4f2125c684a73f3842",
+    strip_prefix = "rules_cc-d66a13e2a01630afcafc4ba411d83e291ecf02bd",
+    urls = ["https://github.com/bazelbuild/rules_cc/archive/d66a13e2a01630afcafc4ba411d83e291ecf02bd.tar.gz"],
+)
 
 http_archive(
     name = "com_google_absl",

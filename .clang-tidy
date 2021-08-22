@@ -1,0 +1,47 @@
+# This file is part of mathtrader.
+#
+# Copyright (C) 2021 George Ioannidis
+#
+# mathtrader is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# mathtrader is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
+
+# Overrides for default clang-tidy configuration.
+
+# Rationale for removed checks:
+#
+# Conflict with googletest macros:
+# - cppcoreguidelines-avoid-non-const-global-variables
+# - cppcoreguidelines-owning-memory
+#
+# Ban on mutable references has been lifted:
+# - google-runtime-references
+Checks: "\
+  -*,\
+  abseil-*,\
+  bugprone-*,\
+  clang-analyzer-*,\
+  cppcoreguidelines-*,\
+  -cppcoreguidelines-avoid-c-arrays,\
+  -cppcoreguidelines-avoid-non-const-global-variables,\
+  -cppcoreguidelines-owning-memory,\
+  google-*,\
+  -google-runtime-references,\
+  modernize-*,\
+  -modernize-avoid-c-arrays,\
+  -modernize-use-trailing-return-type,\
+  performance-*"
+
+# Filters header files only from this workspace.
+HeaderFilterRegex: "mathtrader*.h"
+
+WarningsAsErrors: "*"

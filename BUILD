@@ -15,19 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-# === Default build options for mathtrader (MT) === #
-
-# Builds MT in C++ 17 mode.
-build --cxxopt=-std=c++17
-
-# Disables exceptions.
-build --cxxopt=-fno-exceptions
-
-# === clang-tidy integration === #
-
-# Calls clang-tidy when building via `--config=clang-tidy`.
-build:clang-tidy --aspects @bazel_clang_tidy//clang_tidy:clang_tidy.bzl%clang_tidy_aspect
-build:clang-tidy --output_groups=report
-
-# Overrides the .clang-tidy config file target.
-build:clang-tidy --@bazel_clang_tidy//:clang_tidy_config=//:clang_tidy_config
+# Overrides the default clang-tidy configuration.
+filegroup(
+    name = "clang_tidy_config",
+    data = [":.clang-tidy"],
+    visibility = ["//visibility:public"],
+)
