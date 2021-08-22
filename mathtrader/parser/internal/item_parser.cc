@@ -19,7 +19,6 @@
 
 #include <string>
 #include <string_view>
-#include <utility>
 
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
@@ -124,7 +123,7 @@ absl::StatusOr<Item> ItemParser::ParseItem(std::string_view text) const {
   {
     std::string official_name;
     if (re2::RE2::PartialMatch(text, kOfficialNameRegex, &official_name)) {
-      item.SetExtension(OfferedItem::official_name, std::move(official_name));
+      item.SetExtension(OfferedItem::official_name, official_name);
     }
   }
 

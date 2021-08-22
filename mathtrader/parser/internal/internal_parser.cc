@@ -224,8 +224,9 @@ void RemoveOwnedItems(
 
                        // Retrieves the item's frequency, if previously
                        // defined, otherwise initializes it.
+                       // TODO(gioannidis) implement with emplace.
                        int32_t& frequency = gtl::LookupOrInsert(
-                           &frequencies, std::move(key), /*frequency=*/0);
+                           &frequencies, key, /*frequency=*/0);
                        ++frequency;
                        return true;
                      }),

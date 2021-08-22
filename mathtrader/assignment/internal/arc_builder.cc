@@ -59,7 +59,7 @@ void AddArc(std::string_view tail, std::string_view head, int64_t capacity,
   // Generates a unique arc_id to index the arc in the "arcs" set.
   std::string arc_id = absl::StrCat(tail, head);
 
-  gtl::InsertOrDie(&arcs, std::move(arc_id), std::move(arc));
+  gtl::InsertOrDie(&arcs, arc_id, arc);
 }
 
 // Same as above, but adds an arc with a unit capacity.

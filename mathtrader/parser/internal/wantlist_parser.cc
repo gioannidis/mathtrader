@@ -193,7 +193,7 @@ absl::StatusOr<Wantlist> WantlistParser::ParseWantlist(
 
     // Sets the wantlist username, if specified.
     if (!username.empty()) {
-      wantlist.SetExtension(InternalWantlist::username, std::move(username));
+      wantlist.SetExtension(InternalWantlist::username, username);
     } else {
       // TODO(gioannidis) return if usernames are required.
     }
