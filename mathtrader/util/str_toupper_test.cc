@@ -18,6 +18,7 @@
 #include "mathtrader/util/str_toupper.h"
 
 #include <string>
+#include <string_view>
 
 #include "gtest/gtest.h"
 
@@ -42,8 +43,8 @@ TEST(StrToUpperTest, TestNonAlphaChars) {
 }
 
 TEST(StrToUpperTest, TestWithMutable) {
-  static constexpr char kOriginalString[] = "abCdeFGHiJKlm!@#$nOp";
-  std::string str = kOriginalString;
+  static constexpr std::string_view kOriginalString = "abCdeFGHiJKlm!@#$nOp";
+  auto str = std::string(kOriginalString);
   StrToUpper(&str);
   EXPECT_EQ(str, "ABCDEFGHIJKLM!@#$NOP");
 }
