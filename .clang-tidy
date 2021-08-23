@@ -41,7 +41,11 @@ Checks: "\
   -modernize-use-trailing-return-type,\
   performance-*"
 
-# Filters header files only from this workspace.
-HeaderFilterRegex: "mathtrader*.h"
+# Filters header files only from this workspace. Ignores any headers with 2+ '.'
+# characters in the file path, notably all "*.pb.h" protobuf headers.
+# Note: special character '.' loses its meaning in bracket expression, so it
+# not have to be escaped.
+# See: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html
+HeaderFilterRegex: 'mathtrader[^.]*\.h'
 
-WarningsAsErrors: "*"
+WarningsAsErrors: '*'
