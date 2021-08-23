@@ -64,7 +64,7 @@ TEST(IsDummyItemTest, TestItems) {
 // Test suite: `MakeItem` function.
 
 TEST(MakeItemTest, NonDummyItem) {
-  static constexpr char kItemId[] = R"(someItemId")";
+  static constexpr std::string_view kItemId = R"(someItemId")";
 
   const Item item = MakeItem(kItemId);
   EXPECT_EQ(item.id(), kItemId);
@@ -74,8 +74,8 @@ TEST(MakeItemTest, NonDummyItem) {
 }
 
 TEST(MakeItemTest, NonDummyItemWithUsername) {
-  static constexpr char kItemId[] = R"(someItemId")";
-  static constexpr char kUsername[] = "randomUser";
+  static constexpr std::string_view kItemId = R"(someItemId")";
+  static constexpr std::string_view kUsername = "randomUser";
 
   const Item item = MakeItem(kItemId, kUsername);
   EXPECT_EQ(item.id(), kItemId);
@@ -85,8 +85,8 @@ TEST(MakeItemTest, NonDummyItemWithUsername) {
 }
 
 TEST(MakeItemTest, DummyItemWithUsername) {
-  static constexpr char kItemId[] = R"(%someItemId")";
-  static constexpr char kUsername[] = "randomUser";
+  static constexpr std::string_view kItemId = R"(%someItemId")";
+  static constexpr std::string_view kUsername = "randomUser";
 
   const Item item = MakeItem(kItemId, kUsername);
   EXPECT_THAT(item.id(), AllOf(StartsWith(kItemId), EndsWith(kUsername)));
@@ -98,10 +98,10 @@ TEST(MakeItemTest, DummyItemWithUsername) {
 // Test suite: `ProcessIfDummy` function.
 
 TEST(ProcessIfDummyTest, TestNonDummyId) {
-  static constexpr char kItemId[] = R"(someItemId")";
-  static constexpr char kUsername[] = "randomUser";
+  static constexpr std::string_view kItemId = R"(someItemId")";
+  static constexpr std::string_view kUsername = "randomUser";
 
-  std::string item_id = kItemId;
+  auto item_id = std::string(kItemId);
 
   // Does not change the original item id, since it's not a dummy.
   ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
@@ -109,12 +109,12 @@ TEST(ProcessIfDummyTest, TestNonDummyId) {
 }
 
 TEST(ProcessIfDummyTest, TestNonDummyItem) {
-  static constexpr char kItemId[] = R"(someItemId")";
-  static constexpr char kUsername[] = "randomUser";
+  static constexpr std::string_view kItemId = R"(someItemId")";
+  static constexpr std::string_view kUsername = "randomUser";
 
   // Builds the item.
   Item item;
-  item.set_id(kItemId);
+  item.set_id(std::string(kItemId));
   item.set_username(std::string(kUsername));
 
   // Does not change the original item, since it's not a dummy.
@@ -124,10 +124,10 @@ TEST(ProcessIfDummyTest, TestNonDummyItem) {
 }
 
 TEST(ProcessIfDummyTest, TestDummyId) {
-  static constexpr char kItemId[] = R"(%someItemId")";
-  static constexpr char kUsername[] = "randomUser";
+  static constexpr std::string_view kItemId = R"(%someItemId")";
+  static constexpr std::string_view kUsername = "randomUser";
 
-  std::string item_id = kItemId;
+  auto item_id = std::string(kItemId);
 
   // Mutates the original item id, since it's a dummy.
   ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
@@ -136,10 +136,10 @@ TEST(ProcessIfDummyTest, TestDummyId) {
 
 // As above, but tests consecutive processing.
 TEST(ProcessIfDummyTest, TestDummyIdMultipleProcessing) {
-  static constexpr char kItemId[] = R"(%someItemId")";
-  static constexpr char kUsername[] = "randomUser";
+  static constexpr std::string_view kItemId = R"(%someItemId")";
+  static constexpr std::string_view kUsername = "randomUser";
 
-  std::string item_id = kItemId;
+  auto item_id = std::string(kItemId);
 
   // Mutates the original item id, since it's a dummy.
   ASSERT_TRUE(ProcessIfDummy(kUsername, &item_id).ok());
@@ -169,12 +169,12 @@ TEST(ProcessIfDummyTest, TestDummyIdIdenticalToUsername) {
 }
 
 TEST(ProcessIfDummyTest, TestDummy) {
-  static constexpr char kItemId[] = R"(%someItemId")";
-  static constexpr char kUsername[] = "randomUser";
+  static constexpr std::string_view kItemId = R"(%someItemId")";
+  static constexpr std::string_view kUsername = "randomUser";
 
   // Builds the item.
   Item item;
-  item.set_id(kItemId);
+  item.set_id(std::string(kItemId));
   item.set_username(std::string(kUsername));
 
   // Mutates the item id, since it's a dummy.
@@ -197,17 +197,21 @@ TEST(ProcessIfDummyTest, DummyItemPropertyWithoutUsername) {
 }
 
 TEST(ProcessIfDummyDeathTest, NullItem) {
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto)
   EXPECT_DEATH(ProcessIfDummy(nullptr).IgnoreError(), "Must be non NULL");
 }
 
+
 TEST(ProcessIfDummyDeathTest, NullItemWithUsername) {
   Item* const item = nullptr;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto)
   EXPECT_DEATH(ProcessIfDummy("someUsername", item).IgnoreError(),
                "Must be non NULL");
 }
 
 TEST(ProcessIfDummyDeathTest, NullUsername) {
   std::string* const item_id = nullptr;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-goto)
   EXPECT_DEATH(ProcessIfDummy("someUsername", item_id).IgnoreError(),
                "Must be non NULL");
 }
