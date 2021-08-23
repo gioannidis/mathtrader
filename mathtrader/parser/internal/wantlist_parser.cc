@@ -41,6 +41,12 @@ namespace {
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::util::StrToUpper;
 
+// Default value of kSmallStep.
+static constexpr int32_t kDefaultSmallStep = 1;
+
+// Default value of kBigStep.
+static constexpr int32_t kDefaultBigStep = 9;
+
 // Internal regex that matches wantlist prefix, capturing offered item id and
 // optionally the username.
 constexpr std::string_view kWantlistPrefixRegexStr
@@ -131,6 +137,14 @@ ABSL_MUST_USE_RESULT absl::Status CheckWantlist(std::string_view text,
 
 // Constructs the parser and dies if the regular expression was not created
 // properly.
+WantlistParser::WantlistParser()
+    : kSmallStep(kDefaultSmallStep),
+      kBigStep(kDefaultBigStep),
+      kWantlistPrefixRegex(kWantlistPrefixRegexStr) {
+  CHECK(kWantlistPrefixRegex.ok()) << "Could not create regular expression: "
+                                   << kWantlistPrefixRegex.error();
+}
+
 WantlistParser::WantlistParser(int32_t small_step, int32_t big_step)
     : kSmallStep(small_step),
       kBigStep(big_step),

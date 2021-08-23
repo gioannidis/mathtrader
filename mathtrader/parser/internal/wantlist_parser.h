@@ -40,7 +40,10 @@ class WantlistParser {
  public:
   // Constructs the parser and dies if the regular expressions were not created
   // properly.
-  explicit WantlistParser(int32_t small_step = 1, int32_t big_step = 9);
+  WantlistParser();
+
+  // As above, but overrides default values of small and big step.
+  explicit WantlistParser(int32_t small_step, int32_t big_step);
 
   // Disables copy constructor and assignment operator.
   WantlistParser(const WantlistParser&) = delete;
