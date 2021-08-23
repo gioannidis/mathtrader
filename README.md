@@ -60,25 +60,14 @@ The Math Trading problem may be formally stated as:
 
 ### Required Packages
 
-The following packages are required to build the library:
+The following packages are required to build `mathtrader`:
 
 - C++ compiler with C++17 support.
   - `g++` compiler: version `8` or newer. Recommended: `10.2.1` or newer.
 - [`bazel`][bazel ref] version `4` or newer. Recommended: `4.1.0` or newer.
 
-### External Dependencies:
-
-`mathtrader` uses the following external libraries, which should be
-automatically integrated by the build system.
-
-- [Abseil][abseil ref] common libraries. libraries, used to solve the math trade
-  problem.
-- [GoogleTest][gtest ref] testing and mocking framework.
-- [OR-Tools][ortools ref] optimization
-- [RE2][re2 ref] regular expression library.
-
-*Note: earlier versions would also depend on the [Google Logging][glog ref]
-Library, until it was replaced by the OR-Tools provided implementation.*
+`bazel` integrates multiple external repositories. Please read the
+[external repositories][external ref] documentation for more information.
 
 ## Compiling
 
@@ -94,14 +83,10 @@ Pull requests are welcome. Please take a look at the
 [technical notes][notes doc] for details on the style guide and automation
 tools.
 
-[abseil ref]: https://abseil.io
 [bazel ref]: https://bazel.build
 [bgg ref]: https://www.boardgamegeek.com/wiki/page/Math_Trades
-[glog ref]: https://github.com/google/glog
-[gtest ref]: http://google.github.io/googletest
-[notes doc]: mathtrader/technical_notes.md
-[ortools ref]: https://developers.google.com/optimization
-[re2 ref]: https://github.com/google/re2
+[external ref]: docs/external.md
+[notes doc]: docs/technical_notes.md
 [tradegenie ref]: https://www.boardgamegeek.com/wiki/page/TradeGenie
 [trademaximizer ref]: https://www.boardgamegeek.com/wiki/page/TradeMaximizer
 [tradething ref]: https://sourceforge.net/projects/tradething/files/
