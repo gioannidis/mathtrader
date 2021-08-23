@@ -368,7 +368,8 @@ TEST(WantlistParserNegativeTest, TestUsernameInvalidChars) {
 
   // Verifies that the following characters are valid in usernames. This
   // includes the '\0' character.
-  static constexpr char kValidChars[] = R"tag(`~!@#$%^&*+-=[]{}\|;'"<>?,./)tag";
+  static constexpr std::string_view kValidChars =
+      R"tag(`~!@#$%^&*+-=[]{}\|;'"<>?,./)tag";
 
   for (char c : kValidChars) {
     std::string username = "user";
@@ -512,7 +513,7 @@ TEST(WantlistParserRegexTest, SimpleCapturingTest) {
 // Missing offered item test.
 TEST(WantlistParserRegexTest, MissingOfferedItemTest) {
   auto re = MakeRegex();
-  static constexpr char wantlist[] = ": 1-A";
+  static constexpr std::string_view wantlist = ": 1-A";
   EXPECT_FALSE(re2::RE2::PartialMatch(wantlist, *re));
 }
 

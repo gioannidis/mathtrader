@@ -90,7 +90,7 @@ namespace {
 // ID of non-dummy items: NNNN-AAAA or NNNN-AAAA-COPYNN.
 // Examples:
 //    "0001-MKGB", "0002-20GIFT"
-static constexpr char kItemRegex[] =
+static constexpr std::string_view kItemRegex =
     R"(()"  // opens item id group
             // Item id format 1: exactly 4 leading digits, separating '-",
             // followed by any alphanumeric, including zero.
@@ -250,7 +250,7 @@ TEST(MathParserOlwlgCountryTest, TestJune2021UK) {
                  /*missing_item_count=*/150);
 
   // User who lists owned items as wanted.
-  static constexpr char kOwner[] = "MLBath";
+  static constexpr std::string_view kOwner = "MLBath";
 
   // Verifies that the following items have been removed as they have been
   // listed as wanted by their owner.

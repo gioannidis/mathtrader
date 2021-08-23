@@ -19,16 +19,19 @@
 
 #include "mathtrader/parser/internal/internal_parser.h"
 
+#include <string_view>
+
 #include "absl/strings/str_format.h"
 #include "ortools/base/map_util.h"
 
 namespace mathtrader::parser::internal {
 namespace {
 // Indicates start of official names.
-constexpr char kDirectiveOfficialNamesBegin[] = "BEGIN-OFFICIAL-NAMES";
+constexpr std::string_view kDirectiveOfficialNamesBegin =
+    "BEGIN-OFFICIAL-NAMES";
 
 // Indicates end of official names.
-constexpr char kDirectiveOfficialNamesEnd[] = "END-OFFICIAL-NAMES";
+constexpr std::string_view kDirectiveOfficialNamesEnd = "END-OFFICIAL-NAMES";
 }  // namespace
 
 // Parses a directive. Exactly one directive can be specified per line.
@@ -79,7 +82,8 @@ absl::Status InternalParser::ParseDirective(std::string_view line) {
   } else if (line == kDirectiveOfficialNamesEnd) {
     // Directs the parser to stop reading official item names and start reading
     // wantlists.
-    if (!gtl::FindOrNull(directives_, kDirectiveOfficialNamesBegin)) {
+    if (!gtl::FindOrNull(directives_,
+                         std::string(kDirectiveOfficialNamesBegin))) {
       return absl::InvalidArgumentError(absl::StrFormat(
           "Declaring directive %s requires previous declaration of directive "
           "%s, which is missing.",

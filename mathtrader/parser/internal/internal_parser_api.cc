@@ -20,6 +20,7 @@
 #include "mathtrader/parser/internal/internal_parser.h"
 
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "absl/strings/str_format.h"
@@ -30,7 +31,7 @@ namespace mathtrader::parser::internal {
 namespace {
 // Regex defining the lines to ignore: empty lines, lines with all whitespaces,
 // or comment lines beginning with "#" but not "#!".
-constexpr char kIgnoreLineRegexStr[] = R"(^#[^!]|^\s*$)";
+constexpr std::string_view kIgnoreLineRegexStr = R"(^#[^!]|^\s*$)";
 }  // namespace
 
 // Initializes the constant members.

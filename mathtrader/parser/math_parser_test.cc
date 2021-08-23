@@ -20,6 +20,8 @@
 
 #include "mathtrader/parser/math_parser.h"
 
+#include <string_view>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -50,7 +52,7 @@ using RemovedItem = ::mathtrader::parser::ParserResult::RemovedItem;
 // Base test case with official item names and wantlists. Each wantlist defines
 // three (3) non-dummy items.
 TEST(MathParserTest, TestOfficialItemsAndWantlists) {
-  static constexpr char kInputData[] = R"(
+  static constexpr std::string_view kInputData = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from Abcd1)
 0002-SOC ==> "Shadows over Camelot" (from Abcd2)
@@ -92,7 +94,7 @@ TEST(MathParserTest, TestOfficialItemsAndWantlists) {
 // Tests that missing items are properly removed from wantlists. These are
 // wanted items without an official name.
 TEST(MathParserTest, TestMissingItems) {
-  static constexpr char kInputData[] = R"(
+  static constexpr std::string_view kInputData = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from SomeUsername1)
 0002-SOC ==> "Shadows over Camelot" (from SomeUsername2)
@@ -132,7 +134,7 @@ TEST(MathParserTest, TestMissingItems) {
 // Tests that missing items are properly removed from wantlists. These are
 // wanted items without an official name.
 TEST(MathParserTest, TestMissingItemsWithoutOfficialNames) {
-  static constexpr char kInputData[] = R"(
+  static constexpr std::string_view kInputData = R"(
 (SomeUsername1) 0001-20GIFT : 0002-SOC 0003-AGMI 0004-AN7WCS
 (SomeUsername2) 0002-SOC : 0001-20GIFT 0006-AN6P-COPY1 0003-AGMI
 (SomeUsername3) 0003-AGMI : 0001-20GIFT 0005-TIMSTO %DUMMY 0002-SOC

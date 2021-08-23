@@ -37,13 +37,14 @@ using ::mathtrader::util::StrToUpper;
 
 // Captures item id at the beginning of the text. Stops at a ':' character or at
 // a whitespace. Filters any leading whitespaces.
-static constexpr char kItemIdRegexStr[] = R"regex(^\s*([^:\s]+))regex";
+static constexpr std::string_view kItemIdRegexStr =
+    R"regex(^\s*([^:\s]+))regex";
 
 // Captures official name within quotation marks. The quotation marks are not
 // captured. The official name itself is allowed to contain quotation marks or
 // whitespaces, which are captured.
 // Note: official names with unicode characters may not be properly parsed.
-static constexpr char kOfficialNameRegexStr[] = R"regex("(.+)")regex";
+static constexpr std::string_view kOfficialNameRegexStr = R"regex("(.+)")regex";
 
 // Captures optional username. Expected format:
 //    (from USERNAME)
@@ -57,11 +58,12 @@ static constexpr char kOfficialNameRegexStr[] = R"regex("(.+)")regex";
 // Note: new usernames must begin with an alpha character, but older
 // usernames may not conform to this rule.
 // Note: we don't enforce the expected username format.
-static constexpr char kFromUsernameRegexStr[] = R"regex(\(from\s+(.+)\))regex";
+static constexpr std::string_view kFromUsernameRegexStr =
+    R"regex(\(from\s+(.+)\))regex";
 
 // Captures optional copy ids. Expected format:
 //    [copy 1 of 10]
-static constexpr char kCopiesRegexStr[] =
+static constexpr std::string_view kCopiesRegexStr =
     R"regex(\[copy\s+(\d+)\s+of\s+(\d+)\])regex";
 }  // namespace
 
@@ -129,8 +131,8 @@ absl::StatusOr<Item> ItemParser::ParseItem(std::string_view text) const {
 
   // Sets the optional copy id and number of copies.
   {
-    int64_t copy_id;
-    int64_t num_copies;
+    int32_t copy_id = 0;
+    int32_t num_copies = 0;
     if (re2::RE2::PartialMatch(text, kCopiesRegex, &copy_id, &num_copies)) {
       item.SetExtension(OfferedItem::copy_id, copy_id);
       item.SetExtension(OfferedItem::num_copies, num_copies);

@@ -97,7 +97,7 @@ void RemoveDuplicateItems(
             // Retrieves the item's frequency, if previously defined,
             // otherwise initializes it.
             int32_t& frequency =
-                gtl::LookupOrInsert(&frequencies, id, /*frequency=*/0);
+                gtl::LookupOrInsert(&frequencies, id, /*value=*/0);
             ++frequency;
 
             // Removes item if we have already encountered it, adding
@@ -157,8 +157,8 @@ void RemoveMissingItems(
                        }
                        // Initializes the frequency of the missing item to zero
                        // or retrieves it if present.
-                       int32_t& frequency = gtl::LookupOrInsert(
-                           &missing_items, id, /*frequency=*/0);
+                       int32_t& frequency =
+                           gtl::LookupOrInsert(&missing_items, id, /*value=*/0);
                        ++frequency;
                        return true;
                      }),
@@ -225,8 +225,8 @@ void RemoveOwnedItems(
                        // Retrieves the item's frequency, if previously
                        // defined, otherwise initializes it.
                        // TODO(gioannidis) implement with emplace.
-                       int32_t& frequency = gtl::LookupOrInsert(
-                           &frequencies, key, /*frequency=*/0);
+                       int32_t& frequency =
+                           gtl::LookupOrInsert(&frequencies, key, /*value=*/0);
                        ++frequency;
                        return true;
                      }),

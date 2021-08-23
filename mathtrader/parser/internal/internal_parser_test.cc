@@ -17,6 +17,8 @@
 
 #include "mathtrader/parser/internal/internal_parser.h"
 
+#include <string_view>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -50,7 +52,8 @@ using RemovedItem = ::mathtrader::parser::ParserResult::RemovedItem;
 
 // Tests a basic use-case.
 TEST(InternalParser, TestOnlyComments) {
-  static constexpr char input_data[] = R"(# Comment line. Next line is empty.
+  static constexpr std::string_view input_data =
+      R"(# Comment line. Next line is empty.
 
 #Comment line without leading whitespace. Next two lines are also empty.
 
@@ -65,7 +68,7 @@ TEST(InternalParser, TestOnlyComments) {
 // Tests a single wantlist without official names. All wanted items are missing,
 // because they have no respective wantlists.
 TEST(InternalParser, TestSingleWantlist) {
-  static constexpr char input_data[] = R"(1-A : 2-B 3-C 4-D)";
+  static constexpr std::string_view input_data = R"(1-A : 2-B 3-C 4-D)";
 
   InternalParser parser;
   ASSERT_OK(parser.ParseText(input_data));
@@ -84,7 +87,7 @@ TEST(InternalParser, TestSingleWantlist) {
 }
 
 TEST(InternalParser, TestMultipleWantlists) {
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
   1-A : 2-B 3-C 4-D
   2-B : 1-A 4-D
   3-C : 5-E
@@ -103,7 +106,7 @@ TEST(InternalParser, TestMultipleWantlists) {
 // Test suite: official items
 
 TEST(InternalParserItemsTest, TestOfficialItems) {
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
 0002-SOC ==> "Shadows over Camelot" (from username2)
@@ -127,7 +130,7 @@ TEST(InternalParserItemsTest, TestOfficialItems) {
 // returns an error when an empty line is given, the InternalParser filters out
 // empty lines before passing them to the ItemParser.
 TEST(InternalParserItemsTest, TestColonsSpaces) {
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
 !BEGIN-OFFICIAL-NAMES
 
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
@@ -151,7 +154,7 @@ TEST(InternalParserItemsTest, TestColonsSpaces) {
 // Tests that we can specify new usernames in wantlists, even if they have not
 // been declared in the official names.
 TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
 0002-SOC ==> "Shadows over Camelot" (from username2)
@@ -177,7 +180,7 @@ TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
 
 TEST(InternalParser, TestDuplicateItems) {
   // Defines official names for all items to avoid reporting any missing items.
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
 !BEGIN-OFFICIAL-NAMES
 A
 B
@@ -249,7 +252,7 @@ Z
 
 // Offered items must have an official name, if official names have been given.
 TEST(InternalParserNegativeTest, TestMissingOfficialOfferedItemName) {
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-A
 0002-B
@@ -270,7 +273,7 @@ TEST(InternalParserNegativeTest, TestMissingOfficialOfferedItemName) {
 
 // Checks against declaring a double wantlist for an item.
 TEST(InternalParserNegativeTest, TestDoubleWantlist) {
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
       0001-A : 0002-B 0003-C
       0002-B : 0003-C 0001-A
       0004-D : 0001-A
@@ -288,7 +291,7 @@ TEST(InternalParserNegativeTest, TestDoubleWantlist) {
 
 // Checks against declaring a double wantlist for a dummy item.
 TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
       0001-A : 0002-B 0003-C
       0002-B : 0003-C 0001-A
       0004-D : 0001-A
@@ -306,7 +309,7 @@ TEST(InternalParserNegativeTest, TestDoubleWantlistOfDummyItem) {
 
 // One of the items is a dummy item and should be ignored.
 TEST(InternalParserNegativeTest, TestDummyNames) {
-  static constexpr char input_data[] = R"(
+  static constexpr std::string_view input_data = R"(
 !BEGIN-OFFICIAL-NAMES
 0001-20GIFT ==> "Alt Name: $20 PayPal GC" (from username1)
 0002-SOC ==> "Shadows over Camelot" (from username2)
