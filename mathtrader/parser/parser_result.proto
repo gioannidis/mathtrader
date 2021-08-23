@@ -56,7 +56,7 @@ message ParserResult {
   // The number of items with an official name. This treats copies of individual
   // items as unique items. If no official names have been given, it corresponds
   // to the number of wantlists.
-  optional int32 item_count = 3;
+  optional int64 item_count = 3;
 
   // Tracks duplicate wanted items in wantlists.
   repeated RemovedItem duplicate_items = 4;
