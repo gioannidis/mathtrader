@@ -194,14 +194,19 @@ void ExpectWantlist(absl::string_view filename, int32_t user_count,
 // Test suites: OLWLG trades.
 
 TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
+  static constexpr int64_t kUserCount = 139;
+  static constexpr int64_t kItemCount = 9056;
+  static constexpr int64_t kWantlistCount = 13035;
+  // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
+  static constexpr int64_t kLongestWantlistSize = 1000;
+  static constexpr int64_t kMissingItemCount = 184;
+
   MathParser parser;
   const auto result =
       parser.ParseFile("mathtrader/parser/test_data/283180-officialwants.txt");
 
-  // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
-  ExpectWantlist(result, /*user_count=*/139, /*item_count=*/9056,
-                 /*wantlist_count=*/13035, /*longest_wantlist=*/1000,
-                 /*missing_item_count=*/184);
+  ExpectWantlist(result, kUserCount, kItemCount, kWantlistCount,
+                 kLongestWantlistSize, kMissingItemCount);
 
   // Number of duplicate items can be retrieved from the result file
   // "https://bgg.activityclub.org/olwlg/283180-results-official.txt"
@@ -224,30 +229,43 @@ TEST(MathParserOlwlgWorldTest, TestMarch2021Worldwide) {
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021US) {
+  static constexpr int64_t kUserCount = 335;
+  static constexpr int64_t kItemCount = 5896;
+  static constexpr int64_t kWantlistCount = 14860;
   // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
+  static constexpr int64_t kLongestWantlistSize = 695;
+  static constexpr int64_t kMissingItemCount = 134;
+
   ExpectWantlist("mathtrader/parser/test_data/286101-officialwants.txt",
-                 /*user_count=*/335, /*item_count=*/5896,
-                 /*wantlist_count=*/14860, /*longest_wantlist=*/695,
-                 /*missing_item_count=*/134);
+                 kUserCount, kItemCount, kWantlistCount, kLongestWantlistSize,
+                 kMissingItemCount);
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021Norway) {
+  static constexpr int64_t kUserCount = 18;
+  static constexpr int64_t kItemCount = 143;
+  static constexpr int64_t kWantlistCount = 142;
   // Longest wantlist: line 517: "(nils777) 8339221 ..."
+  static constexpr int64_t kLongestWantlistSize = 35;
+
   ExpectWantlist("mathtrader/parser/test_data/286103-officialwants.txt",
-                 /*user_count=*/18, /*item_count=*/143,
-                 /*wantlist_count=*/142, /*longest_wantlist=*/35);
+                 kUserCount, kItemCount, kWantlistCount, kLongestWantlistSize);
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021UK) {
+  static constexpr int64_t kUserCount = 223;
+  static constexpr int64_t kItemCount = 2990;
+  static constexpr int64_t kWantlistCount = 9549;
+  static constexpr int64_t kLongestWantlistSize = 785;
+  // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
+  static constexpr int64_t kMissingItemCount = 150;
+
   MathParser parser;
   const auto result =
       parser.ParseFile("mathtrader/parser/test_data/286149-officialwants.txt");
 
-  // Longest wantlist: line 19783: "(jgoyes) 1109-3GIFT ..."
-  ExpectWantlist(result,
-                 /*user_count=*/223, /*item_count=*/2990,
-                 /*wantlist_count=*/9549, /*longest_wantlist=*/785,
-                 /*missing_item_count=*/150);
+  ExpectWantlist(result, kUserCount, kItemCount, kWantlistCount,
+                 kLongestWantlistSize, kMissingItemCount);
 
   // User who lists owned items as wanted.
   static constexpr std::string_view kOwner = "MLBath";
@@ -281,17 +299,26 @@ TEST(MathParserOlwlgCountryTest, TestJune2021UK) {
 }
 
 TEST(MathParserOlwlgCountryTest, TestJune2021Canada) {
+  static constexpr int64_t kUserCount = 121;
+  static constexpr int64_t kItemCount = 1147;
+  static constexpr int64_t kWantlistCount = 1266;
   // Longest wantlist: line 2149: "(Dragoon6542) 8351711 ..."
+  static constexpr int64_t kLongestWantlistSize = 289;
+  static constexpr int64_t kMissingItemCount = 87;
+
   ExpectWantlist("mathtrader/parser/test_data/286870-officialwants.txt",
-                 /*user_count=*/121, /*item_count=*/1147,
-                 /*wantlist_count=*/1266, /*longest_wantlist=*/289,
-                 /*missing_item_count=*/87);
+                 kUserCount, kItemCount, kWantlistCount, kLongestWantlistSize,
+                 kMissingItemCount);
 }
 
 TEST(MathParserOlwlgCountryTest, TestJuly2021Greece) {
+  static constexpr int64_t kUserCount = 66;
+  static constexpr int64_t kItemCount = 687;
+  static constexpr int64_t kWantlistCount = 1003;
   // Longest wantlist: line 3417: "(Rico13mpatsoni) 8366279 ..."
+  static constexpr int64_t kLongestWantlistSize = 235;
+
   ExpectWantlist("mathtrader/parser/test_data/286928-officialwants.txt",
-                 /*user_count=*/66, /*item_count=*/687,
-                 /*wantlist_count=*/1003, /*longest_wantlist=*/235);
+                 kUserCount, kItemCount, kWantlistCount, kLongestWantlistSize);
 }
 }  // namespace
