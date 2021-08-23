@@ -26,10 +26,6 @@
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
 
-#ifndef ASSERT_OK
-#define ASSERT_OK(status) ASSERT_TRUE((status).ok()) << (status).message();
-#endif
-
 namespace {
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::ParserResult;
@@ -60,7 +56,7 @@ TEST(InternalParser, TestOnlyComments) {
 )";
 
   InternalParser parser;
-  ASSERT_OK(parser.ParseText(input_data));
+  ASSERT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 5);
   EXPECT_THAT(parser.parser_result().wantlists(), IsEmpty());
 }
@@ -71,7 +67,7 @@ TEST(InternalParser, TestSingleWantlist) {
   static constexpr std::string_view input_data = R"(1-A : 2-B 3-C 4-D)";
 
   InternalParser parser;
-  ASSERT_OK(parser.ParseText(input_data));
+  ASSERT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 1);
 
   const ParserResult& result = parser.parser_result();
@@ -95,7 +91,7 @@ TEST(InternalParser, TestMultipleWantlists) {
   )";
 
   InternalParser parser;
-  ASSERT_OK(parser.ParseText(input_data));
+  ASSERT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_GE(parser.get_line_count(), 4);
   EXPECT_THAT(parser.parser_result().wantlists(), SizeIs(4));
 
@@ -118,7 +114,7 @@ TEST(InternalParserItemsTest, TestOfficialItems) {
 !END-OFFICIAL-NAMES)";
 
   InternalParser parser;
-  ASSERT_OK(parser.ParseText(input_data));
+  ASSERT_TRUE(parser.ParseText(input_data).ok());
 
   const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), 7);  // Non-dummy items.
@@ -143,7 +139,7 @@ TEST(InternalParserItemsTest, TestColonsSpaces) {
 !END-OFFICIAL-NAMES)";
 
   InternalParser parser;
-  ASSERT_OK(parser.ParseText(input_data));
+  ASSERT_TRUE(parser.ParseText(input_data).ok());
 
   const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), 5);  // Non-dummy items.
@@ -170,7 +166,7 @@ TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
 (username3) 0024-AGMI : 0002-SOC)";
 
   InternalParser parser;
-  ASSERT_OK(parser.ParseText(input_data));
+  ASSERT_TRUE(parser.ParseText(input_data).ok());
 
   const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), 6);  // Non-dummy items.
@@ -209,7 +205,7 @@ Z
   static constexpr int32_t kAllWantedItems = 15;
 
   InternalParser parser;
-  ASSERT_OK(parser.ParseText(input_data));
+  ASSERT_TRUE(parser.ParseText(input_data).ok());
 
   const auto& result = parser.parser_result();
   EXPECT_EQ(result.item_count(), kAllWantedItems);  // Non-dummy items.
