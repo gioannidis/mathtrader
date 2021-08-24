@@ -17,6 +17,7 @@
 
 #include "mathtrader/parser/internal/item_parser.h"
 
+#include <string_view>
 #include <utility>
 
 #include "gtest/gtest.h"
@@ -27,9 +28,9 @@ namespace {
 using ::mathtrader::common::OfferedItem;
 using ::mathtrader::parser::internal::ItemParser;
 
-constexpr char kPandemicId[] = "0012-PANDE";  // case-insensitive
-constexpr char kPandemicName[] = "Pandemic";
-constexpr char kPandemicUser[] = "USER";  // case-insensitive
+static constexpr std::string_view kPandemicId = "0012-PANDE";
+static constexpr std::string_view kPandemicName = "Pandemic";
+static constexpr std::string_view kPandemicUser = "USER";
 
 // Extracts the item from the given text and compares it with the given
 // arguments. Empty arguments are not compared.
@@ -123,10 +124,11 @@ TEST(ItemParserTest, TestIdAndOfficialNameAndUsername) {
 TEST(ItemParserTest, TestMultipleCopies) {
   static constexpr std::string_view text =
       R"(9999-5GIFT-COPY10 ==> "Alt Name: $7 Gift Certificate" (from dummyUserName) [copy 17 of 64])";
+  static constexpr int64_t kCopyId = 17;
+  static constexpr int64_t kNumCopies = 64;
 
   ExpectItem(text, "9999-5GIFT-COPY10", "DUMMYUSERNAME",
-             "Alt Name: $7 Gift Certificate", /*copy_id=*/17,
-             /*num_copies=*/64);
+             "Alt Name: $7 Gift Certificate", kCopyId, kNumCopies);
 }
 
 // Tests an item separated by an optional colon, without separating spaces.
@@ -212,24 +214,36 @@ TEST(ItemParserNonStrictItemIdTest, TestNegativeNumeric) {
 TEST(ItemParserCopiesTest, TestCopies) {
   static constexpr std::string_view text =
       R"(1A-ID ==> "OfficialName" (from Username) [copy 5 of 42])";
-  ExpectItem(text, "1A-ID", "USERNAME", "OfficialName", 5, 42);
+  static constexpr int64_t kCopyId = 5;
+  static constexpr int64_t kNumCopies = 42;
+
+  ExpectItem(text, "1A-ID", "USERNAME", "OfficialName", kCopyId, kNumCopies);
 }
 
 TEST(ItemParserCopiesTest, TestCopiesWithoutUsername) {
   static constexpr std::string_view text =
       R"(1A-ID ==> (from Username) [copy 10 of 10000])";
-  ExpectItem(text, "1A-ID", "USERNAME", "", 10, 10000);
+  static constexpr int64_t kCopyId = 10;
+  static constexpr int64_t kNumCopies = 10000;
+
+  ExpectItem(text, "1A-ID", "USERNAME", "", kCopyId, kNumCopies);
 }
 
 TEST(ItemParserCopiesTest, TestCopiesWithoutOfficialName) {
   static constexpr std::string_view text =
       R"(1A-ID ==> "OfficialName" [copy 10 of 10000])";
-  ExpectItem(text, "1A-ID", "", "OfficialName", 10, 10000);
+  static constexpr int64_t kCopyId = 10;
+  static constexpr int64_t kNumCopies = 10000;
+
+  ExpectItem(text, "1A-ID", "", "OfficialName", kCopyId, kNumCopies);
 }
 
 TEST(ItemParserCopiesTest, TestCopiesWithoutOfficialNameOrUsername) {
   static constexpr std::string_view text = R"(1A-ID ==> [copy 10 of 10000])";
-  ExpectItem(text, "1A-ID", "", "", 10, 10000);
+  static constexpr int64_t kCopyId = 10;
+  static constexpr int64_t kNumCopies = 10000;
+
+  ExpectItem(text, "1A-ID", "", "", kCopyId, kNumCopies);
 }
 
 // Test suite: negative tests
