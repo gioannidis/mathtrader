@@ -46,7 +46,7 @@ Checks: "\
 # Note: special character '.' loses its meaning in bracket expression, so it
 # not have to be escaped.
 # See: https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html
-HeaderFilterRegex: 'mathtrader[^.]*\.h'
+HeaderFilterRegex: '^./mathtrader[^.]*\.h$'
 
 WarningsAsErrors: '*'
 
