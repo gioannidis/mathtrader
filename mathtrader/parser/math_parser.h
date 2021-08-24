@@ -21,6 +21,8 @@
 #ifndef MATHTRADER_PARSER_MATH_PARSER_H_
 #define MATHTRADER_PARSER_MATH_PARSER_H_
 
+#include <string_view>
+
 #include "absl/status/statusor.h"
 
 #include "mathtrader/parser/parser_result.pb.h"
@@ -44,10 +46,10 @@ class MathParser {
   ~MathParser() = default;
 
   // Parses the OLWLG-generated file and generates the trade data.
-  static absl::StatusOr<ParserResult> ParseFile(absl::string_view filename);
+  static absl::StatusOr<ParserResult> ParseFile(std::string_view filename);
 
   // Identical to `ParseFile`, but operates directly on the data string.
-  static absl::StatusOr<ParserResult> ParseText(absl::string_view text);
+  static absl::StatusOr<ParserResult> ParseText(std::string_view text);
 };
 }  // namespace mathtrader::parser
 #endif  // MATHTRADER_PARSER_MATH_PARSER_H_

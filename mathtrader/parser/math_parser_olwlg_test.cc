@@ -24,6 +24,7 @@
 #include "mathtrader/parser/math_parser.h"
 
 #include <ostream>
+#include <string_view>
 
 #include "absl/status/statusor.h"
 #include "gmock/gmock.h"
@@ -177,7 +178,7 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
 }
 
 // Parses `filename` and runs a number of checks against the result.
-void ExpectWantlist(absl::string_view filename, int32_t user_count,
+void ExpectWantlist(std::string_view filename, int32_t user_count,
                     int32_t item_count, int32_t wantlist_count,
                     int32_t longest_wantlist, int32_t missing_item_count = 0) {
   MathParser parser;
