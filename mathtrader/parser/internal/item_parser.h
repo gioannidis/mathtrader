@@ -51,6 +51,8 @@ class ItemParser {
   ItemParser(const ItemParser&) = delete;
   ItemParser& operator=(const ItemParser&) = delete;
 
+  ~ItemParser() = default;
+
   // Parses the input text and returns an Item on success. If it fails, returns
   // an InvalidArgumentError.
   absl::StatusOr<common::Item> ParseItem(std::string_view text) const;

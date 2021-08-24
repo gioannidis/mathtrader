@@ -34,6 +34,8 @@ class AssignmentBuilder {
   AssignmentBuilder(const AssignmentBuilder&) = delete;
   AssignmentBuilder& operator=(const AssignmentBuilder&) = delete;
 
+  ~AssignmentBuilder() = default;
+
   // Processes the OLWLG-generated wantlists and builds the Assignment.
   static Assignment BuildAssignment(const parser::ParserResult& parser_result);
 };

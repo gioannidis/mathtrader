@@ -41,6 +41,8 @@ class MathParser {
   MathParser(const MathParser&) = delete;
   MathParser& operator=(const MathParser&) = delete;
 
+  ~MathParser() = default;
+
   // Parses the OLWLG-generated file and generates the trade data.
   static absl::StatusOr<ParserResult> ParseFile(absl::string_view filename);
 

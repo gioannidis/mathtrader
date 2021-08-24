@@ -44,6 +44,8 @@ class InternalParser {
   InternalParser(const InternalParser&) = delete;
   InternalParser& operator=(const InternalParser&) = delete;
 
+  ~InternalParser() = default;
+
   // Opens and parses the given want file.
   ABSL_MUST_USE_RESULT absl::Status ParseFile(std::string_view filename);
 

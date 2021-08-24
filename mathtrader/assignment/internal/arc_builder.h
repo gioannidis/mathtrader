@@ -68,6 +68,8 @@ class ArcBuilder {
   ArcBuilder(const ArcBuilder&) = delete;
   ArcBuilder& operator=(const ArcBuilder&) = delete;
 
+  ~ArcBuilder() = default;
+
   // Generates Arcs from the parser result, adding them to `assignment`.
   // Prunes items as follows:
   // 1. Detects all items that have a valid wantlist, i.e., being offered.

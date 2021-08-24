@@ -49,6 +49,8 @@ class WantlistParser {
   WantlistParser(const WantlistParser&) = delete;
   WantlistParser& operator=(const WantlistParser&) = delete;
 
+  ~WantlistParser() = default;
+
   // Parses the input text and returns a Wantlist on success. If it fails,
   // returns an InvalidArgumentError. Does not check whether the offered or any
   // of the wanted items correspond to an actual official item, if official item
