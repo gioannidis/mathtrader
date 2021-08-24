@@ -23,9 +23,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Integration of clang-tidy with bazel.
 http_archive(
     name = "bazel_clang_tidy",
-    sha256 = "8e1f43cd7c7c55cddeaedf94edc52ed41dd1b60c591eaa4d9ff977575b81cf6b",
-    strip_prefix = "bazel_clang_tidy-1c3a983c054a41be73ac128e3d842a940850b5fe",
-    urls = ["https://github.com/erenon/bazel_clang_tidy/archive/1c3a983c054a41be73ac128e3d842a940850b5fe.tar.gz"],
+    sha256 = "226b695f14756fd1138eccb5556a029ab4f92d1e047769d0d99fec1bff5ed577",
+    strip_prefix = "bazel_clang_tidy-e9b89bc49e538e6112ca8985d29c81b9bf613683",
+    urls = ["https://github.com/erenon/bazel_clang_tidy/archive/e9b89bc49e538e6112ca8985d29c81b9bf613683.tar.gz"],
 )
 
 http_archive(
