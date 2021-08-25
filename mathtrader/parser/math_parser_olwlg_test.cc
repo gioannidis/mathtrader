@@ -40,7 +40,6 @@ using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::MathParser;
 using ::mathtrader::parser::ParserResult;
-using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Contains;
@@ -52,7 +51,6 @@ using ::testing::FieldsAre;
 using ::testing::IsFalse;
 using ::testing::IsTrue;
 using ::testing::MatchesRegex;
-using ::testing::Pair;
 using ::testing::Property;
 using ::testing::SizeIs;
 using ::testing::StartsWith;
@@ -102,6 +100,13 @@ static constexpr std::string_view kItemRegex =
     R"())"                      // closes item id group
     R"((-COPY[[:digit:]]+)?)";  // e.g., "-COPY42"; optional
 
+// Mapped(inner_matcher) matches an std::pair whose `second` field matches
+// inner_matcher. For example, Contains(Mapped(Ge(5))) can be used to match an
+// std::map that contains at least one element whose value is >= 5.
+MATCHER_P(Mapped, inner_matcher, "") {
+  return ExplainMatchResult(inner_matcher, arg.second, result_listener);
+}
+
 // Matches an item that:
 // * Non-dummy and adhere to a specific format.
 // * Dummy and begin with "%".
@@ -142,7 +147,7 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
   ASSERT_TRUE(parser_result.ok()) << parser_result.status().message();
 
   // Verifies the number of users with items.
-  EXPECT_THAT(parser_result->users(), SizeIs(user_count));
+  EXPECT_THAT(parser_result->users(), SizeIs(Eq(user_count)));
 
   // Verifies the number of items.
   EXPECT_EQ(parser_result->item_count(), item_count);
@@ -153,7 +158,7 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
   // Verifies that every item has a username.
   EXPECT_THAT(
       parser_result->items(),
-      Each(FieldsAre(_, Property("username", &Item::has_username, IsTrue()))));
+      Each(Mapped(Property("username", &Item::has_username, IsTrue()))));
 
   const auto& wantlists = parser_result->wantlists();
 
@@ -161,19 +166,19 @@ void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
   EXPECT_EQ(wantlists.size(), wantlist_count);
 
   // Verifies the id format of all items.
-  EXPECT_THAT(parser_result->items(), Each(Pair(_, IsValidItemId())));
+  EXPECT_THAT(parser_result->items(), Each(Mapped(IsValidItemId())));
 
   // Verifies the longest wantlist.
-  EXPECT_THAT(wantlists,
-              Contains(Property(&Wantlist::wanted, SizeIs(longest_wantlist))));
+  EXPECT_THAT(parser_result->wantlists(),
+              Contains(Property(&Wantlist::wanted_size, Eq(longest_wantlist))));
 
   // Verifies the number of missing items.
   if (missing_item_count) {
     EXPECT_THAT(parser_result->missing_items(),
-                ElementsAre(AllOf(
-                    Property(&RemovedItem::wanted_item_id,
-                             StrCaseEq("missing-official")),
-                    Property(&RemovedItem::frequency, missing_item_count))));
+                ElementsAre(AllOf(Property(&RemovedItem::wanted_item_id,
+                                           StrCaseEq("missing-official")),
+                                  Property(&RemovedItem::frequency,
+                                           Eq(missing_item_count)))));
   }
 }
 
@@ -288,11 +293,10 @@ TEST(MathParserOlwlgCountryTest, TestJune2021UK) {
   // Verifies that the above items are all owned by kOwner.
   EXPECT_THAT(
       result->items(),
-      Contains(
-          FieldsAre(_, AllOf(Property(&Item::username, StrCaseEq(kOwner)),
-                             Property(&Item::id,
-                                      MatchesRegex(
-                                          "(8320574-COPY[12])|(%8320574.*)")))))
+      Contains(Mapped(AllOf(
+                   Property(&Item::username, StrCaseEq(kOwner)),
+                   Property(&Item::id,
+                            MatchesRegex("(8320574-COPY[12])|(%8320574.*)")))))
           .Times(3));
 
   // No duplicate items.
