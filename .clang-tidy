@@ -31,13 +31,11 @@ Checks: "\
   bugprone-*,\
   clang-analyzer-*,\
   cppcoreguidelines-*,\
-  -cppcoreguidelines-avoid-c-arrays,\
   -cppcoreguidelines-avoid-non-const-global-variables,\
   -cppcoreguidelines-owning-memory,\
   google-*,\
   -google-runtime-references,\
   modernize-*,\
-  -modernize-avoid-c-arrays,\
   -modernize-use-trailing-return-type,\
   performance-*"
 

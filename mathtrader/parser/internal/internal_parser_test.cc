@@ -17,6 +17,7 @@
 
 #include "mathtrader/parser/internal/internal_parser.h"
 
+#include <array>
 #include <string_view>
 
 #include "gmock/gmock.h"
@@ -199,7 +200,7 @@ Z
 (user3) C : O F K Z E K K P F I K X K
   )";
   // Number of wanted items, excluding duplicates.
-  static constexpr int32_t kWantedItems[] = {7, 6, 8};
+  static constexpr std::array<int32_t, 3> kWantedItems = {7, 6, 8};
 
   // Number of all unique items: offered + unique
   static constexpr int32_t kAllWantedItems = 15;
