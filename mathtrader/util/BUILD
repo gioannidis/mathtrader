@@ -38,3 +38,25 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "str_indexer",
+    srcs = ["str_indexer.cc"],
+    hdrs = ["str_indexer.h"],
+    deps = [
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/types:span",
+        "@com_google_or_tools//ortools/base:map_util",
+    ],
+)
+
+cc_test(
+    name = "str_indexer_test",
+    size = "small",
+    srcs = ["str_indexer_test.cc"],
+    deps = [
+        ":str_indexer",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
