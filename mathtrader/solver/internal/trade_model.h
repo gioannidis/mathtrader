@@ -134,12 +134,12 @@ class TradeModel {
   // Maps each item to a 1:1 index. This avoids hashing entire strings.
   util::StrIndexer indexer_;
 
-  // Allowed trades, indexed by an <offered, wanted> pair. Each trade is
-  // represented by a boolean variable. A boolean variable <offered, wanted> is
-  // true if item "offered" is assigned to item "wanted. If offered==wanted, it
-  // represents a self-trade.
-  absl::flat_hash_map<std::pair<int32_t, int32_t>, InternalAssignment>
-      assignments_;
+  // Stores the allowed assignments. Each `assignment_[i][j]` represents an
+  // allowed trade between the offered item `i` and the wanted item `j`. The
+  // value of the boolean variable `assignment_[i][j].var` represents whether
+  // this trade takes place or not. We define `assignment_[i][i]` for every
+  // item, representing a self-trade, i.e., the item not being traded.
+  std::vector<absl::flat_hash_map<int32_t, InternalAssignment>> assignments_;
 };
 }  // namespace mathtrader::solver::internal
 #endif  // MATHTRADER_SOLVER_INTERNAL_TRADE_MODEL_H_

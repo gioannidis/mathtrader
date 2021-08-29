@@ -34,7 +34,9 @@ namespace {
 static constexpr int64_t kSelfTradeCost = 1'000'000;
 }  // namespace
 
-TradeModel::TradeModel(absl::Span<const std::string_view> items) {
+// Creates an entry in the `assignments_` vector for each item.
+TradeModel::TradeModel(absl::Span<const std::string_view> items)
+    : assignments_(items.size()) {
   // Creates the indexes for each item.
   indexer_.BuildIndexes(items);
 
@@ -47,15 +49,15 @@ TradeModel::TradeModel(absl::Span<const std::string_view> items) {
 
 void TradeModel::AddAssignment(std::string_view offered,
                                std::string_view wanted, int64_t cost) {
-  // Key that identifies this trade: <offered, wanted>
-  const auto key = MakeItemPair(offered, wanted);
+  const int32_t offered_id = indexer_.IndexOrDie(offered);
+  const int32_t wanted_id = indexer_.IndexOrDie(wanted);
 
-  // Creates a new BoolVar representing the allowed trade and hashes it by the
-  // ids of the offered and wanted item. Note that we call the "NoPrint"
-  // operation because there is no default `operator<<` overload for an
-  // `std::pair`.
+  // Creates a new BoolVar representing the allowed trade.
   InternalAssignment assignment = {cp_model_.NewBoolVar(), cost};
-  gtl::InsertOrDieNoPrint(&assignments_, {key, assignment});
+
+  // Registers the allowed assignment between the `offered` and the `wanted`
+  // items.
+  gtl::InsertOrDie(&assignments_[offered_id], wanted_id, assignment);
 }
 
 void TradeModel::BuildConstraints() {
@@ -71,21 +73,23 @@ void TradeModel::BuildConstraints() {
   // `j`.
   absl::flat_hash_map<int32_t, LinearExpr> wanted_sums;
 
-  for (const auto& [key, assignment] : assignments_) {
-    int32_t offered = 0;
-    int32_t wanted = 0;
-    std::tie(offered, wanted) = key;
+  // The index of the offered item. We increment it within the loop to avoid
+  // mixing signed with unsigned types.
+  int32_t offered_id = 0;
+  for (const auto& assignment_row : assignments_) {
+    for (const auto& [wanted_id, assignment] : assignment_row) {
+      // Retrieves the respective sums of the offered and wanted item, or
+      // creates them if they do not exist.
+      LinearExpr& offered_sum =
+          gtl::LookupOrInsert(&offered_sums, offered_id, LinearExpr());
+      LinearExpr& wanted_sum =
+          gtl::LookupOrInsert(&wanted_sums, wanted_id, LinearExpr());
 
-    // Retrieves the respective sums of the offered and wanted item, or creates
-    // them if they do not exist.
-    LinearExpr& offered_sum =
-        gtl::LookupOrInsert(&offered_sums, offered, LinearExpr());
-    LinearExpr& wanted_sum =
-        gtl::LookupOrInsert(&wanted_sums, wanted, LinearExpr());
-
-    // Adds the BoolVar[i][j] to offered_sum[i] and wanted_sum[j].
-    offered_sum.AddVar(assignment.var);
-    wanted_sum.AddVar(assignment.var);
+      // Adds the BoolVar[i][j] to offered_sum[i] and wanted_sum[j].
+      offered_sum.AddVar(assignment.var);
+      wanted_sum.AddVar(assignment.var);
+    }
+    ++offered_id;
   }
 
   // Mandates that each offered item trades with exactly one wanted item.
@@ -100,19 +104,29 @@ void TradeModel::BuildConstraints() {
 }
 
 void TradeModel::BuildTotalCost() {
-  for (const auto& [key, assignment] : assignments_) {
-    total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
+  for (const auto& assignment_row : assignments_) {
+    for (const auto& [wanted_id, assignment] : assignment_row) {
+      total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
+    }
   }
 }
 
 std::vector<TradeModel::Assignment> TradeModel::assignments() const {
+  // The assignment vector to return.
   std::vector<Assignment> assignments;
-  for (const auto& [key, internal_assignment] : assignments_) {
-    Assignment assignment;
-    assignment.offered = indexer_.ValueOrDie(key.first);
-    assignment.wanted = indexer_.ValueOrDie(key.second);
-    assignment.cost = internal_assignment.cost;
-    assignments.emplace_back(std::move(assignment));
+
+  // The index of the offered item. We increment it within the loop to avoid
+  // mixing signed with unsigned types.
+  int32_t offered_id = 0;
+  for (const auto& assignment_row : assignments_) {
+    for (const auto& [wanted_id, internal_assignment] : assignment_row) {
+      Assignment assignment;
+      assignment.offered = indexer_.ValueOrDie(offered_id);
+      assignment.wanted = indexer_.ValueOrDie(wanted_id);
+      assignment.cost = internal_assignment.cost;
+      assignments.emplace_back(std::move(assignment));
+    }
+    ++offered_id;
   }
   return assignments;
 }
