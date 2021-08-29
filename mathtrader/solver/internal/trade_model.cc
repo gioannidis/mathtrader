@@ -63,11 +63,6 @@ void TradeModel::AddAssignment(std::string_view offered,
 void TradeModel::BuildConstraints() {
   using ::operations_research::sat::LinearExpr;
 
-  // offered_sums[i] = sum{ BoolVar[i][j] } for all `j`.
-  // Represents the sum of how many wanted items trade with the offered item
-  // `i`.
-  absl::flat_hash_map<int32_t, LinearExpr> offered_sums;
-
   // wanted_sums[j] = sum{ BoolVar[i][j] } for all `i`.
   // Represents the sum of how many offered items trade with the wanted item
   // `j`.
@@ -77,11 +72,12 @@ void TradeModel::BuildConstraints() {
   // mixing signed with unsigned types.
   int32_t offered_id = 0;
   for (const auto& assignment_row : assignments_) {
+    // The sum of wanted items that trade with `offered_id`.
+    LinearExpr offered_sum;
+
     for (const auto& [wanted_id, assignment] : assignment_row) {
-      // Retrieves the respective sums of the offered and wanted item, or
-      // creates them if they do not exist.
-      LinearExpr& offered_sum =
-          gtl::LookupOrInsert(&offered_sums, offered_id, LinearExpr());
+      // Retrieves the sum of offered items that trade with `wanted id`. Creates
+      // it if they do not exist.
       LinearExpr& wanted_sum =
           gtl::LookupOrInsert(&wanted_sums, wanted_id, LinearExpr());
 
@@ -89,12 +85,10 @@ void TradeModel::BuildConstraints() {
       offered_sum.AddVar(assignment.var);
       wanted_sum.AddVar(assignment.var);
     }
-    ++offered_id;
-  }
-
-  // Mandates that each offered item trades with exactly one wanted item.
-  for (const auto& [index, offered_sum] : offered_sums) {
+    // Mandates that the offered item trades with exactly one wanted item.
     cp_model_.AddEquality(offered_sum, 1);
+
+    ++offered_id;
   }
 
   // Mandates that each wanted item trades with exactly one offered item.
