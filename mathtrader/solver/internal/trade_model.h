@@ -53,13 +53,21 @@ namespace mathtrader::solver::internal {
 //   trade_model.AddAllowedTrade("0002-PUERIC", "0001-MKBG", 1);
 class TradeModel {
  public:
-  // Wrapper around the internal representation of item assignments. Represents
-  // the allowed trades between offered and wanted items using the actual item
-  // ids. A self-trade is represented by `offered == wanted`.
+  // Debugging struct. Wrapper around the internal representation of item
+  // assignments. Represents the allowed trades between offered and wanted items
+  // using the actual item ids. A self-trade is represented by
+  // `offered == wanted`.
   struct Assignment {
     std::string offered{};
     std::string wanted{};
     int64_t cost{};
+  };
+
+  // Debugging struct. Wrapper around the internal representation of owners.
+  // Represents the items that a given user owns.
+  struct Owner {
+    std::string owner;
+    std::vector<std::string> items;
   };
 
   // Constructs the TradeModel and passes all items.
@@ -107,6 +115,10 @@ class TradeModel {
   // self-trades. Intended to be used for debugging because it constructs a new
   // vector.
   std::vector<Assignment> assignments() const;
+
+  // Returns all owners with the respective owned items. Intended to be used for
+  // debugging because it constructs a new vector.
+  std::vector<Owner> owners() const;
 
   // Returns all cofficients of the cost linear expression. Intended to be used
   // for debugging.

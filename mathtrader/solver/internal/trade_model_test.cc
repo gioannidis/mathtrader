@@ -137,4 +137,21 @@ TEST(TradeModelTest, AssignmentCoefficients) {
   EXPECT_THAT(model.cost_coefficients(),
               IsSupersetOf({1, 2, 3, 1, 1, 2, 3, 4}));
 }
+
+TEST(TradeModelTest, AddOwner) {
+  TradeModel model(kItems);
+
+  model.AddOwner(/*owner=*/"Knuth", /*item=*/"Pandemic");
+  model.AddOwner(/*owner=*/"Turin", /*item=*/"SanJuan");
+  model.AddOwner(/*owner=*/"Turin", /*item=*/"PuertoRico");
+  model.AddOwner(/*owner=*/"Knuth", /*item=*/"1");
+  model.AddOwner(/*owner=*/"Wirth", /*item=*/"MageKnight");
+
+  EXPECT_THAT(
+      model.owners(),
+      UnorderedElementsAre(
+          FieldsAre("Knuth", UnorderedElementsAre("Pandemic", "1")),
+          FieldsAre("Turin", UnorderedElementsAre("SanJuan", "PuertoRico")),
+          FieldsAre("Wirth", UnorderedElementsAre("MageKnight"))));
+}
 }  // namespace

@@ -134,6 +134,19 @@ std::vector<TradeModel::Assignment> TradeModel::assignments() const {
   return assignments;
 }
 
+std::vector<TradeModel::Owner> TradeModel::owners() const {
+  std::vector<Owner> owners;
+  for (const auto& [owner_name, items] : owners_) {
+    Owner owner;
+    owner.owner = owner_name;
+    for (const int32_t item_id : items) {
+      owner.items.emplace_back(indexer_.ValueOrDie(item_id));
+    }
+    owners.emplace_back(std::move(owner));
+  }
+  return owners;
+}
+
 void TradeModel::AddSelfAssignment(std::string_view item) {
   // Calls the public API with a fixed cost for self-trades.
   AddAssignment(item, item, kSelfTradeCost);
