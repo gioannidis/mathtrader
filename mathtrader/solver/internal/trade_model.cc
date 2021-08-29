@@ -20,9 +20,9 @@
 #include <cstdint>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include "ortools/base/map_util.h"
-#include "ortools/sat/cp_model.h"
 
 #include "mathtrader/util/str_indexer.h"
 
@@ -37,15 +37,15 @@ TradeModel::TradeModel(absl::Span<const std::string_view> items) {
   // Creates the indexes for each item.
   indexer_.BuildIndexes(items);
 
-  // Builds a self-trade assignment for each item, representing the item not
-  // being traded. This is required so that the solver always finds a solution.
+  // Builds a self-trade trade for each item, representing the item not being
+  // traded. This is required so that the solver always finds a solution.
   for (const std::string_view item : items) {
-    AddSelfTrade(item);
+    AddSelfAssignment(item);
   }
 }
 
-void TradeModel::AddAllowedTrade(std::string_view offered,
-                                 std::string_view wanted, int64_t cost) {
+void TradeModel::AddAssignment(std::string_view offered,
+                               std::string_view wanted, int64_t cost) {
   // Key that identifies this trade: <offered, wanted>
   const auto key = MakeItemPair(offered, wanted);
 
@@ -53,12 +53,25 @@ void TradeModel::AddAllowedTrade(std::string_view offered,
   // ids of the offered and wanted item. Note that we call the "NoPrint"
   // operation because there is no default `operator<<` overload for an
   // `std::pair`.
-  gtl::InsertOrDieNoPrint(&allowed_assignments_, {key, cp_model_.NewBoolVar()});
+  InternalAssignment assignment = {cp_model_.NewBoolVar(), cost};
+  gtl::InsertOrDieNoPrint(&assignments_, {key, assignment});
 }
 
-void TradeModel::AddSelfTrade(std::string_view item) {
+std::vector<TradeModel::Assignment> TradeModel::assignments() const {
+  std::vector<Assignment> assignments;
+  for (const auto& [key, internal_assignment] : assignments_) {
+    Assignment assignment;
+    assignment.offered = indexer_.ValueOrDie(key.first);
+    assignment.wanted = indexer_.ValueOrDie(key.second);
+    assignment.cost = internal_assignment.cost;
+    assignments.emplace_back(std::move(assignment));
+  }
+  return assignments;
+}
+
+void TradeModel::AddSelfAssignment(std::string_view item) {
   // Calls the public API with a fixed cost for self-trades.
-  AddAllowedTrade(item, item, kSelfTradeCost);
+  AddAssignment(item, item, kSelfTradeCost);
 }
 
 std::pair<int32_t, int32_t> TradeModel::MakeItemPair(

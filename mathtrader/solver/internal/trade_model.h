@@ -18,15 +18,16 @@
 #ifndef MATHTRADER_SOLVER_INTERNAL_TRADE_MODEL_H_
 #define MATHTRADER_SOLVER_INTERNAL_TRADE_MODEL_H_
 
+#include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/types/span.h"
 #include "ortools/sat/cp_model.h"
 
-#include "mathtrader/assignment/assignment.pb.h"
 #include "mathtrader/util/str_indexer.h"
 
 // CpModelBuilder wrapper to model a math trade.
@@ -52,6 +53,15 @@ namespace mathtrader::solver::internal {
 //   trade_model.AddAllowedTrade("0002-PUERIC", "0001-MKBG", 1);
 class TradeModel {
  public:
+  // Wrapper around the internal representation of item assignments. Represents
+  // the allowed trades between offered and wanted items using the actual item
+  // ids. A self-trade is represented by `offered == wanted`.
+  struct Assignment {
+    std::string offered{};
+    std::string wanted{};
+    int64_t cost{};
+  };
+
   // Constructs the TradeModel and passes all items.
   explicit TradeModel(absl::Span<const std::string_view> items);
 
@@ -61,17 +71,34 @@ class TradeModel {
 
   ~TradeModel() = default;
 
-  // Adds an allowed trade assignment between an offered and a wanted item.
-  void AddAllowedTrade(std::string_view offered, std::string_view wanted,
-                       int64_t cost);
+  // Adds an assignment between an offered and a wanted item, representing an
+  // allowed trade.
+  void AddAssignment(std::string_view offered, std::string_view wanted,
+                     int64_t cost);
 
   // Allows each offered item to be paired with at most one wanted item and each
   // wanted item to be paired with at most one offered item.
   void BuildConstraints();
 
+  // Returns all constructed assignments representing the item trades, including
+  // self-trades. Intended to be used for debugging because it constructs a new
+  // vector.
+  std::vector<Assignment> assignments() const;
+
  private:
+  // Internal representation of an allowed assignment between an offered and a
+  // wanted item.
+  struct InternalAssignment {
+    // The boolean variable representing whether the assignment is selected or
+    // not. If true, the offered item trades with the wanted item.
+    operations_research::sat::BoolVar var;
+
+    // The cost of this trade if `var` is true.
+    int64_t cost{};
+  };
+
   // Adds a self trade on an item, representing the item not being traded.
-  void AddSelfTrade(std::string_view item);
+  void AddSelfAssignment(std::string_view item);
 
   // Creates a pair of item indexes, given the actual item ids. The first
   // element represents the offered item, the second element represents the
@@ -88,13 +115,12 @@ class TradeModel {
   // Maps each item to a 1:1 index. This avoids hashing entire strings.
   util::StrIndexer indexer_;
 
-  // Allowed assignments, indexed by an <offered, wanted> pair. Each assignment
-  // is represented by a boolean variable. A boolean variable <offered, wanted>
-  // is true if item "offered" is assigned to item "wanted. If offered==wanted,
-  // it represents a self-trade.
-  absl::flat_hash_map<std::pair<int32_t, int32_t>,
-                      operations_research::sat::BoolVar>
-      allowed_assignments_;
+  // Allowed trades, indexed by an <offered, wanted> pair. Each trade is
+  // represented by a boolean variable. A boolean variable <offered, wanted> is
+  // true if item "offered" is assigned to item "wanted. If offered==wanted, it
+  // represents a self-trade.
+  absl::flat_hash_map<std::pair<int32_t, int32_t>, InternalAssignment>
+      assignments_;
 };
 }  // namespace mathtrader::solver::internal
 #endif  // MATHTRADER_SOLVER_INTERNAL_TRADE_MODEL_H_

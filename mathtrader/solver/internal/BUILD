@@ -17,7 +17,7 @@
 
 # Defines BUILD rules internal solver modules.
 
-load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
 package(
     default_visibility = ["//mathtrader/solver:__pkg__"],
@@ -33,5 +33,15 @@ cc_library(
         "@com_google_absl//absl/types:span",
         "@com_google_or_tools//ortools/base:map_util",
         "@com_google_or_tools//ortools/sat:cp_model",
+    ],
+)
+
+cc_test(
+    name = "trade_model_test",
+    size = "small",
+    srcs = ["trade_model_test.cc"],
+    deps = [
+        ":trade_model",
+        "@com_google_googletest//:gtest_main",
     ],
 )
