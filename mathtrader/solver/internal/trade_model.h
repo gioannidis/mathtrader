@@ -76,6 +76,17 @@ class TradeModel {
   void AddAssignment(std::string_view offered, std::string_view wanted,
                      int64_t cost);
 
+  // Builds the linear expression representing the trade cost.
+  // cost = sum{ t[i][j] * c[i][j] }, where:
+  //   i: an offered item
+  //   j: a wanted item
+  //   t[i][j]: {0, 1}, representing whether item `i` trades with `j`. If
+  //            `i == j`, this represents item `i` not being traded.
+  //   c[i][j]: the cost of item `i` trading with item `j`. Trading costs are
+  //            determined by the position of `j` in the wantlist of `i`.
+  //            Self-trades are assigned an internal value: `cost >> 1`.
+  void BuildTotalCost();
+
   // Allows each offered item to be paired with at most one wanted item and each
   // wanted item to be paired with at most one offered item.
   void BuildConstraints();
@@ -84,6 +95,12 @@ class TradeModel {
   // self-trades. Intended to be used for debugging because it constructs a new
   // vector.
   std::vector<Assignment> assignments() const;
+
+  // Returns all cofficients of the cost linear expression. Intended to be used
+  // for debugging.
+  const absl::Span<const int64_t> cost_coefficients() const {
+    return total_cost_.coefficients();
+  }
 
  private:
   // Internal representation of an allowed assignment between an offered and a

@@ -57,6 +57,12 @@ void TradeModel::AddAssignment(std::string_view offered,
   gtl::InsertOrDieNoPrint(&assignments_, {key, assignment});
 }
 
+void TradeModel::BuildTotalCost() {
+  for (const auto& [key, assignment] : assignments_) {
+    total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
+  }
+}
+
 std::vector<TradeModel::Assignment> TradeModel::assignments() const {
   std::vector<Assignment> assignments;
   for (const auto& [key, internal_assignment] : assignments_) {

@@ -29,6 +29,7 @@ using ::testing::AllOf;
 using ::testing::Contains;
 using ::testing::FieldsAre;
 using ::testing::Gt;
+using ::testing::IsSupersetOf;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 
@@ -105,5 +106,35 @@ TEST(TradeModelTest, BigStepCost) {
               Contains(FieldsAre("Pandemic", "PuertoRico", kBigStepCost)));
   EXPECT_THAT(assignments,
               Contains(FieldsAre("Pandemic", "SanJuan", kBigStepCost + 1)));
+}
+
+// Tests the cost coefficients for self-trading items.
+TEST(TradeModelTest, SelfAssignmentCoefficients) {
+  TradeModel model(items);
+  model.BuildTotalCost();
+  EXPECT_THAT(model.cost_coefficients(),
+              Contains(Gt(1'000)).Times(items.size()));
+}
+
+// Tests the cost coefficients for allowed trades.
+TEST(TradeModelTest, AssignmentCoefficients) {
+  TradeModel model(items);
+
+  model.AddAssignment("Pandemic", "MageKnight", 1);
+  model.AddAssignment("Pandemic", "PuertoRico", 2);
+  model.AddAssignment("Pandemic", "a", 3);
+  model.AddAssignment("SanJuan", "Pandemic", 1);
+  model.AddAssignment("a", "PuertoRico", 1);
+  model.AddAssignment("a", "Pandemic", 2);
+  model.AddAssignment("a", "1", 3);
+  model.AddAssignment("a", "SanJuan", 4);
+
+  model.BuildTotalCost();
+
+  // Verifies that it contains at least the coefficients of the above
+  // assignments.
+  const auto assignments = model.assignments();
+  EXPECT_THAT(model.cost_coefficients(),
+              IsSupersetOf({1, 2, 3, 1, 1, 2, 3, 4}));
 }
 }  // namespace
