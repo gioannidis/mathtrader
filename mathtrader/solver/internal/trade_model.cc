@@ -54,13 +54,12 @@ void TradeModel::AddAssignment(std::string_view offered,
   // operation because there is no default `operator<<` overload for an
   // `std::pair`.
   InternalAssignment assignment = {cp_model_.NewBoolVar(), cost};
-  gtl::InsertOrDieNoPrint(&assignments_, {key, assignment});
-}
 
-void TradeModel::BuildTotalCost() {
-  for (const auto& [key, assignment] : assignments_) {
-    total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
-  }
+  // Adds a linear expression term representing the cost of this trade.
+  total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
+
+  // Finally, registers the assignment.
+  gtl::InsertOrDieNoPrint(&assignments_, {key, assignment});
 }
 
 std::vector<TradeModel::Assignment> TradeModel::assignments() const {
