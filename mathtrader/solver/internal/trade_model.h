@@ -76,6 +76,11 @@ class TradeModel {
   void AddAssignment(std::string_view offered, std::string_view wanted,
                      int64_t cost);
 
+  // Adds the owner of an item. This is desired if the target is to maximize the
+  // owners that trade an item. It is possible to add multiple times the same
+  // item to an owner.
+  void AddOwner(std::string_view owner, std::string_view item);
+
   // Builds the linear expression representing the trade cost.
   // cost = sum{ t[i][j] * c[i][j] }, where:
   //   i: an offered item
@@ -145,6 +150,9 @@ class TradeModel {
   // this trade takes place or not. We define `assignment_[i][i]` for every
   // item, representing a self-trade, i.e., the item not being traded.
   std::vector<absl::flat_hash_map<int32_t, InternalAssignment>> assignments_;
+
+  // Stores the item owners. Maps an owner to their owned item indexes.
+  absl::flat_hash_map<std::string, std::vector<int32_t>> owners_;
 };
 }  // namespace mathtrader::solver::internal
 #endif  // MATHTRADER_SOLVER_INTERNAL_TRADE_MODEL_H_

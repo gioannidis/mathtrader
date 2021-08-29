@@ -60,6 +60,15 @@ void TradeModel::AddAssignment(std::string_view offered,
   gtl::InsertOrDie(&assignments_[offered_id], wanted_id, assignment);
 }
 
+void TradeModel::AddOwner(std::string_view owner, std::string_view item) {
+  const int32_t item_id = indexer_.IndexOrDie(item);
+
+  // Retrieves the owned items for this owner. Creates an empty container if the
+  // owner doesn't exist.
+  auto& owned_items = gtl::LookupOrInsert(&owners_, std::string(owner), {});
+  owned_items.emplace_back(item_id);
+}
+
 void TradeModel::BuildConstraints() {
   using ::operations_research::sat::LinearExpr;
 
