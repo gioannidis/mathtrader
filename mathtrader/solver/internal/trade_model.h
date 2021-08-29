@@ -85,8 +85,10 @@ class TradeModel {
   void AddAssignment(std::string_view offered, std::string_view wanted,
                      int64_t cost);
 
-  // Allows each offered item to be paired with at most one wanted item and each
-  // wanted item to be paired with at most one offered item.
+  // Mandates that each offered item must be traded with exactly one wanted item
+  // and that each wanted item must be traded with exactly one offered item.
+  // This also allows items to be traded with themselves, representing a
+  // non-trade.
   void BuildConstraints();
 
   // Returns all constructed assignments representing the item trades, including

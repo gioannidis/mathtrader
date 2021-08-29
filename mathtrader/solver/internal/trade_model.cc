@@ -22,6 +22,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/util/str_indexer.h"
@@ -60,6 +61,47 @@ void TradeModel::AddAssignment(std::string_view offered,
 
   // Finally, registers the assignment.
   gtl::InsertOrDieNoPrint(&assignments_, {key, assignment});
+}
+
+void TradeModel::BuildConstraints() {
+  using ::operations_research::sat::LinearExpr;
+
+  // offered_sums[i] = sum{ BoolVar[i][j] } for all `j`.
+  // Represents the sum of how many wanted items trade with the offered item
+  // `i`.
+  absl::flat_hash_map<int32_t, LinearExpr> offered_sums;
+
+  // wanted_sums[j] = sum{ BoolVar[i][j] } for all `i`.
+  // Represents the sum of how many offered items trade with the wanted item
+  // `j`.
+  absl::flat_hash_map<int32_t, LinearExpr> wanted_sums;
+
+  for (const auto& [key, assignment] : assignments_) {
+    int32_t offered = 0;
+    int32_t wanted = 0;
+    std::tie(offered, wanted) = key;
+
+    // Retrieves the respective sums of the offered and wanted item, or creates
+    // them if they do not exist.
+    LinearExpr& offered_sum =
+        gtl::LookupOrInsert(&offered_sums, offered, LinearExpr());
+    LinearExpr& wanted_sum =
+        gtl::LookupOrInsert(&wanted_sums, wanted, LinearExpr());
+
+    // Adds the BoolVar[i][j] to offered_sum[i] and wanted_sum[j].
+    offered_sum.AddVar(assignment.var);
+    wanted_sum.AddVar(assignment.var);
+  }
+
+  // Mandates that each offered item trades with exactly one wanted item.
+  for (const auto& [index, offered_sum] : offered_sums) {
+    cp_model_.AddEquality(offered_sum, 1);
+  }
+
+  // Mandates that each wanted item trades with exactly one offered item.
+  for (const auto& [index, wanted_sum] : wanted_sums) {
+    cp_model_.AddEquality(wanted_sum, 1);
+  }
 }
 
 std::vector<TradeModel::Assignment> TradeModel::assignments() const {
