@@ -51,4 +51,59 @@ TEST(TradeModelTest, HasSelfTrades) {
                                    /*cost=*/Gt(1'000))));
   }
 }
+
+TEST(TradeModelTest, OneAssignmentPerItem) {
+  TradeModel model(items);
+
+  // Each item but the last is assigned to its next item.
+  for (unsigned i = 0; i < items.size() - 1; ++i) {
+    model.AddAssignment(/*offered=*/items.at(i), /*wanted=*/items.at(i + 1),
+                        /*cost=*/1);
+  }
+  // Last item is assigned to the first item.
+  model.AddAssignment(/*offered=*/items.back(), /*wanted=*/items.front(),
+                      /*cost=*/1);
+
+  const auto assignments = model.assignments();
+  for (unsigned i = 0; i < items.size(); ++i) {
+    // Next item: wraps around past the last item to the first item.
+    unsigned next_i = (i + 1) % (items.size());
+    EXPECT_THAT(assignments,
+                Contains(FieldsAre(/*offered=*/items.at(i),
+                                   /*wanted=*/items.at(next_i), /*cost=*/1)));
+  }
+}
+
+TEST(TradeModelTest, MultipleAssignmentsPerItem) {
+  TradeModel model(items);
+
+  model.AddAssignment("Pandemic", "MageKnight", 1);
+  model.AddAssignment("Pandemic", "PuertoRico", 2);
+  model.AddAssignment("Pandemic", "a", 3);
+  model.AddAssignment("SanJuan", "Pandemic", 1);
+
+  const auto assignments = model.assignments();
+  EXPECT_THAT(assignments, Contains(FieldsAre("Pandemic", "MageKnight", 1)));
+  EXPECT_THAT(assignments, Contains(FieldsAre("Pandemic", "PuertoRico", 2)));
+  EXPECT_THAT(assignments, Contains(FieldsAre("Pandemic", "a", 3)));
+  EXPECT_THAT(assignments, Contains(FieldsAre("SanJuan", "Pandemic", 1)));
+}
+
+// Tests an item with multiple assignments where there is a big gap (step) in
+// the costs.
+TEST(TradeModelTest, BigStepCost) {
+  static constexpr int64_t kBigStepCost = 42;
+  TradeModel model(items);
+
+  model.AddAssignment("Pandemic", "MageKnight", 1);
+  model.AddAssignment("Pandemic", "PuertoRico", kBigStepCost);
+  model.AddAssignment("Pandemic", "SanJuan", kBigStepCost + 1);
+
+  const auto assignments = model.assignments();
+  EXPECT_THAT(assignments, Contains(FieldsAre("Pandemic", "MageKnight", 1)));
+  EXPECT_THAT(assignments,
+              Contains(FieldsAre("Pandemic", "PuertoRico", kBigStepCost)));
+  EXPECT_THAT(assignments,
+              Contains(FieldsAre("Pandemic", "SanJuan", kBigStepCost + 1)));
+}
 }  // namespace
