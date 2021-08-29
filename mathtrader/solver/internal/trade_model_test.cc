@@ -111,6 +111,7 @@ TEST(TradeModelTest, BigStepCost) {
 // Tests the cost coefficients for self-trading items.
 TEST(TradeModelTest, SelfAssignmentCoefficients) {
   TradeModel model(items);
+  model.BuildTotalCost();
   EXPECT_THAT(model.cost_coefficients(),
               Contains(Gt(1'000)).Times(items.size()));
 }
@@ -127,6 +128,8 @@ TEST(TradeModelTest, AssignmentCoefficients) {
   model.AddAssignment("a", "Pandemic", 2);
   model.AddAssignment("a", "1", 3);
   model.AddAssignment("a", "SanJuan", 4);
+
+  model.BuildTotalCost();
 
   // Verifies that it contains at least the coefficients of the above
   // assignments.

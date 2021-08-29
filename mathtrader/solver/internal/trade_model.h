@@ -73,7 +73,10 @@ class TradeModel {
 
   // Adds an assignment between an offered and a wanted item, representing an
   // allowed trade.
-  // Also adds a linear expression term representing the trade cost.
+  void AddAssignment(std::string_view offered, std::string_view wanted,
+                     int64_t cost);
+
+  // Builds the linear expression representing the trade cost.
   // cost = sum{ t[i][j] * c[i][j] }, where:
   //   i: an offered item
   //   j: a wanted item
@@ -82,8 +85,7 @@ class TradeModel {
   //   c[i][j]: the cost of item `i` trading with item `j`. Trading costs are
   //            determined by the position of `j` in the wantlist of `i`.
   //            Self-trades are assigned an internal value: `cost >> 1`.
-  void AddAssignment(std::string_view offered, std::string_view wanted,
-                     int64_t cost);
+  void BuildTotalCost();
 
   // Mandates that each offered item must be traded with exactly one wanted item
   // and that each wanted item must be traded with exactly one offered item.

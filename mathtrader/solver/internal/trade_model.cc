@@ -55,11 +55,6 @@ void TradeModel::AddAssignment(std::string_view offered,
   // operation because there is no default `operator<<` overload for an
   // `std::pair`.
   InternalAssignment assignment = {cp_model_.NewBoolVar(), cost};
-
-  // Adds a linear expression term representing the cost of this trade.
-  total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
-
-  // Finally, registers the assignment.
   gtl::InsertOrDieNoPrint(&assignments_, {key, assignment});
 }
 
@@ -101,6 +96,12 @@ void TradeModel::BuildConstraints() {
   // Mandates that each wanted item trades with exactly one offered item.
   for (const auto& [index, wanted_sum] : wanted_sums) {
     cp_model_.AddEquality(wanted_sum, 1);
+  }
+}
+
+void TradeModel::BuildTotalCost() {
+  for (const auto& [key, assignment] : assignments_) {
+    total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
   }
 }
 
