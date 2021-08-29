@@ -93,6 +93,11 @@ class TradeModel {
   // non-trade.
   void BuildConstraints();
 
+  // Returns the internal CP model.
+  const operations_research::sat::CpModelBuilder& model() const {
+    return cp_model_;
+  }
+
   // Returns all constructed assignments representing the item trades, including
   // self-trades. Intended to be used for debugging because it constructs a new
   // vector.
