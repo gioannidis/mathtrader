@@ -41,9 +41,14 @@ static constexpr int64_t kSelfTradeCost = 1'000'000;
 static constexpr int64_t kNonTradingUserCost = 10'000'000;
 }  // namespace
 
-// Creates an entry in the `assignments_` vector for each item.
-TradeModel::TradeModel(absl::Span<const std::string_view> items)
-    : assignments_(items.size()) {
+TradeModel::TradeModel(absl::Span<const std::string_view> items) {
+  IndexItems(items);
+}
+
+void TradeModel::IndexItems(absl::Span<const std::string_view> items) {
+  // Resizes the `assignments_` vector to accomondate each offered item.
+  assignments_.resize(items.size());
+
   // Creates the indexes for each item.
   indexer_.BuildIndexes(items);
 

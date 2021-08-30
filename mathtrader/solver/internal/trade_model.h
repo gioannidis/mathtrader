@@ -36,7 +36,7 @@ namespace mathtrader::solver::internal {
 // `TradeModel` is a wrapper around `CpModelBuilder`, defining an API oriented
 // towards modeling a math trade. You can use the `TradeModel` as follows:
 //
-// 1. Construct the `TradeModel` by defining all items.
+// 1. Define all observable items.
 // 2. Define the allowed trades by calling `AddAllowedTrade`.
 // 3. Constraints: max one wanted item per offered item and vice-versa.
 // 4. Objective: add costs for item trades and negative costs for trading users.
@@ -70,7 +70,11 @@ class TradeModel {
     std::vector<std::string> items;
   };
 
-  // Constructs the TradeModel and passes all items.
+  TradeModel() = default;
+
+  // Directly indexes the trading items. Equivalent to calling:
+  //   TradeModel model;
+  //   model.IndexItems(items);
   explicit TradeModel(absl::Span<const std::string_view> items);
 
   // Disables copy constructor and assignment operator.
@@ -78,6 +82,10 @@ class TradeModel {
   TradeModel& operator=(const TradeModel&) = delete;
 
   ~TradeModel() = default;
+
+  // Indexes the given span of items that will be used in this math trade. You
+  // must call this operation first.
+  void IndexItems(absl::Span<const std::string_view> items);
 
   // Adds an assignment between an offered and a wanted item, representing an
   // allowed trade.
