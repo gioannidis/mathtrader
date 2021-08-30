@@ -32,6 +32,13 @@ namespace {
 // The trade cost of an item not trading. This is set to a large number to guide
 // the CP Solver to trade as many items as possible.
 static constexpr int64_t kSelfTradeCost = 1'000'000;
+
+// The trade cost of a user not trading. This is set to a large number to guide
+// the CP Solver towards solutions where users trade at least one item. Note
+// that it should be at least one order of magnitude larger than
+// `kSelfTradeCost` so that the CP Solver prioritizes more trading users over
+// more trading items.
+static constexpr int64_t kNonTradingUserCost = 10'000'000;
 }  // namespace
 
 // Creates an entry in the `assignments_` vector for each item.
@@ -106,11 +113,65 @@ void TradeModel::BuildConstraints() {
   }
 }
 
+// Implementation details: each term is in the form: `t[i][j] * c[i][j]`,
+// where:
+//   i: an offered item
+//   j: a wanted item
+//   t[i][j]: {0, 1}, represents whether item `i` trades with `j`. If
+//            `i == j`, this represents item `i` not being traded.
+//   c[i][j]: the cost of item `i` trading with item `j`. Trading costs are
+//            determined by the position of `j` in the wantlist of `i`.
+//            Self-trades are assigned an internal value: `cost >> 1`.
 void TradeModel::BuildTotalCost() {
   for (const auto& assignment_row : assignments_) {
     for (const auto& [wanted_id, assignment] : assignment_row) {
       total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
     }
+  }
+}
+
+// Implementation details: a user who does not trade any item incurs an
+// additional cost. This is implemented as:
+//   `!sum{!t[i][i]} => kNonTradingUserCost` for all owned items `i`.
+//
+// * The variable `t[i][i]` encodes a self-trade, i.e., the item `i` not
+//   trading.
+// * The negation `!t[i][i]` represents the item `i` trading with some other
+//   item other than itself.
+// * `sum{!t[i][i]}` represents the user trading at least one item.
+// * `!sum{!t[i][i]}` represents the user not trading at all.
+void TradeModel::BuildNonTradingUserCosts() {
+  using operations_research::sat::BoolVar;
+  using operations_research::sat::LinearExpr;
+  using operations_research::sat::Not;
+
+  for (const auto& [owner, items] : owners_) {
+    // Represents the number of items that are trading. Implemented as:
+    // `sum{ Not(assignment[i][i]) }`. The variable `assignment[i][i]`
+    // represents the item not trading (self-trade), so we take its inversion.
+    LinearExpr trading_items_sum;
+
+    for (const int32_t item_id : items) {
+      // Retrieves the self-trading assignment of the given item. Equivalent to:
+      // `assignment_[item_id][item_id]`.
+      const auto& assignment = gtl::FindOrDie(assignments_[item_id], item_id);
+
+      // Adds the inversion of the self-trading variable.
+      trading_items_sum.AddVar(assignment.var.Not());
+    }
+
+    // Declares an intermediate boolean variable that represents whether the
+    // given user trades at least one item or not.
+    const BoolVar user_trades = cp_model_.NewBoolVar();
+
+    // Implements user_trades = (trading_items_sum >= 1).
+    cp_model_.AddGreaterOrEqual(trading_items_sum, 1)
+        .OnlyEnforceIf(user_trades);
+    cp_model_.AddLessThan(trading_items_sum, 1).OnlyEnforceIf(Not(user_trades));
+
+    // Creates a half-reified constraint. A non-trading user increases the cost
+    // of the math trade. Trading users incur no additional costs.
+    total_cost_.AddTerm(Not(user_trades), kNonTradingUserCost);
   }
 }
 

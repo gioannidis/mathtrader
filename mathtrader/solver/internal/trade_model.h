@@ -89,16 +89,29 @@ class TradeModel {
   // item to an owner.
   void AddOwner(std::string_view owner, std::string_view item);
 
-  // Builds the linear expression representing the trade cost.
-  // cost = sum{ t[i][j] * c[i][j] }, where:
-  //   i: an offered item
-  //   j: a wanted item
-  //   t[i][j]: {0, 1}, representing whether item `i` trades with `j`. If
-  //            `i == j`, this represents item `i` not being traded.
-  //   c[i][j]: the cost of item `i` trading with item `j`. Trading costs are
-  //            determined by the position of `j` in the wantlist of `i`.
-  //            Self-trades are assigned an internal value: `cost >> 1`.
+  // Builds the costs associated with each potential item trade:
+  // 'offered -> wanted'. An item trade incurs its cost if the solver actually
+  // selects it.
+  //
+  // * Higher priority wanted items in the same wantlist incur a lower cost.
+  //   This guides the solver to choose higher priority items when possible.
+  //   For example, if:
+  //     c1 = cost{offered -> high_priority_wanted}
+  //     c2 = cost{offered -> low_priority_wanted}
+  //   Then c1 < c2 because the wanted item has a higher priority.
+  //
+  // * Self-trades incur costs that are orders of magnitude higher than costs of
+  //   actual trades. This guides the solver to choose actual trades over
+  //   non-trades, even if it means selecting a lower-priority trade.
+  //   For example, if:
+  //     c3 = cost{offered -> offered}
+  //   Then c3 >> c2 > c1.
   void BuildTotalCost();
+
+  // Builds the costs associated with non-trading owners. An item owner incurs
+  // an additional cost if they don't trade any item that they own. Owners that
+  // trade at least one item incur no costs.
+  void BuildNonTradingUserCosts();
 
   // Mandates that each offered item must be traded with exactly one wanted item
   // and that each wanted item must be traded with exactly one offered item.
