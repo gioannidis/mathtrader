@@ -40,7 +40,10 @@ cc_library(
     hdrs = ["solver.h"],
     deps = [
         ":solver_result_cc_proto",
-        "//mathtrader/assignment:assignment_cc_proto",
-        "@com_google_absl//absl/status:statusor",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "//mathtrader/parser:parser_result_cc_proto",
+        "//mathtrader/solver/internal:trade_model",
+        "@com_google_absl//absl/base:core_headers",
     ],
 )

@@ -20,8 +20,12 @@
 #ifndef MATHTRADER_SOLVER_SOLVER_H_
 #define MATHTRADER_SOLVER_SOLVER_H_
 
-#include "mathtrader/assignment/assignment.pb.h"
+#include "absl/base/attributes.h"
+
+#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/solver/internal/trade_model.h"
 #include "mathtrader/solver/solver_result.pb.h"
+#include "mathtrader/util/str_indexer.h"
 
 namespace mathtrader::solver {
 class Solver {
@@ -34,14 +38,15 @@ class Solver {
 
   ~Solver() = default;
 
-  void set_assignment(const assignment::Assignment& assignment);
-  void set_assignment(assignment::Assignment&& assignment);
+  // Builds the model that models the math trade from the given OLWLG-parser
+  // generated input.
+  void BuildModel(const parser::ParserResult& parser_result);
 
-  const SolverResult& result() const { return result_; }
+  ABSL_MUST_USE_RESULT const SolverResult& result() const { return result_; }
 
  private:
-  // The input assignment to run the solver on.
-  assignment::Assignment assignment_;
+  // The model that represents the math trade.
+  internal::TradeModel trade_model_;
 
   // The result with the solved trade.
   SolverResult result_;
