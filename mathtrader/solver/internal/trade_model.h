@@ -106,7 +106,7 @@ class TradeModel {
   //   For example, if:
   //     c3 = cost{offered -> offered}
   //   Then c3 >> c2 > c1.
-  void BuildTotalCost();
+  void BuildItemTradingCost();
 
   // Builds the costs associated with non-trading owners. An item owner incurs
   // an additional cost if they don't trade any item that they own. Owners that

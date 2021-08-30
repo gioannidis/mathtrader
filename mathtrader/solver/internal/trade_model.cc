@@ -122,7 +122,7 @@ void TradeModel::BuildConstraints() {
 //   c[i][j]: the cost of item `i` trading with item `j`. Trading costs are
 //            determined by the position of `j` in the wantlist of `i`.
 //            Self-trades are assigned an internal value: `cost >> 1`.
-void TradeModel::BuildTotalCost() {
+void TradeModel::BuildItemTradingCost() {
   for (const auto& assignment_row : assignments_) {
     for (const auto& [wanted_id, assignment] : assignment_row) {
       total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
