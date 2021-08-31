@@ -132,7 +132,7 @@ class TradeModel {
   void BuildConstraints();
 
   // Returns the internal CP model.
-  const operations_research::sat::CpModelBuilder& model() const {
+  const operations_research::sat::CpModelBuilder& cp_model() const {
     return cp_model_;
   }
 
