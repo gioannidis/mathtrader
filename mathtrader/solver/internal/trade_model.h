@@ -121,6 +121,10 @@ class TradeModel {
   // trade at least one item incur no costs.
   void BuildNonTradingUserCosts();
 
+  // Commits the objective function: minimizes the total cost that has been
+  // build through previously-called `Build*Cost()` functions.
+  void CommitObjectiveFunction() { cp_model_.Minimize(total_cost_); }
+
   // Mandates that each offered item must be traded with exactly one wanted item
   // and that each wanted item must be traded with exactly one offered item.
   // This also allows items to be traded with themselves, representing a
