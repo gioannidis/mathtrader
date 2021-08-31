@@ -22,6 +22,11 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
+#include "ortools/sat/cp_model.pb.h"
+#include "ortools/sat/sat_parameters.pb.h"
+
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/parser/parser_result.pb.h"
@@ -70,5 +75,26 @@ void Solver::BuildModel(const ParserResult& parser_result) {
 
   // Builds the cost of non-trading users.
   trade_model_.BuildNonTradingUserCosts();
+}
+
+absl::Status Solver::SolveModel() {
+  using ::operations_research::sat::CpSolverResponse;
+  using ::operations_research::sat::CpSolverStatus;
+
+  // First, commits the objective function.
+  trade_model_.CommitObjectiveFunction();
+
+  // Solves the CP model objective.
+  const CpSolverResponse response =
+      operations_research::sat::Solve(trade_model_.cp_model().Build());
+
+  if (response.status() != CpSolverStatus::FEASIBLE) {
+    return absl::NotFoundError(absl::StrCat(
+        "No solution found. Solver returned status: ", response.status()));
+  }
+
+  // Populates the solver_result with the trading items.
+  trade_model_.PopulateResponse(response, result_);
+  return absl::OkStatus();
 }
 }  // namespace mathtrader::solver

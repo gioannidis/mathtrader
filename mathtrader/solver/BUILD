@@ -49,5 +49,7 @@ cc_library(
         "//mathtrader/parser:parser_result_cc_proto",
         "//mathtrader/solver/internal:trade_model",
         "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
     ],
 )

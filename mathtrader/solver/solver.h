@@ -21,6 +21,7 @@
 #define MATHTRADER_SOLVER_SOLVER_H_
 
 #include "absl/base/attributes.h"
+#include "absl/status/status.h"
 
 #include "mathtrader/parser/parser_result.pb.h"
 #include "mathtrader/solver/internal/trade_model.h"
@@ -41,6 +42,9 @@ class Solver {
   // Builds the model that models the math trade from the given OLWLG-parser
   // generated input.
   void BuildModel(const parser::ParserResult& parser_result);
+
+  // Solves the CP model.
+  ABSL_MUST_USE_RESULT absl::Status SolveModel();
 
   ABSL_MUST_USE_RESULT const SolverResult& result() const { return result_; }
 
