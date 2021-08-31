@@ -63,9 +63,18 @@ void BuildItemMap(ParserResult& parser_result) {
   }
 }
 
+// Constructs a ParserResult proto from the given text input. Builds the
+// wantlists from the text input and updates the item map with all listed items.
+ParserResult BuildParserResult(std::string_view text_proto) {
+  ParserResult parser_proto;
+  CHECK(TextFormat::ParseFromString(std::string(text_proto), &parser_proto));
+  BuildItemMap(parser_proto);
+  return parser_proto;
+}
+
 // Tests two items that trade with each other.
 TEST(SolverTest, TwoItems) {
-  static constexpr std::string_view input_text = R"pb(
+  static constexpr std::string_view input = R"pb(
     wantlists {
       offered: "Pandemic"
       wanted { id: "MageKnight" }
@@ -76,12 +85,8 @@ TEST(SolverTest, TwoItems) {
     }
   )pb";
 
-  ParserResult input_proto;
-  CHECK(TextFormat::ParseFromString(std::string(input_text), &input_proto));
-  BuildItemMap(input_proto);
-
   Solver solver;
-  solver.BuildModel(input_proto);
+  solver.BuildModel(BuildParserResult(input));
 
   // Solves and verifies that we have found a solution.
   const auto status = solver.SolveModel();
