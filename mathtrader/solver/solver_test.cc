@@ -36,6 +36,7 @@ using ::mathtrader::parser::ParserResult;
 using ::mathtrader::solver::Solver;
 using ::mathtrader::solver::TradePair;
 using ::testing::AllOf;
+using ::testing::IsEmpty;
 using ::testing::Property;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
@@ -70,6 +71,25 @@ ParserResult BuildParserResult(std::string_view text_proto) {
   CHECK(TextFormat::ParseFromString(std::string(text_proto), &parser_proto));
   BuildItemMap(parser_proto);
   return parser_proto;
+}
+
+// Tests that no items trade with empty wantlists.
+TEST(SolverTest, EmptyWantlists) {
+  static constexpr std::string_view input = R"pb(
+    wantlists { offered: "Pandemic" }
+    wantlists { offered: "MageKnight" }
+    wantlists { offered: "ThroughTheAges" }
+    wantlists { offered: "Carcassonne" }
+  )pb";
+
+  Solver solver;
+  solver.BuildModel(BuildParserResult(input));
+
+  // Solves and verifies that we have found a solution.
+  const auto status = solver.SolveModel();
+  CHECK(status.ok()) << status.message();
+
+  EXPECT_THAT(solver.result().trade_pairs(), IsEmpty());
 }
 
 // Tests two items that trade with each other.
