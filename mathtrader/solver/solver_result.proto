@@ -21,5 +21,15 @@ syntax = "proto2";
 
 package mathtrader.solver;
 
+// Encapsulates a successful trade. `offered` item is given away in exchange
+// for `wanted` item.
+message TradePair {
+  optional string offered = 1;
+  optional string wanted = 2;
+}
+
 // Message encapsulating the results of the math trade.
-message SolverResult {}
+message SolverResult {
+  // All successful trading pairs.
+  repeated TradePair trade_pairs = 1;
+}
