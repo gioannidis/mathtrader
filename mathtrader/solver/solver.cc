@@ -38,7 +38,10 @@ using ::mathtrader::parser::ParserResult;
 // Extracts the item ids from `parser_result`. Returns a vector with the
 // extracted item ids.
 std::vector<std::string_view> GetItemIds(const ParserResult& parser_result) {
-  std::vector<std::string_view> items;
+  const auto& item_map = parser_result.items();
+
+  // The item id container to return.
+  std::vector<std::string_view> items(item_map.size());
   std::transform(parser_result.items().begin(), parser_result.items().end(),
                  items.begin(),
                  [](std::pair<std::string_view, const common::Item&> map_pair) {
@@ -70,7 +73,9 @@ void Solver::BuildModel(const ParserResult& parser_result) {
 
   // Adds the usernames.
   for (const auto& [id, item] : parser_result.items()) {
-    trade_model_.AddOwner(/*owner=*/item.username(), /*item=*/item.id());
+    if (item.has_username()) {
+      trade_model_.AddOwner(/*owner=*/item.username(), /*item=*/item.id());
+    }
   }
 
   // Builds the cost of non-trading users.
@@ -88,7 +93,7 @@ absl::Status Solver::SolveModel() {
   const CpSolverResponse response =
       operations_research::sat::Solve(trade_model_.cp_model().Build());
 
-  if (response.status() != CpSolverStatus::FEASIBLE) {
+  if (response.status() != CpSolverStatus::OPTIMAL) {
     return absl::NotFoundError(absl::StrCat(
         "No solution found. Solver returned status: ", response.status()));
   }
