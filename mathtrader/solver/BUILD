@@ -20,6 +20,10 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
+package(
+    default_visibility = ["//mathtrader:__subpackages__"],
+)
+
 proto_library(
     name = "solver_result_proto",
     srcs = ["solver_result.proto"],

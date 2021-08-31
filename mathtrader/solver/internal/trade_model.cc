@@ -26,6 +26,7 @@
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/util/str_indexer.h"
+#include "ortools/sat/cp_model.pb.h"
 
 namespace mathtrader::solver::internal {
 namespace {
@@ -177,6 +178,34 @@ void TradeModel::BuildNonTradingUserCosts() {
     // Creates a half-reified constraint. A non-trading user increases the cost
     // of the math trade. Trading users incur no additional costs.
     total_cost_.AddTerm(Not(user_trades), kNonTradingUserCost);
+  }
+}
+
+void TradeModel::PopulateResponse(
+    const operations_research::sat::CpSolverResponse& response,
+    SolverResult& solver_result) const {
+  using ::operations_research::sat::SolutionBooleanValue;
+
+  // Avoids comparing signed with unsigned;
+  int offered_id = 0;
+
+  // Iterates all boolean variables representing an offered->wanted assignment
+  // to check whether they were chosen.
+  for (const auto& assignment_row : assignments_) {
+    for (const auto& [wanted_id, assignment] : assignment_row) {
+      // Checks whether this offered->wanted trade was eventually chosen.
+      // Ignores self-trades.
+      if ((offered_id != wanted_id) &&
+          SolutionBooleanValue(response, assignment.var)) {
+        // Adds the trading pair to the solver_result.
+        const std::string& offered_item = indexer_.ValueOrDie(offered_id);
+        const std::string& wanted_item = indexer_.ValueOrDie(wanted_id);
+        TradePair* const trade_pair = solver_result.add_trade_pairs();
+        trade_pair->set_offered(offered_item);
+        trade_pair->set_wanted(wanted_item);
+      }
+    }
+    ++offered_id;
   }
 }
 

@@ -28,6 +28,7 @@ cc_library(
     srcs = ["trade_model.cc"],
     hdrs = ["trade_model.h"],
     deps = [
+        "//mathtrader/solver:solver_result_cc_proto",
         "//mathtrader/util:str_indexer",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/types:span",

@@ -27,7 +27,9 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/types/span.h"
 #include "ortools/sat/cp_model.h"
+#include "ortools/sat/cp_model.pb.h"
 
+#include "mathtrader/solver/solver_result.pb.h"
 #include "mathtrader/util/str_indexer.h"
 
 // CpModelBuilder wrapper to model a math trade.
@@ -130,6 +132,12 @@ class TradeModel {
   // This also allows items to be traded with themselves, representing a
   // non-trade.
   void BuildConstraints();
+
+  // Populates the solver result with the trading items from the solver
+  // response
+  void PopulateResponse(
+      const operations_research::sat::CpSolverResponse& response,
+      SolverResult& solver_result) const;
 
   // Returns the internal CP model.
   const operations_research::sat::CpModelBuilder& cp_model() const {
