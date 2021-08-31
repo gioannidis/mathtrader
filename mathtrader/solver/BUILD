@@ -17,7 +17,7 @@
 
 # Defines BUILD rules for the module that solves the math trade.
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 package(
@@ -51,5 +51,19 @@ cc_library(
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "solver_test",
+    size = "small",
+    srcs = ["solver_test.cc"],
+    deps = [
+        ":solver",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/parser:parser_result_cc_proto",
+        "//mathtrader/solver:solver_result_cc_proto",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_or_tools//ortools/base:map_util",
     ],
 )
