@@ -198,4 +198,35 @@ TEST(SolverTest, FiveItemsTwoChains) {
                            TradePairIs("ThroughTheAges", "TwilightStruggle"),
                            TradePairIs("TwilightStruggle", "Carcassonne")));
 }
+
+// Tests three items with priorities. Pandemic trades with Carcassonne because
+// it has a higher priority (lower value).
+TEST(SolverTest, ThreeItemsWithPriorities) {
+  static constexpr std::string_view input = R"pb(
+    wantlists {
+      offered: "Pandemic"
+      wanted { id: "Carcassonne" priority: 1 }
+      wanted { id: "MageKnight" priority: 2 }
+    }
+    wantlists {
+      offered: "MageKnight"
+      wanted { id: "Pandemic" }
+    }
+    wantlists {
+      offered: "Carcassonne"
+      wanted { id: "Pandemic" }
+    }
+  )pb";
+
+  Solver solver;
+  solver.BuildModel(BuildParserResult(input));
+
+  // Solves and verifies that we have found a solution.
+  const auto status = solver.SolveModel();
+  CHECK(status.ok()) << status.message();
+
+  EXPECT_THAT(solver.result().trade_pairs(),
+              UnorderedElementsAre(TradePairIs("Pandemic", "Carcassonne"),
+                                   TradePairIs("Carcassonne", "Pandemic")));
+}
 }  // namespace
