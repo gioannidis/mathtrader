@@ -33,6 +33,7 @@ namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::parser::ParserResult;
 using ::mathtrader::solver::Solver;
+using ::mathtrader::solver::SolverResult;
 using ::mathtrader::solver::TradePair;
 using ::testing::AllOf;
 using ::testing::IsEmpty;
@@ -73,6 +74,16 @@ ParserResult BuildParserResult(std::string_view text_proto) {
   return parser_proto;
 }
 
+// Solves the math trade defined by the input, verifies that we have found a solution and returns the result.
+const SolverResult SolveTrade(std::string_view input) {
+  Solver solver;
+  solver.BuildModel(BuildParserResult(input));
+
+  const auto status = solver.SolveModel();
+  CHECK(status.ok()) << status.message();
+  return solver.result();
+}
+
 // Tests that no items trade with empty wantlists.
 TEST(SolverTest, EmptyWantlists) {
   static constexpr std::string_view input = R"pb(
@@ -82,14 +93,8 @@ TEST(SolverTest, EmptyWantlists) {
     wantlists { offered: "Carcassonne" }
   )pb";
 
-  Solver solver;
-  solver.BuildModel(BuildParserResult(input));
-
-  // Solves and verifies that we have found a solution.
-  const auto status = solver.SolveModel();
-  CHECK(status.ok()) << status.message();
-
-  EXPECT_THAT(solver.result().trade_pairs(), IsEmpty());
+  const SolverResult& result = SolveTrade(input);
+  EXPECT_THAT(result.trade_pairs(), IsEmpty());
 }
 
 // Tests two items that trade with each other.
@@ -105,14 +110,8 @@ TEST(SolverTest, TwoItems) {
     }
   )pb";
 
-  Solver solver;
-  solver.BuildModel(BuildParserResult(input));
-
-  // Solves and verifies that we have found a solution.
-  const auto status = solver.SolveModel();
-  CHECK(status.ok()) << status.message();
-
-  EXPECT_THAT(solver.result().trade_pairs(),
+  const SolverResult& result = SolveTrade(input);
+  EXPECT_THAT(result.trade_pairs(),
               UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
                                    TradePairIs("MageKnight", "Pandemic")));
 }
@@ -142,15 +141,9 @@ TEST(SolverTest, FiveItemsOneChain) {
     }
   )pb";
 
-  Solver solver;
-  solver.BuildModel(BuildParserResult(input));
-
-  // Solves and verifies that we have found a solution.
-  const auto status = solver.SolveModel();
-  CHECK(status.ok()) << status.message();
-
+  const SolverResult& result = SolveTrade(input);
   EXPECT_THAT(
-      solver.result().trade_pairs(),
+      result.trade_pairs(),
       UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
                            TradePairIs("MageKnight", "Carcassonne"),
                            TradePairIs("Carcassonne", "ThroughTheAges"),
@@ -183,15 +176,9 @@ TEST(SolverTest, FiveItemsTwoChains) {
     }
   )pb";
 
-  Solver solver;
-  solver.BuildModel(BuildParserResult(input));
-
-  // Solves and verifies that we have found a solution.
-  const auto status = solver.SolveModel();
-  CHECK(status.ok()) << status.message();
-
+  const SolverResult& result = SolveTrade(input);
   EXPECT_THAT(
-      solver.result().trade_pairs(),
+      result.trade_pairs(),
       UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
                            TradePairIs("MageKnight", "Pandemic"),
                            TradePairIs("Carcassonne", "ThroughTheAges"),
@@ -218,14 +205,8 @@ TEST(SolverTest, ThreeItemsWithPriorities) {
     }
   )pb";
 
-  Solver solver;
-  solver.BuildModel(BuildParserResult(input));
-
-  // Solves and verifies that we have found a solution.
-  const auto status = solver.SolveModel();
-  CHECK(status.ok()) << status.message();
-
-  EXPECT_THAT(solver.result().trade_pairs(),
+  const SolverResult& result = SolveTrade(input);
+  EXPECT_THAT(result.trade_pairs(),
               UnorderedElementsAre(TradePairIs("Pandemic", "Carcassonne"),
                                    TradePairIs("Carcassonne", "Pandemic")));
 }
