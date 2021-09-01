@@ -116,4 +116,86 @@ TEST(SolverTest, TwoItems) {
               UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
                                    TradePairIs("MageKnight", "Pandemic")));
 }
+
+// Tests five items that trade with each other.
+TEST(SolverTest, FiveItemsOneChain) {
+  static constexpr std::string_view input = R"pb(
+    wantlists {
+      offered: "Pandemic"
+      wanted { id: "MageKnight" }
+    }
+    wantlists {
+      offered: "MageKnight"
+      wanted { id: "Carcassonne" }
+    }
+    wantlists {
+      offered: "Carcassonne"
+      wanted { id: "ThroughTheAges" }
+    }
+    wantlists {
+      offered: "ThroughTheAges"
+      wanted { id: "TwilightStruggle" }
+    }
+    wantlists {
+      offered: "TwilightStruggle"
+      wanted { id: "Pandemic" }
+    }
+  )pb";
+
+  Solver solver;
+  solver.BuildModel(BuildParserResult(input));
+
+  // Solves and verifies that we have found a solution.
+  const auto status = solver.SolveModel();
+  CHECK(status.ok()) << status.message();
+
+  EXPECT_THAT(
+      solver.result().trade_pairs(),
+      UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
+                           TradePairIs("MageKnight", "Carcassonne"),
+                           TradePairIs("Carcassonne", "ThroughTheAges"),
+                           TradePairIs("ThroughTheAges", "TwilightStruggle"),
+                           TradePairIs("TwilightStruggle", "Pandemic")));
+}
+
+// Tests five items that form two chains.
+TEST(SolverTest, FiveItemsTwoChains) {
+  static constexpr std::string_view input = R"pb(
+    wantlists {
+      offered: "Pandemic"
+      wanted { id: "MageKnight" }
+    }
+    wantlists {
+      offered: "MageKnight"
+      wanted { id: "Pandemic" }
+    }
+    wantlists {
+      offered: "Carcassonne"
+      wanted { id: "ThroughTheAges" }
+    }
+    wantlists {
+      offered: "ThroughTheAges"
+      wanted { id: "TwilightStruggle" }
+    }
+    wantlists {
+      offered: "TwilightStruggle"
+      wanted { id: "Carcassonne" }
+    }
+  )pb";
+
+  Solver solver;
+  solver.BuildModel(BuildParserResult(input));
+
+  // Solves and verifies that we have found a solution.
+  const auto status = solver.SolveModel();
+  CHECK(status.ok()) << status.message();
+
+  EXPECT_THAT(
+      solver.result().trade_pairs(),
+      UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
+                           TradePairIs("MageKnight", "Pandemic"),
+                           TradePairIs("Carcassonne", "ThroughTheAges"),
+                           TradePairIs("ThroughTheAges", "TwilightStruggle"),
+                           TradePairIs("TwilightStruggle", "Carcassonne")));
+}
 }  // namespace
