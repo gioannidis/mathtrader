@@ -36,7 +36,7 @@ TEST(StrIndexerTest, CanRetrieveStringFromIndex) {
 
   for (const std::string_view value : values) {
     const int32_t index = indexer.IndexOrDie(value);
-    const auto mapped = indexer.ValueOrDie(index);
+    const auto& mapped = indexer.ValueOrDie(index);
     EXPECT_EQ(mapped, value);
   }
 }
