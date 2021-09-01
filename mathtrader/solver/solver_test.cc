@@ -30,7 +30,6 @@
 #include "mathtrader/solver/solver_result.pb.h"
 
 namespace {
-using ::google::protobuf::TextFormat;
 using ::mathtrader::common::Item;
 using ::mathtrader::parser::ParserResult;
 using ::mathtrader::solver::Solver;
@@ -68,7 +67,8 @@ void BuildItemMap(ParserResult& parser_result) {
 // wantlists from the text input and updates the item map with all listed items.
 ParserResult BuildParserResult(std::string_view text_proto) {
   ParserResult parser_proto;
-  CHECK(TextFormat::ParseFromString(std::string(text_proto), &parser_proto));
+  CHECK(::google::protobuf::TextFormat::ParseFromString(std::string(text_proto),
+                                                        &parser_proto));
   BuildItemMap(parser_proto);
   return parser_proto;
 }
