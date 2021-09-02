@@ -63,6 +63,7 @@ cc_test(
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/parser:parser_result_cc_proto",
         "//mathtrader/solver:solver_result_cc_proto",
+        "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
         "@com_google_or_tools//ortools/base:map_util",
     ],

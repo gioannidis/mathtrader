@@ -20,6 +20,7 @@
 #include <string>
 #include <string_view>
 
+#include "absl/types/span.h"
 #include "gmock/gmock.h"
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
@@ -75,10 +76,26 @@ ParserResult BuildParserResult(std::string_view text_proto) {
 }
 
 // Solves the math trade defined by the input, verifies that we have found a
-// solution and returns the result.
-const SolverResult SolveTrade(std::string_view input) {
+// solution and returns the result. Optionally takes a span of the wantlist
+// owners.
+const SolverResult SolveTrade(std::string_view input,
+                              absl::Span<const std::string_view> owners = {}) {
+  CHECK_GE(input.size(), owners.size());
+
   Solver solver;
-  solver.BuildModel(BuildParserResult(input));
+  ParserResult parser_result = BuildParserResult(input);
+
+  // Index corresponding to owner[i] of wantlist[i].
+  int index = 0;
+  for (const std::string_view owner : owners) {
+    const std::string_view offered = parser_result.wantlists(index).offered();
+    auto* items = parser_result.mutable_items();
+    auto it = items->find(offered);
+    CHECK(it != items->end());
+    it->second.set_username(std::string(owner));
+    ++index;
+  }
+  solver.BuildModel(parser_result);
 
   const auto status = solver.SolveModel();
   CHECK(status.ok()) << status.message();
@@ -224,7 +241,7 @@ TEST(SolverTest, ThreeItemsWithPriorities) {
 //
 // - User U1 can either trade with U5 or form a longer chain with U2, U3, U4.
 // U5G1 -> U1G2
-// U1G2 -> U2G2
+// U1G2 -> U2G2, U5G1
 // U2G2 -> U3G2
 // U3G2 -> U4G2
 // U4G2 -> U1G2
@@ -255,6 +272,7 @@ static constexpr std::string_view kSolverWithUsernamesTestUseCase = R"pb(
   wantlists {
     offered: "U1G2"
     wanted { id: "U2G2" }
+    wanted { id: "U5G1" }
   }
   wantlists {
     offered: "U2G2"
@@ -279,5 +297,18 @@ TEST(SolverWithUsernamesTest, NoUsernames) {
                   TradePairIs("U3G1", "U4G1"), TradePairIs("U4G1", "U3G1"),
                   TradePairIs("U1G2", "U2G2"), TradePairIs("U2G2", "U3G2"),
                   TradePairIs("U3G2", "U4G2"), TradePairIs("U4G2", "U1G2")));
+}
+
+// Defines usernames for all items.
+TEST(SolverWithUsernamesTest, WithUsernames) {
+  const SolverResult& result =
+      SolveTrade(kSolverWithUsernamesTestUseCase,
+                 {"user1", "user2", "user3", "user4", "user5", "user1", "user2",
+                  "user3", "user4"});
+  EXPECT_THAT(result.trade_pairs(),
+              UnorderedElementsAre(
+                  TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),
+                  TradePairIs("U3G1", "U4G1"), TradePairIs("U4G1", "U3G1"),
+                  TradePairIs("U1G2", "U5G1"), TradePairIs("U5G1", "U1G2")));
 }
 }  // namespace
