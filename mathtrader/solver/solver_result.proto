@@ -32,4 +32,10 @@ message TradePair {
 message SolverResult {
   // All successful trading pairs.
   repeated TradePair trade_pairs = 1;
+
+  // Statistics on the internal CP model.
+  optional string cp_model_stats = 2;
+
+  // Information about the found solution.
+  optional string solution_info = 3;
 }

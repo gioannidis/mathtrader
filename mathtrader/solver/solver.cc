@@ -74,7 +74,7 @@ void Solver::BuildModel(const ParserResult& parser_result) {
   // Adds the usernames.
   for (const auto& [id, item] : parser_result.items()) {
     if (item.has_username()) {
-      trade_model_.AddOwner(/*owner=*/item.username(), /*item=*/item.id());
+      trade_model_.AddOwner(/*owner=*/item.username(), /*item=*/id);
     }
   }
 
@@ -90,8 +90,9 @@ absl::Status Solver::SolveModel() {
   trade_model_.CommitObjectiveFunction();
 
   // Solves the CP model objective.
+  const auto& cp_model = trade_model_.cp_model();
   const CpSolverResponse response =
-      operations_research::sat::Solve(trade_model_.cp_model().Build());
+      operations_research::sat::Solve(cp_model.Build());
 
   if (response.status() != CpSolverStatus::OPTIMAL) {
     return absl::NotFoundError(absl::StrCat(
@@ -100,6 +101,11 @@ absl::Status Solver::SolveModel() {
 
   // Populates the solver_result with the trading items.
   trade_model_.PopulateResponse(response, result_);
+
+  result_.set_cp_model_stats(
+      operations_research::sat::CpModelStats(cp_model.Proto()));
+  result_.set_solution_info(response.solution_info());
+
   return absl::OkStatus();
 }
 }  // namespace mathtrader::solver
