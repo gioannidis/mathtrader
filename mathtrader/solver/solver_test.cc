@@ -74,7 +74,8 @@ ParserResult BuildParserResult(std::string_view text_proto) {
   return parser_proto;
 }
 
-// Solves the math trade defined by the input, verifies that we have found a solution and returns the result.
+// Solves the math trade defined by the input, verifies that we have found a
+// solution and returns the result.
 const SolverResult SolveTrade(std::string_view input) {
   Solver solver;
   solver.BuildModel(BuildParserResult(input));
@@ -209,5 +210,74 @@ TEST(SolverTest, ThreeItemsWithPriorities) {
   EXPECT_THAT(result.trade_pairs(),
               UnorderedElementsAre(TradePairIs("Pandemic", "Carcassonne"),
                                    TradePairIs("Carcassonne", "Pandemic")));
+}
+
+// Test suite: solving with usernames. The use case is as follows:
+// - Users U1 and U2 trade with each other their respective G1 items.
+// U1G1 -> U2G1
+// U2G1 -> U1G1
+//
+// - Users U3 and U4 trade with each other their respective G1 items.
+//
+// U3G1 -> U4G1
+// U3G1 -> U3G1
+//
+// - User U1 can either trade with U5 or form a longer chain with U2, U3, U4.
+// U5G1 -> U1G2
+// U1G2 -> U2G2
+// U2G2 -> U3G2
+// U3G2 -> U4G2
+// U4G2 -> U1G2
+
+static constexpr std::string_view kSolverWithUsernamesTestUseCase = R"pb(
+  wantlists {
+    offered: "U1G1"
+    wanted { id: "U2G1" }
+  }
+  wantlists {
+    offered: "U2G1"
+    wanted { id: "U1G1" }
+  }
+
+  wantlists {
+    offered: "U3G1"
+    wanted { id: "U4G1" }
+  }
+  wantlists {
+    offered: "U4G1"
+    wanted { id: "U3G1" }
+  }
+
+  wantlists {
+    offered: "U5G1"
+    wanted { id: "U1G2" }
+  }
+  wantlists {
+    offered: "U1G2"
+    wanted { id: "U2G2" }
+  }
+  wantlists {
+    offered: "U2G2"
+    wanted { id: "U3G2" }
+  }
+  wantlists {
+    offered: "U3G2"
+    wanted { id: "U4G2" }
+  }
+  wantlists {
+    offered: "U4G2"
+    wanted { id: "U1G2" }
+  }
+)pb";
+
+// Baseline: no usernames are given.
+TEST(SolverWithUsernamesTest, NoUsernames) {
+  const SolverResult& result = SolveTrade(kSolverWithUsernamesTestUseCase);
+  EXPECT_THAT(result.trade_pairs(),
+              UnorderedElementsAre(
+                  TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),
+                  TradePairIs("U3G1", "U4G1"), TradePairIs("U4G1", "U3G1"),
+                  TradePairIs("U1G2", "U2G2"), TradePairIs("U2G2", "U3G2"),
+                  TradePairIs("U3G2", "U4G2"), TradePairIs("U4G2", "U1G2")));
 }
 }  // namespace
