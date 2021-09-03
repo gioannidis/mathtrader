@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
-// Proto definition for the solver result.
+// Proto definition of the mathtrade output, i.e., the item pairs that trade
+// with each other.
 
 syntax = "proto2";
 
@@ -29,7 +30,7 @@ message TradePair {
 }
 
 // Message encapsulating the results of the math trade.
-message SolverResult {
+message TradeResponse {
   // All successful trading pairs.
   repeated TradePair trade_pairs = 1;
 

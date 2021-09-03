@@ -183,7 +183,7 @@ void TradeModel::BuildNonTradingUserCosts() {
 
 void TradeModel::PopulateResponse(
     const operations_research::sat::CpSolverResponse& response,
-    SolverResult& solver_result) const {
+    TradeResponse& trade_response) const {
   using ::operations_research::sat::SolutionBooleanValue;
 
   // Avoids comparing signed with unsigned;
@@ -197,10 +197,10 @@ void TradeModel::PopulateResponse(
       // Ignores self-trades.
       if ((offered_id != wanted_id) &&
           SolutionBooleanValue(response, assignment.var)) {
-        // Adds the trading pair to the solver_result.
+        // Adds the trading pair to the trade_response.
         const std::string& offered_item = indexer_.ValueOrDie(offered_id);
         const std::string& wanted_item = indexer_.ValueOrDie(wanted_id);
-        TradePair* const trade_pair = solver_result.add_trade_pairs();
+        TradePair* const trade_pair = trade_response.add_trade_pairs();
         trade_pair->set_offered(offered_item);
         trade_pair->set_wanted(wanted_item);
       }

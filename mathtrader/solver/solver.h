@@ -25,7 +25,7 @@
 
 #include "mathtrader/parser/trade_request.pb.h"
 #include "mathtrader/solver/internal/trade_model.h"
-#include "mathtrader/solver/solver_result.pb.h"
+#include "mathtrader/solver/trade_response.pb.h"
 #include "mathtrader/util/str_indexer.h"
 
 namespace mathtrader::solver {
@@ -46,14 +46,16 @@ class Solver {
   // Solves the CP model.
   ABSL_MUST_USE_RESULT absl::Status SolveModel();
 
-  ABSL_MUST_USE_RESULT const SolverResult& result() const { return result_; }
+  ABSL_MUST_USE_RESULT const TradeResponse& response() const {
+    return response_;
+  }
 
  private:
   // The model that represents the math trade.
   internal::TradeModel trade_model_;
 
-  // The result with the solved trade.
-  SolverResult result_;
+  // The response with the solved trade.
+  TradeResponse response_;
 };
 }  // namespace mathtrader::solver
 #endif  // MATHTRADER_SOLVER_SOLVER_H_

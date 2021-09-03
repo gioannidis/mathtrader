@@ -28,14 +28,14 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/parser/trade_request.pb.h"
-#include "mathtrader/solver/solver_result.pb.h"
+#include "mathtrader/solver/trade_response.pb.h"
 
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::parser::TradeRequest;
 using ::mathtrader::solver::Solver;
-using ::mathtrader::solver::SolverResult;
 using ::mathtrader::solver::TradePair;
+using ::mathtrader::solver::TradeResponse;
 using ::testing::AllOf;
 using ::testing::IsEmpty;
 using ::testing::Property;
@@ -76,10 +76,10 @@ TradeRequest BuildTradeRequest(std::string_view text_proto) {
 }
 
 // Solves the math trade defined by the input, verifies that we have found a
-// solution and returns the result. Optionally takes a span of the wantlist
+// solution and returns the response. Optionally takes a span of the wantlist
 // owners.
-const SolverResult SolveTrade(std::string_view input,
-                              absl::Span<const std::string_view> owners = {}) {
+const TradeResponse SolveTrade(std::string_view input,
+                               absl::Span<const std::string_view> owners = {}) {
   CHECK_GE(input.size(), owners.size());
 
   Solver solver;
@@ -99,7 +99,7 @@ const SolverResult SolveTrade(std::string_view input,
 
   const auto status = solver.SolveModel();
   CHECK(status.ok()) << status.message();
-  return solver.result();
+  return solver.response();
 }
 
 // Tests that no items trade with empty wantlists.
@@ -111,8 +111,8 @@ TEST(SolverTest, EmptyWantlists) {
     wantlists { offered: "Carcassonne" }
   )pb";
 
-  const SolverResult& result = SolveTrade(input);
-  EXPECT_THAT(result.trade_pairs(), IsEmpty());
+  const TradeResponse& response = SolveTrade(input);
+  EXPECT_THAT(response.trade_pairs(), IsEmpty());
 }
 
 // Tests two items that trade with each other.
@@ -128,8 +128,8 @@ TEST(SolverTest, TwoItems) {
     }
   )pb";
 
-  const SolverResult& result = SolveTrade(input);
-  EXPECT_THAT(result.trade_pairs(),
+  const TradeResponse& response = SolveTrade(input);
+  EXPECT_THAT(response.trade_pairs(),
               UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
                                    TradePairIs("MageKnight", "Pandemic")));
 }
@@ -159,9 +159,9 @@ TEST(SolverTest, FiveItemsOneChain) {
     }
   )pb";
 
-  const SolverResult& result = SolveTrade(input);
+  const TradeResponse& response = SolveTrade(input);
   EXPECT_THAT(
-      result.trade_pairs(),
+      response.trade_pairs(),
       UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
                            TradePairIs("MageKnight", "Carcassonne"),
                            TradePairIs("Carcassonne", "ThroughTheAges"),
@@ -194,9 +194,9 @@ TEST(SolverTest, FiveItemsTwoChains) {
     }
   )pb";
 
-  const SolverResult& result = SolveTrade(input);
+  const TradeResponse& response = SolveTrade(input);
   EXPECT_THAT(
-      result.trade_pairs(),
+      response.trade_pairs(),
       UnorderedElementsAre(TradePairIs("Pandemic", "MageKnight"),
                            TradePairIs("MageKnight", "Pandemic"),
                            TradePairIs("Carcassonne", "ThroughTheAges"),
@@ -223,8 +223,8 @@ TEST(SolverTest, ThreeItemsWithPriorities) {
     }
   )pb";
 
-  const SolverResult& result = SolveTrade(input);
-  EXPECT_THAT(result.trade_pairs(),
+  const TradeResponse& response = SolveTrade(input);
+  EXPECT_THAT(response.trade_pairs(),
               UnorderedElementsAre(TradePairIs("Pandemic", "Carcassonne"),
                                    TradePairIs("Carcassonne", "Pandemic")));
 }
@@ -290,8 +290,8 @@ static constexpr std::string_view kSolverWithUsernamesTestUseCase = R"pb(
 
 // Baseline: no usernames are given.
 TEST(SolverWithUsernamesTest, NoUsernames) {
-  const SolverResult& result = SolveTrade(kSolverWithUsernamesTestUseCase);
-  EXPECT_THAT(result.trade_pairs(),
+  const TradeResponse& response = SolveTrade(kSolverWithUsernamesTestUseCase);
+  EXPECT_THAT(response.trade_pairs(),
               UnorderedElementsAre(
                   TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),
                   TradePairIs("U3G1", "U4G1"), TradePairIs("U4G1", "U3G1"),
@@ -301,11 +301,11 @@ TEST(SolverWithUsernamesTest, NoUsernames) {
 
 // Defines usernames for all items.
 TEST(SolverWithUsernamesTest, WithUsernames) {
-  const SolverResult& result =
+  const TradeResponse& response =
       SolveTrade(kSolverWithUsernamesTestUseCase,
                  {"user1", "user2", "user3", "user4", "user5", "user1", "user2",
                   "user3", "user4"});
-  EXPECT_THAT(result.trade_pairs(),
+  EXPECT_THAT(response.trade_pairs(),
               UnorderedElementsAre(
                   TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),
                   TradePairIs("U3G1", "U4G1"), TradePairIs("U4G1", "U3G1"),

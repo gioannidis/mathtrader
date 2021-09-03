@@ -25,8 +25,8 @@ package(
 )
 
 proto_library(
-    name = "solver_result_proto",
-    srcs = ["solver_result.proto"],
+    name = "trade_response_proto",
+    srcs = ["trade_response.proto"],
     deps = [
         "//mathtrader/common:item_proto",
         "//mathtrader/common:wantlist_proto",
@@ -34,8 +34,8 @@ proto_library(
 )
 
 cc_proto_library(
-    name = "solver_result_cc_proto",
-    deps = [":solver_result_proto"],
+    name = "trade_response_cc_proto",
+    deps = [":trade_response_proto"],
 )
 
 cc_library(
@@ -43,7 +43,7 @@ cc_library(
     srcs = ["solver.cc"],
     hdrs = ["solver.h"],
     deps = [
-        ":solver_result_cc_proto",
+        ":trade_response_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser:trade_request_cc_proto",
@@ -62,7 +62,7 @@ cc_test(
         ":solver",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/parser:trade_request_cc_proto",
-        "//mathtrader/solver:solver_result_cc_proto",
+        "//mathtrader/solver:trade_response_cc_proto",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
         "@com_google_or_tools//ortools/base:map_util",

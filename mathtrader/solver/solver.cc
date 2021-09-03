@@ -99,12 +99,12 @@ absl::Status Solver::SolveModel() {
         "No solution found. Solver returned status: ", response.status()));
   }
 
-  // Populates the solver_result with the trading items.
-  trade_model_.PopulateResponse(response, result_);
+  // Populates the trade_response with the trading items.
+  trade_model_.PopulateResponse(response, response_);
 
-  result_.set_cp_model_stats(
+  response_.set_cp_model_stats(
       operations_research::sat::CpModelStats(cp_model.Proto()));
-  result_.set_solution_info(response.solution_info());
+  response_.set_solution_info(response.solution_info());
 
   return absl::OkStatus();
 }
