@@ -25,11 +25,11 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/trade_request.pb.h"
 
 namespace {
 using ::mathtrader::common::Wantlist;
-using ::mathtrader::parser::ParserResult;
+using ::mathtrader::parser::TradeRequest;
 using ::mathtrader::parser::internal::InternalParser;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -45,7 +45,7 @@ using ::testing::StrCaseEq;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
-using RemovedItem = ::mathtrader::parser::ParserResult::RemovedItem;
+using RemovedItem = ::mathtrader::parser::TradeRequest::RemovedItem;
 
 // Tests a basic use-case.
 TEST(InternalParser, TestOnlyComments) {
@@ -59,7 +59,7 @@ TEST(InternalParser, TestOnlyComments) {
   InternalParser parser;
   ASSERT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 5);
-  EXPECT_THAT(parser.parser_result().wantlists(), IsEmpty());
+  EXPECT_THAT(parser.trade_request().wantlists(), IsEmpty());
 }
 
 // Tests a single wantlist without official names. All wanted items are missing,
@@ -71,7 +71,7 @@ TEST(InternalParser, TestSingleWantlist) {
   ASSERT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_EQ(parser.get_line_count(), 1);
 
-  const ParserResult& result = parser.parser_result();
+  const TradeRequest& result = parser.trade_request();
 
   // Only non-missing items are registered in the item map. In this case, it is
   // the offered item.
@@ -94,10 +94,10 @@ TEST(InternalParser, TestMultipleWantlists) {
   InternalParser parser;
   ASSERT_TRUE(parser.ParseText(input_data).ok());
   EXPECT_GE(parser.get_line_count(), 4);
-  EXPECT_THAT(parser.parser_result().wantlists(), SizeIs(4));
+  EXPECT_THAT(parser.trade_request().wantlists(), SizeIs(4));
 
   // Tests the mutable interface.
-  EXPECT_THAT(parser.mutable_parser_result()->wantlists(), SizeIs(4));
+  EXPECT_THAT(parser.mutable_trade_request()->wantlists(), SizeIs(4));
 }
 
 // Test suite: official items
@@ -117,7 +117,7 @@ TEST(InternalParserItemsTest, TestOfficialItems) {
   InternalParser parser;
   ASSERT_TRUE(parser.ParseText(input_data).ok());
 
-  const auto& result = parser.parser_result();
+  const auto& result = parser.trade_request();
   EXPECT_EQ(result.item_count(), 7);  // Non-dummy items.
   EXPECT_EQ(result.items_size(), 7);  // All items.
   EXPECT_THAT(result.users(), SizeIs(5));
@@ -142,7 +142,7 @@ TEST(InternalParserItemsTest, TestColonsSpaces) {
   InternalParser parser;
   ASSERT_TRUE(parser.ParseText(input_data).ok());
 
-  const auto& result = parser.parser_result();
+  const auto& result = parser.trade_request();
   EXPECT_EQ(result.item_count(), 5);  // Non-dummy items.
   EXPECT_EQ(result.items_size(), 5);  // All items.
   EXPECT_THAT(result.users(), SizeIs(4));
@@ -169,7 +169,7 @@ TEST(InternalParserItemsTest, TestExtraUsernameInWantlist) {
   InternalParser parser;
   ASSERT_TRUE(parser.ParseText(input_data).ok());
 
-  const auto& result = parser.parser_result();
+  const auto& result = parser.trade_request();
   EXPECT_EQ(result.item_count(), 6);  // Non-dummy items.
   EXPECT_EQ(result.items_size(), 6);  // All items.
   EXPECT_THAT(result.users(), SizeIs(5));
@@ -208,7 +208,7 @@ Z
   InternalParser parser;
   ASSERT_TRUE(parser.ParseText(input_data).ok());
 
-  const auto& result = parser.parser_result();
+  const auto& result = parser.trade_request();
   EXPECT_EQ(result.item_count(), kAllWantedItems);  // Non-dummy items.
   EXPECT_EQ(result.items_size(), kAllWantedItems);  // All items.
   EXPECT_THAT(result.users(),

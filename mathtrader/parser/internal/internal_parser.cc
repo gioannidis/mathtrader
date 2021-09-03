@@ -35,7 +35,7 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/trade_request.pb.h"
 #include "mathtrader/parser/util/item_util.h"
 
 namespace mathtrader::parser::internal {
@@ -70,10 +70,10 @@ std::string_view StripPrefix(std::string_view line) {
 }
 
 // Identifies and removes duplicate items from a wantlist, reporting them to
-// parser_result.
+// trade_request.
 void RemoveDuplicateItems(
     Wantlist& wantlist,             // NOLINT(runtime/references)
-    ParserResult& parser_result) {  // NOLINT(runtime/references)
+    TradeRequest& trade_request) {  // NOLINT(runtime/references)
   // Tracks the frequency of each wanted item in the wantlist.
   // key: item ID in wantlist.
   // mapped: frequency
@@ -110,18 +110,18 @@ void RemoveDuplicateItems(
           }),
       wanted_items->end());  // 2nd argument of `erase()`.
 
-  // Populates the `parser_result` with the duplicate items that appear 2+ times
+  // Populates the `trade_request` with the duplicate items that appear 2+ times
   // in the wantlist.
   for (const std::string& duplicate_id : duplicates) {
     // The offered item and the duplicate wanted item must both exist, because
     // the wantlist has been fully parsed by this point.
     const Item& offered_item =
-        gtl::FindOrDie(parser_result.items(), wantlist.offered());
+        gtl::FindOrDie(trade_request.items(), wantlist.offered());
     const Item& wanted_item =
-        gtl::FindOrDie(parser_result.items(), duplicate_id);
+        gtl::FindOrDie(trade_request.items(), duplicate_id);
 
     // Creates a new duplicate wanted item.
-    auto* const duplicate_item = parser_result.add_duplicate_items();
+    auto* const duplicate_item = trade_request.add_duplicate_items();
     duplicate_item->set_offered_item_id(offered_item.id());
     duplicate_item->set_wanted_item_id(wanted_item.id());
 
@@ -142,7 +142,7 @@ void RemoveMissingItems(
   auto* const wanted_items = wantlist.mutable_wanted();
 
   // Checks if a wanted item is missing and, if so, records it as a missing
-  // item in `parser_result_`.
+  // item in `trade_request_`.
   wanted_items->erase(
       std::remove_if(wanted_items->begin(), wanted_items->end(),
 
@@ -166,21 +166,21 @@ void RemoveMissingItems(
 }
 
 // Identifies and removes non-dummy owned items that are wanted in a wantlist,
-// reporting them to parser_result.
+// reporting them to trade_request.
 void RemoveOwnedItems(
     Wantlist& wantlist,             // NOLINT(runtime/references)
-    ParserResult& parser_result) {  // NOLINT(runtime/references)
+    TradeRequest& trade_request) {  // NOLINT(runtime/references)
   // Key to identify a removed item:
   using MapKey = std::pair<const std::string, const std::string>;
 
   // Const-reference to in/out argument.
-  const ParserResult& const_parser_result = parser_result;
+  const TradeRequest& const_trade_request = trade_request;
 
   // Retrieves the username of an item id. Assumes that the item exists in
-  // `parser_result.items()`.
+  // `trade_request.items()`.
   const auto GetUsername =
-      [&const_parser_result](const std::string& id) -> const std::string& {
-    const Item& item = gtl::FindOrDie(const_parser_result.items(), id);
+      [&const_trade_request](const std::string& id) -> const std::string& {
+    const Item& item = gtl::FindOrDie(const_trade_request.items(), id);
     return item.username();
   };
 
@@ -234,7 +234,7 @@ void RemoveOwnedItems(
 
   for (const auto& [key, frequency] : frequencies) {
     // Creates a new owned wanted item.
-    auto* const owned_item = parser_result.add_owned_items();
+    auto* const owned_item = trade_request.add_owned_items();
     owned_item->set_offered_item_id(offered_id);
     owned_item->set_wanted_item_id(key.first);
     owned_item->set_frequency(frequency);
@@ -313,7 +313,7 @@ absl::Status InternalParser::ParseItem(std::string_view line) {
     return item.status();
 
   } else if (const std::string& id = item->id(); !gtl::InsertIfNotPresent(
-                 parser_result_.mutable_items(), id, *item)) {
+                 trade_request_.mutable_items(), id, *item)) {
     // Failed to insert the item; already exists.
     return absl::AlreadyExistsError(absl::StrFormat(
         "Duplicate declaration of official item %s not allowed.", id));
@@ -327,43 +327,43 @@ absl::Status InternalParser::ParseItem(std::string_view line) {
   return absl::OkStatus();
 }
 
-// Propagates data from the data members to the parser_result.
-void InternalParser::FinalizeParserResult() {
+// Propagates data from the data members to the trade_request.
+void InternalParser::FinalizeTradeRequest() {
   // Sets the final item count. Counts non-dummy items.
-  parser_result_.set_item_count(std::count_if(
-      parser_result_.items().cbegin(), parser_result_.items().cend(),
+  trade_request_.set_item_count(std::count_if(
+      trade_request_.items().cbegin(), trade_request_.items().cend(),
       [](const auto& map_pair) { return !map_pair.second.is_dummy(); }));
 
   // Executes consistency checks and removes offending items.
   // mutable_wantlists() is a pointer, so we dereference it to iterate the
   // mutable elements.
-  for (Wantlist& wantlist : *parser_result_.mutable_wantlists()) {
+  for (Wantlist& wantlist : *trade_request_.mutable_wantlists()) {
     // Removes missing items from all wantlists. This is executed after all
     // wantlists have been processed to cover the following cases:
     // * No official names; wanted items without corresponding wantlists.
     // * Dummy items without being offered in a wantlist.
-    RemoveMissingItems(parser_result_.items(), wantlist, missing_items_);
+    RemoveMissingItems(trade_request_.items(), wantlist, missing_items_);
 
     // Identifies and removes duplicate items that have an official name. This
     // should be done after items without an official named have been removed,
     // because all wanted items are assumed to be present in
-    // `parser_result.items()`.
-    RemoveDuplicateItems(wantlist, parser_result_);
+    // `trade_request.items()`.
+    RemoveDuplicateItems(wantlist, trade_request_);
 
     // Identifies and removes wanted items from the same user.
-    RemoveOwnedItems(wantlist, parser_result_);
+    RemoveOwnedItems(wantlist, trade_request_);
   }
 
-  // Moves the usernames to parser_result.
+  // Moves the usernames to trade_request.
   while (!users_.empty()) {
     auto internal_node = users_.extract(users_.begin());
-    parser_result_.add_users(std::move(internal_node.value()));
+    trade_request_.add_users(std::move(internal_node.value()));
   }
 
-  // Moves the missing items to parser_result.
+  // Moves the missing items to trade_request.
   // TODO(gioannidis) populate them in RemoveMissingItems.
   while (!missing_items_.empty()) {
-    auto* missing_item = parser_result_.add_missing_items();
+    auto* missing_item = trade_request_.add_missing_items();
 
     // Internal node: maps item_id -> frequency.
     auto internal_node = missing_items_.extract(missing_items_.begin());

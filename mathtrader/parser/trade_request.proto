@@ -25,9 +25,9 @@ package mathtrader.parser;
 import "mathtrader/common/item.proto";
 import "mathtrader/common/wantlist.proto";
 
-// Message encapsulating the trade input.
+// Message encapsulating the trade request.
 // Next id: 8
-message ParserResult {
+message TradeRequest {
   // Encapsulates a wanted item that has been removed from a wantlist.
   // Next id: 4
   message RemovedItem {

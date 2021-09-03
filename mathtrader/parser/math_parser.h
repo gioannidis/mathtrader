@@ -25,16 +25,16 @@
 
 #include "absl/status/statusor.h"
 
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/trade_request.pb.h"
 
 namespace mathtrader::parser {
 // Parses the official wants provided by the Online Want List Generator (OLWLG)
-// and generates a `ParserResult` message. Minimum configuration to parse a
+// and generates a `TradeRequest` message. Minimum configuration to parse a
 // file from OLWLG:
 //
-//    const auto parser_result = MathParser::ParseFile("123-officialwants.txt");
-//    CHECK(parser_result.ok());
-//    const auto& Wantlists = parser_result->wantlists();
+//    const auto trade_request = MathParser::ParseFile("123-officialwants.txt");
+//    CHECK(trade_request.ok());
+//    const auto& Wantlists = trade_request->wantlists();
 class MathParser {
  public:
   MathParser() = default;
@@ -46,10 +46,10 @@ class MathParser {
   ~MathParser() = default;
 
   // Parses the OLWLG-generated file and generates the trade data.
-  static absl::StatusOr<ParserResult> ParseFile(std::string_view filename);
+  static absl::StatusOr<TradeRequest> ParseFile(std::string_view filename);
 
   // Identical to `ParseFile`, but operates directly on the data string.
-  static absl::StatusOr<ParserResult> ParseText(std::string_view text);
+  static absl::StatusOr<TradeRequest> ParseText(std::string_view text);
 };
 }  // namespace mathtrader::parser
 #endif  // MATHTRADER_PARSER_MATH_PARSER_H_

@@ -29,20 +29,20 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/trade_request.pb.h"
 
 namespace mathtrader::solver {
 namespace {
-using ::mathtrader::parser::ParserResult;
+using ::mathtrader::parser::TradeRequest;
 
-// Extracts the item ids from `parser_result`. Returns a vector with the
+// Extracts the item ids from `trade_request`. Returns a vector with the
 // extracted item ids.
-std::vector<std::string_view> GetItemIds(const ParserResult& parser_result) {
-  const auto& item_map = parser_result.items();
+std::vector<std::string_view> GetItemIds(const TradeRequest& trade_request) {
+  const auto& item_map = trade_request.items();
 
   // The item id container to return.
   std::vector<std::string_view> items(item_map.size());
-  std::transform(parser_result.items().begin(), parser_result.items().end(),
+  std::transform(trade_request.items().begin(), trade_request.items().end(),
                  items.begin(),
                  [](std::pair<std::string_view, const common::Item&> map_pair) {
                    return map_pair.first;
@@ -51,13 +51,13 @@ std::vector<std::string_view> GetItemIds(const ParserResult& parser_result) {
 }
 }  // namespace
 
-void Solver::BuildModel(const ParserResult& parser_result) {
+void Solver::BuildModel(const TradeRequest& trade_request) {
   // Retrieves the item ids and indexes them in the TradeModel.
-  const auto item_ids = GetItemIds(parser_result);
+  const auto item_ids = GetItemIds(trade_request);
   trade_model_.IndexItems(item_ids);
 
   // Adds the allowed assignment for each offered->wanted relationship.
-  for (const common::Wantlist& wantlist : parser_result.wantlists()) {
+  for (const common::Wantlist& wantlist : trade_request.wantlists()) {
     for (const auto& wanted_item : wantlist.wanted()) {
       trade_model_.AddAssignment(wantlist.offered(), wanted_item.id(),
                                  wanted_item.priority());
@@ -72,7 +72,7 @@ void Solver::BuildModel(const ParserResult& parser_result) {
   trade_model_.BuildItemTradingCost();
 
   // Adds the usernames.
-  for (const auto& [id, item] : parser_result.items()) {
+  for (const auto& [id, item] : trade_request.items()) {
     if (item.has_username()) {
       trade_model_.AddOwner(/*owner=*/item.username(), /*item=*/id);
     }

@@ -92,7 +92,7 @@ absl::Status InternalParser::ParseWantlist(std::string_view line) {
           wantlist_of_item_.emplace(offered_id, line_count_);
       !inserted) {
     // Reports the line number of the existing wantlist.
-    const Item& duplicate = gtl::FindOrDie(parser_result_.items(), offered_id);
+    const Item& duplicate = gtl::FindOrDie(trade_request_.items(), offered_id);
     return absl::AlreadyExistsError(absl::StrFormat(
         "Cannot declare multiple wantlists for item %s%s. Previous wantlist "
         "declared in line %d.",
@@ -107,7 +107,7 @@ absl::Status InternalParser::ParseWantlist(std::string_view line) {
   // Registers the offered item.
   if (absl::Status status = RegisterOfferedItem(
           offered_id, username, /*is_existing=*/has_official_names_,
-          *parser_result_.mutable_items());
+          *trade_request_.mutable_items());
       !status.ok()) {
     return status;
   }
@@ -115,7 +115,7 @@ absl::Status InternalParser::ParseWantlist(std::string_view line) {
   // Finally, clears any internal extensions.
   wantlist->ClearExtension(InternalWantlist::username);
 
-  (*parser_result_.add_wantlists()) = std::move(*wantlist);
+  (*trade_request_.add_wantlists()) = std::move(*wantlist);
   return absl::OkStatus();
 }
 }  // namespace mathtrader::parser::internal

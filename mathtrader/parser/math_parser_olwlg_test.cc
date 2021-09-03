@@ -33,13 +33,13 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/trade_request.pb.h"
 
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::MathParser;
-using ::mathtrader::parser::ParserResult;
+using ::mathtrader::parser::TradeRequest;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Contains;
@@ -57,7 +57,7 @@ using ::testing::StartsWith;
 using ::testing::StrCaseEq;
 using ::testing::StrEq;
 
-using RemovedItem = ::mathtrader::parser::ParserResult::RemovedItem;
+using RemovedItem = ::mathtrader::parser::TradeRequest::RemovedItem;
 }  // namespace
 
 // Opens the same namespace that defines the protobuf Map in order to specialize
@@ -139,42 +139,42 @@ MATCHER_P2(WantlistOwnerOfRemovedStrCaseEq, username, item_map, "") {
                             result_listener);
 }
 
-// Runs a number of checks against the given ParserResult.
-void ExpectWantlist(const absl::StatusOr<ParserResult>& parser_result,
+// Runs a number of checks against the given TradeRequest.
+void ExpectWantlist(const absl::StatusOr<TradeRequest>& trade_request,
                     int32_t user_count, int32_t item_count,
                     int32_t wantlist_count, int32_t longest_wantlist,
                     int32_t missing_item_count = 0) {
-  ASSERT_TRUE(parser_result.ok()) << parser_result.status().message();
+  ASSERT_TRUE(trade_request.ok()) << trade_request.status().message();
 
   // Verifies the number of users with items.
-  EXPECT_THAT(parser_result->users(), SizeIs(Eq(user_count)));
+  EXPECT_THAT(trade_request->users(), SizeIs(Eq(user_count)));
 
   // Verifies the number of items.
-  EXPECT_EQ(parser_result->item_count(), item_count);
+  EXPECT_EQ(trade_request->item_count(), item_count);
 
   // Verifies that the item map is well-formed.
-  EXPECT_THAT(parser_result->items(), Each(HasIdAsKey()));
+  EXPECT_THAT(trade_request->items(), Each(HasIdAsKey()));
 
   // Verifies that every item has a username.
   EXPECT_THAT(
-      parser_result->items(),
+      trade_request->items(),
       Each(Mapped(Property("username", &Item::has_username, IsTrue()))));
 
-  const auto& wantlists = parser_result->wantlists();
+  const auto& wantlists = trade_request->wantlists();
 
   // Verifies the number of wantlists.
   EXPECT_EQ(wantlists.size(), wantlist_count);
 
   // Verifies the id format of all items.
-  EXPECT_THAT(parser_result->items(), Each(Mapped(IsValidItemId())));
+  EXPECT_THAT(trade_request->items(), Each(Mapped(IsValidItemId())));
 
   // Verifies the longest wantlist.
-  EXPECT_THAT(parser_result->wantlists(),
+  EXPECT_THAT(trade_request->wantlists(),
               Contains(Property(&Wantlist::wanted_size, Eq(longest_wantlist))));
 
   // Verifies the number of missing items.
   if (missing_item_count) {
-    EXPECT_THAT(parser_result->missing_items(),
+    EXPECT_THAT(trade_request->missing_items(),
                 ElementsAre(AllOf(Property(&RemovedItem::wanted_item_id,
                                            StrCaseEq("missing-official")),
                                   Property(&RemovedItem::frequency,

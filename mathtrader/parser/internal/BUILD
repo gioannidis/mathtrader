@@ -113,7 +113,7 @@ cc_library(
         ":wantlist_parser",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
-        "//mathtrader/parser:parser_result_cc_proto",
+        "//mathtrader/parser:trade_request_cc_proto",
         "//mathtrader/parser/util:item_util",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/container:flat_hash_map",

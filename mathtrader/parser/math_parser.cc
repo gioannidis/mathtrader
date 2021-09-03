@@ -23,13 +23,13 @@
 #include "absl/status/statusor.h"
 
 #include "mathtrader/parser/internal/internal_parser.h"
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/trade_request.pb.h"
 
 namespace mathtrader::parser {
 namespace {
 // Creates a stateful internal parser, parses the OLWLG data and returns the
 // result.
-absl::StatusOr<ParserResult> ParseFileOrText(std::string_view file_or_data,
+absl::StatusOr<TradeRequest> ParseFileOrText(std::string_view file_or_data,
                                              bool is_file) {
   internal::InternalParser parser;
 
@@ -39,17 +39,17 @@ absl::StatusOr<ParserResult> ParseFileOrText(std::string_view file_or_data,
       !status.ok()) {
     return status;
   }
-  return std::move(*parser.mutable_parser_result());
+  return std::move(*parser.mutable_trade_request());
 }
 }  // namespace
 
 // Parses the OLWLG-generated file and generates the trade data.
-absl::StatusOr<ParserResult> MathParser::ParseFile(std::string_view filename) {
+absl::StatusOr<TradeRequest> MathParser::ParseFile(std::string_view filename) {
   return ParseFileOrText(filename, /*is_file=*/true);
 }
 
 // Identical to `ParseFile`, but operates directly on the data string.
-absl::StatusOr<ParserResult> MathParser::ParseText(std::string_view text) {
+absl::StatusOr<TradeRequest> MathParser::ParseText(std::string_view text) {
   return ParseFileOrText(text, /*is_file=*/false);
 }
 }  // namespace mathtrader::parser

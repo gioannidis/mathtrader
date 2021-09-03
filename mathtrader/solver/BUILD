@@ -46,7 +46,7 @@ cc_library(
         ":solver_result_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
-        "//mathtrader/parser:parser_result_cc_proto",
+        "//mathtrader/parser:trade_request_cc_proto",
         "//mathtrader/solver/internal:trade_model",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status",
@@ -61,7 +61,7 @@ cc_test(
     deps = [
         ":solver",
         "//mathtrader/common:item_cc_proto",
-        "//mathtrader/parser:parser_result_cc_proto",
+        "//mathtrader/parser:trade_request_cc_proto",
         "//mathtrader/solver:solver_result_cc_proto",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",

@@ -24,10 +24,10 @@ package(
     default_visibility = ["//mathtrader:__subpackages__"],
 )
 
-# Parser output.
+# mathtrader request to solve a particular trade.
 proto_library(
-    name = "parser_result_proto",
-    srcs = ["parser_result.proto"],
+    name = "trade_request_proto",
+    srcs = ["trade_request.proto"],
     deps = [
         "//mathtrader/common:item_proto",
         "//mathtrader/common:wantlist_proto",
@@ -35,8 +35,8 @@ proto_library(
 )
 
 cc_proto_library(
-    name = "parser_result_cc_proto",
-    deps = [":parser_result_proto"],
+    name = "trade_request_cc_proto",
+    deps = [":trade_request_proto"],
 )
 
 # Parser of "officialwants" files.
@@ -45,7 +45,7 @@ cc_library(
     srcs = ["math_parser.cc"],
     hdrs = ["math_parser.h"],
     deps = [
-        ":parser_result_cc_proto",
+        ":trade_request_cc_proto",
         "//mathtrader/parser/internal:internal_parser",
         "@com_google_absl//absl/status:statusor",
     ],
@@ -72,7 +72,7 @@ cc_test(
     data = ["//mathtrader/parser/test_data:olwlg_test_data"],
     deps = [
         ":math_parser",
-        ":parser_result_cc_proto",
+        ":trade_request_cc_proto",
         "//mathtrader/common:item_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "@com_google_absl//absl/status:statusor",

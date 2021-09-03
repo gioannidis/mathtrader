@@ -33,7 +33,7 @@
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/parser/internal/item_parser.h"
 #include "mathtrader/parser/internal/wantlist_parser.h"
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/trade_request.pb.h"
 
 namespace mathtrader::parser::internal {
 class InternalParser {
@@ -52,11 +52,11 @@ class InternalParser {
   // Identical to `ParseFile`, but operates directly on the data string.
   ABSL_MUST_USE_RESULT absl::Status ParseText(std::string_view data);
 
-  // Returns the parsed ParserResult.
-  const ParserResult& parser_result() const { return parser_result_; }
+  // Returns the parsed TradeRequest.
+  const TradeRequest& trade_request() const { return trade_request_; }
 
-  // Returns a mutable pointer to the parsed ParserResult.
-  ParserResult* mutable_parser_result() { return &parser_result_; }
+  // Returns a mutable pointer to the parsed TradeRequest.
+  TradeRequest* mutable_trade_request() { return &trade_request_; }
 
   // Returns the number of parsed lines.
   const int64_t get_line_count() const { return line_count_; }
@@ -100,8 +100,8 @@ class InternalParser {
   //    ParseWantlist("0001-MKBG : 0002-PANDE 0003-TTAANSOC 0004-SCYTHE");
   ABSL_MUST_USE_RESULT absl::Status ParseWantlist(std::string_view line);
 
-  // Propagates data from the data members to the parser_result.
-  void FinalizeParserResult();
+  // Propagates data from the data members to the trade_request.
+  void FinalizeTradeRequest();
 
   // Defines the lines that the parser ignores.
   const re2::RE2 kIgnoreLineRegex;
@@ -134,7 +134,7 @@ class InternalParser {
   absl::flat_hash_map<std::string, int32_t> missing_items_;
 
   // The trade input to return.
-  ParserResult parser_result_;
+  TradeRequest trade_request_;
 };
 }  // namespace mathtrader::parser::internal
 #endif  // MATHTRADER_PARSER_INTERNAL_INTERNAL_PARSER_H_

@@ -27,12 +27,12 @@
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
-#include "mathtrader/parser/parser_result.pb.h"
+#include "mathtrader/parser/trade_request.pb.h"
 #include "mathtrader/solver/solver_result.pb.h"
 
 namespace {
 using ::mathtrader::common::Item;
-using ::mathtrader::parser::ParserResult;
+using ::mathtrader::parser::TradeRequest;
 using ::mathtrader::solver::Solver;
 using ::mathtrader::solver::SolverResult;
 using ::mathtrader::solver::TradePair;
@@ -49,26 +49,26 @@ MATCHER_P2(TradePairIs, offered_id, wanted_id, "") {
                             arg, result_listener);
 }
 
-// Builds the item map from the ParserResult::wantlists. This allows us to
+// Builds the item map from the TradeRequest::wantlists. This allows us to
 // define test protos in text format and auto-populate the map. No `Item` fields
 // are populated.
-void BuildItemMap(ParserResult& parser_result) {
-  for (const auto& wantlist : parser_result.wantlists()) {
+void BuildItemMap(TradeRequest& trade_request) {
+  for (const auto& wantlist : trade_request.wantlists()) {
     // Inserts the offered item.
-    gtl::InsertIfNotPresent(parser_result.mutable_items(), wantlist.offered(),
+    gtl::InsertIfNotPresent(trade_request.mutable_items(), wantlist.offered(),
                             Item());
     // Inserts all wanted items.
     for (const auto& wanted : wantlist.wanted()) {
-      gtl::InsertIfNotPresent(parser_result.mutable_items(), wanted.id(),
+      gtl::InsertIfNotPresent(trade_request.mutable_items(), wanted.id(),
                               Item());
     }
   }
 }
 
-// Constructs a ParserResult proto from the given text input. Builds the
+// Constructs a TradeRequest proto from the given text input. Builds the
 // wantlists from the text input and updates the item map with all listed items.
-ParserResult BuildParserResult(std::string_view text_proto) {
-  ParserResult parser_proto;
+TradeRequest BuildTradeRequest(std::string_view text_proto) {
+  TradeRequest parser_proto;
   CHECK(::google::protobuf::TextFormat::ParseFromString(std::string(text_proto),
                                                         &parser_proto));
   BuildItemMap(parser_proto);
@@ -83,19 +83,19 @@ const SolverResult SolveTrade(std::string_view input,
   CHECK_GE(input.size(), owners.size());
 
   Solver solver;
-  ParserResult parser_result = BuildParserResult(input);
+  TradeRequest trade_request = BuildTradeRequest(input);
 
   // Index corresponding to owner[i] of wantlist[i].
   int index = 0;
   for (const std::string_view owner : owners) {
-    const std::string_view offered = parser_result.wantlists(index).offered();
-    auto* items = parser_result.mutable_items();
+    const std::string_view offered = trade_request.wantlists(index).offered();
+    auto* items = trade_request.mutable_items();
     auto it = items->find(offered);
     CHECK(it != items->end());
     it->second.set_username(std::string(owner));
     ++index;
   }
-  solver.BuildModel(parser_result);
+  solver.BuildModel(trade_request);
 
   const auto status = solver.SolveModel();
   CHECK(status.ok()) << status.message();

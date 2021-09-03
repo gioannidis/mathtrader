@@ -52,7 +52,7 @@ absl::Status InternalParser::ParseFile(std::string_view filename) {
     return absl::InvalidArgumentError(absl::StrFormat(
         "Could not open input file or file is empty: %s", filename));
   }
-  FinalizeParserResult();
+  FinalizeTradeRequest();
   return absl::OkStatus();
 }
 
@@ -70,7 +70,7 @@ absl::Status InternalParser::ParseText(std::string_view data) {
       return status;
     }
   }
-  FinalizeParserResult();
+  FinalizeTradeRequest();
   return absl::OkStatus();
 }
 }  // namespace mathtrader::parser::internal
