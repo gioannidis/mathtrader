@@ -28,6 +28,7 @@
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/parser/trade_request.pb.h"
+#include "mathtrader/solver/internal/trade_request_extensions.pb.h"
 #include "mathtrader/solver/trade_response.pb.h"
 
 namespace {
@@ -36,6 +37,7 @@ using ::mathtrader::parser::TradeRequest;
 using ::mathtrader::solver::Solver;
 using ::mathtrader::solver::TradePair;
 using ::mathtrader::solver::TradeResponse;
+using ::mathtrader::solver::internal::TradeRequestExtensions;
 using ::testing::AllOf;
 using ::testing::IsEmpty;
 using ::testing::Property;
@@ -76,24 +78,24 @@ TradeRequest BuildTradeRequest(std::string_view text_proto) {
 }
 
 // Solves the math trade defined by the input, verifies that we have found a
-// solution and returns the response. Optionally takes a span of the wantlist
-// owners.
+// solution and returns the response. If `has_usernames` has been given, builds
+// also an items map from the internal `TradeRequestExtensions`.
 const TradeResponse SolveTrade(std::string_view input,
-                               absl::Span<const std::string_view> owners = {}) {
-  CHECK_GE(input.size(), owners.size());
-
+                               bool has_usernames = false) {
   Solver solver;
   TradeRequest trade_request = BuildTradeRequest(input);
 
-  // Index corresponding to owner[i] of wantlist[i].
-  int index = 0;
-  for (const std::string_view owner : owners) {
-    const std::string_view offered = trade_request.wantlists(index).offered();
-    auto* items = trade_request.mutable_items();
-    auto it = items->find(offered);
-    CHECK(it != items->end());
-    it->second.set_username(std::string(owner));
-    ++index;
+  if (has_usernames) {
+    for (const auto& item_data : trade_request.GetRepeatedExtension(
+             TradeRequestExtensions::item_data)) {
+      // Creates a new item indexed by the given id.
+      const std::string& id = item_data.id();
+      Item& item = (*trade_request.mutable_items())[id];
+
+      // Sets the item id (for consistency) and the username (for the test).
+      item.set_id(id);
+      item.set_username(item_data.username());
+    }
   }
   solver.BuildModel(trade_request);
 
@@ -230,16 +232,18 @@ TEST(SolverTest, ThreeItemsWithPriorities) {
 }
 
 // Test suite: solving with usernames. The use case is as follows:
-// - Users U1 and U2 trade with each other their respective G1 items.
+// - Alice (U1) and Bob (U2) trade with each other their respective G1 items.
 // U1G1 -> U2G1
 // U2G1 -> U1G1
 //
-// - Users U3 and U4 trade with each other their respective G1 items.
+// - Charlie (U3) and Daniel (U4) trade with each other their respective G1
+//   items.
 //
 // U3G1 -> U4G1
 // U3G1 -> U3G1
 //
-// - User U1 can either trade with U5 or form a longer chain with U2, U3, U4.
+// - Alice can either trade with Eve (U5) or form a longer chain with Bob,
+//   Charlie and Daniel.
 // U5G1 -> U1G2
 // U1G2 -> U2G2, U5G1
 // U2G2 -> U3G2
@@ -286,6 +290,43 @@ static constexpr std::string_view kSolverWithUsernamesTestUseCase = R"pb(
     offered: "U4G2"
     wanted { id: "U1G2" }
   }
+
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U1G1"
+    username: "Alice"
+  }
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U1G2"
+    username: "Alice"
+  }
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U2G1"
+    username: "Bob"
+  }
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U2G2"
+    username: "Bob"
+  }
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U3G1"
+    username: "Charlie"
+  }
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U3G2"
+    username: "Charlie"
+  }
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U4G1"
+    username: "Daniel"
+  }
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U4G2"
+    username: "Daniel"
+  }
+  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
+    id: "U5G1"
+    username: "Eve"
+  }
 )pb";
 
 // Baseline: no usernames are given.
@@ -302,9 +343,7 @@ TEST(SolverWithUsernamesTest, NoUsernames) {
 // Defines usernames for all items.
 TEST(SolverWithUsernamesTest, WithUsernames) {
   const TradeResponse& response =
-      SolveTrade(kSolverWithUsernamesTestUseCase,
-                 {"user1", "user2", "user3", "user4", "user5", "user1", "user2",
-                  "user3", "user4"});
+      SolveTrade(kSolverWithUsernamesTestUseCase, /*has_usernames=*/true);
   EXPECT_THAT(response.trade_pairs(),
               UnorderedElementsAre(
                   TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),

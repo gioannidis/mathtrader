@@ -66,4 +66,6 @@ message TradeRequest {
 
   // Tracks non-dummy wanted items requested by their owner.
   repeated RemovedItem owned_items = 7;
+
+  extensions 100 to 199;
 }

@@ -17,7 +17,8 @@
 
 # Defines BUILD rules internal solver modules.
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_proto//proto:defs.bzl", "proto_library")
 
 package(
     default_visibility = ["//mathtrader/solver:__pkg__"],
@@ -45,4 +46,16 @@ cc_test(
         ":trade_model",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+# Rules to build the internal TradeRequest extensions.
+proto_library(
+    name = "trade_request_extensions_proto",
+    srcs = ["trade_request_extensions.proto"],
+    deps = ["//mathtrader/parser:trade_request_proto"],
+)
+
+cc_proto_library(
+    name = "trade_request_extensions_cc_proto",
+    deps = [":trade_request_extensions_proto"],
 )
