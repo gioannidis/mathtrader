@@ -24,14 +24,15 @@ package mathtrader.solver.internal;
 import "mathtrader/parser/trade_request.proto";
 
 message TradeRequestExtensions {
-  // Encapsulates the username associated with an item. This is used to define
-  // item usernames in textprotos for testing purposes, without declaring an
-  // item map.
-  message ItemData {
-    optional string id = 1;
-    optional string username = 2;
+  // Encapsulates an owner, defined as a username who owns multiple items. This
+  // is used to define item usernames in textprotos for testing purposes,
+  // without declaring an item map.
+  message Owner {
+    optional string username = 1;
+    repeated string items = 2;
   }
   extend parser.TradeRequest {
-    repeated ItemData item_data = 100;
+    // A list of owners with their respective items.
+    repeated Owner owners = 100;
   }
 }

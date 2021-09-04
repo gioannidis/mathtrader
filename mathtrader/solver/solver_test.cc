@@ -85,16 +85,20 @@ const TradeResponse SolveTrade(std::string_view input,
   Solver solver;
   TradeRequest trade_request = BuildTradeRequest(input);
 
+  // Creates usernames if specified.
   if (has_usernames) {
-    for (const auto& item_data : trade_request.GetRepeatedExtension(
-             TradeRequestExtensions::item_data)) {
-      // Creates a new item indexed by the given id.
-      const std::string& id = item_data.id();
-      Item& item = (*trade_request.mutable_items())[id];
+    // Iterates each individual owner; they may own multiple items.
+    for (const auto& owners :
+         trade_request.GetRepeatedExtension(TradeRequestExtensions::owners)) {
+      // Iterates the items owned by the given owner.
+      for (const std::string& item_id : owners.items()) {
+        // Creates a new item indexed by the given id.
+        Item& item = (*trade_request.mutable_items())[item_id];
 
-      // Sets the item id (for consistency) and the username (for the test).
-      item.set_id(id);
-      item.set_username(item_data.username());
+        // Sets the item id (for consistency) and the username (for the test).
+        item.set_id(item_id);
+        item.set_username(owners.username());
+      }
     }
   }
   solver.BuildModel(trade_request);
@@ -291,41 +295,29 @@ static constexpr std::string_view kSolverWithUsernamesTestUseCase = R"pb(
     wanted { id: "U1G2" }
   }
 
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U1G1"
+  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
     username: "Alice"
+    items: "U1G1"
+    items: "U1G2"
   }
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U1G2"
-    username: "Alice"
-  }
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U2G1"
+  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
     username: "Bob"
+    items: "U2G1"
+    items: "U2G2"
   }
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U2G2"
-    username: "Bob"
-  }
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U3G1"
+  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
     username: "Charlie"
+    items: "U3G1"
+    items: "U3G2"
   }
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U3G2"
-    username: "Charlie"
-  }
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U4G1"
+  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
     username: "Daniel"
+    items: "U4G1"
+    items: "U4G2"
   }
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U4G2"
-    username: "Daniel"
-  }
-  [mathtrader.solver.internal.TradeRequestExtensions.item_data] {
-    id: "U5G1"
+  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
     username: "Eve"
+    items: "U5G1"
   }
 )pb";
 
