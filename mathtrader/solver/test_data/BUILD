@@ -16,9 +16,21 @@
 # along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
 
 # Defines filegroup for .textproto test files.
-
 filegroup(
     name = "trade_request_textproto",
     srcs = glob(["*.textproto"]),
     visibility = ["//mathtrader/solver:__pkg__"],
+)
+
+# Defines filegroup for .dot files that visualize the test cases.
+filegroup(
+    name = "textproto_dot_files",
+    srcs = glob(["*.dot"]),
+)
+
+# Script to visualize examples.
+sh_binary(
+    name = "run_graphviz",
+    srcs = ["run_graphviz.sh"],
+    data = [":textproto_dot_files"],
 )
