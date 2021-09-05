@@ -98,7 +98,9 @@ absl::Status Solver::SolveModel() {
   }
 
   // Sets the number of parallel search workers.
-  parameters.set_num_search_workers(num_search_workers_);
+  if (num_search_workers_ > 0) {
+    parameters.set_num_search_workers(num_search_workers_);
+  }
 
   // Sets whether the solver should stop after the first solution.
   parameters.set_stop_after_first_solution(stop_after_first_solution_);

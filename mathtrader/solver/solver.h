@@ -85,7 +85,7 @@ class Solver {
   double max_time_in_seconds_{};
 
   // Number of parallel workers.
-  int32_t num_search_workers_ = 1;
+  int32_t num_search_workers_{};
 
   // Stops the solver when it finds the first solution.
   bool stop_after_first_solution_ = false;
