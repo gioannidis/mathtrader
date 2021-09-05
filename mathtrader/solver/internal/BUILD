@@ -52,7 +52,7 @@ cc_test(
 proto_library(
     name = "trade_request_extensions_proto",
     srcs = ["trade_request_extensions.proto"],
-    deps = ["//mathtrader/parser:trade_request_proto"],
+    deps = ["//mathtrader/common:trade_request_proto"],
 )
 
 cc_proto_library(

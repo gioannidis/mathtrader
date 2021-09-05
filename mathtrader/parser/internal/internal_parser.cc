@@ -34,13 +34,14 @@
 #include "re2/re2.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/trade_request.pb.h"
 #include "mathtrader/parser/util/item_util.h"
 
 namespace mathtrader::parser::internal {
 namespace {
 using ::mathtrader::common::Item;
+using ::mathtrader::common::TradeRequest;
 using ::mathtrader::common::Wantlist;
 
 // Prefix for directive lines.

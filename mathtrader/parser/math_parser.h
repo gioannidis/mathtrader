@@ -25,7 +25,7 @@
 
 #include "absl/status/statusor.h"
 
-#include "mathtrader/parser/trade_request.pb.h"
+#include "mathtrader/common/trade_request.pb.h"
 
 namespace mathtrader::parser {
 // Parses the official wants provided by the Online Want List Generator (OLWLG)
@@ -46,10 +46,11 @@ class MathParser {
   ~MathParser() = default;
 
   // Parses the OLWLG-generated file and generates the trade data.
-  static absl::StatusOr<TradeRequest> ParseFile(std::string_view filename);
+  static absl::StatusOr<common::TradeRequest> ParseFile(
+      std::string_view filename);
 
   // Identical to `ParseFile`, but operates directly on the data string.
-  static absl::StatusOr<TradeRequest> ParseText(std::string_view text);
+  static absl::StatusOr<common::TradeRequest> ParseText(std::string_view text);
 };
 }  // namespace mathtrader::parser
 #endif  // MATHTRADER_PARSER_MATH_PARSER_H_

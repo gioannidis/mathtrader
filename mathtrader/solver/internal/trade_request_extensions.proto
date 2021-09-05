@@ -21,7 +21,7 @@ syntax = "proto2";
 
 package mathtrader.solver.internal;
 
-import "mathtrader/parser/trade_request.proto";
+import "mathtrader/common/trade_request.proto";
 
 message TradeRequestExtensions {
   // Encapsulates an owner, defined as a username who owns multiple items. This
@@ -31,7 +31,7 @@ message TradeRequestExtensions {
     optional string username = 1;
     repeated string items = 2;
   }
-  extend parser.TradeRequest {
+  extend common.TradeRequest {
     // A list of owners with their respective items.
     repeated Owner owners = 100;
   }

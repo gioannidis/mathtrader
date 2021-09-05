@@ -22,11 +22,13 @@
 
 #include "absl/status/statusor.h"
 
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/parser/internal/internal_parser.h"
-#include "mathtrader/parser/trade_request.pb.h"
 
 namespace mathtrader::parser {
 namespace {
+using ::mathtrader::common::TradeRequest;
+
 // Creates a stateful internal parser, parses the OLWLG data and returns the
 // result.
 absl::StatusOr<TradeRequest> ParseFileOrText(std::string_view file_or_data,

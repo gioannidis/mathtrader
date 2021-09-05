@@ -23,8 +23,8 @@
 #include "absl/base/attributes.h"
 #include "absl/status/status.h"
 
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/trade_response.pb.h"
-#include "mathtrader/parser/trade_request.pb.h"
 #include "mathtrader/solver/internal/trade_model.h"
 #include "mathtrader/util/str_indexer.h"
 
@@ -41,7 +41,7 @@ class Solver {
 
   // Builds the model that models the math trade from the given OLWLG-parser
   // generated input.
-  void BuildModel(const parser::TradeRequest& trade_request);
+  void BuildModel(const common::TradeRequest& trade_request);
 
   // Solves the CP model.
   ABSL_MUST_USE_RESULT absl::Status SolveModel();

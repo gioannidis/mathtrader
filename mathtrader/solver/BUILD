@@ -29,9 +29,9 @@ cc_library(
     hdrs = ["solver.h"],
     deps = [
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:trade_request_cc_proto",
         "//mathtrader/common:trade_response_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
-        "//mathtrader/parser:trade_request_cc_proto",
         "//mathtrader/solver/internal:trade_model",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/status",
@@ -47,8 +47,8 @@ cc_test(
     deps = [
         ":solver",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:trade_request_cc_proto",
         "//mathtrader/common:trade_response_cc_proto",
-        "//mathtrader/parser:trade_request_cc_proto",
         "//mathtrader/solver/internal:trade_request_extensions_cc_proto",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",

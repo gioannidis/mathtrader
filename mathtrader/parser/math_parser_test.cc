@@ -26,8 +26,8 @@
 #include "gtest/gtest.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/trade_request.pb.h"
 
 namespace {
 using ::mathtrader::common::Item;
@@ -47,7 +47,7 @@ using ::testing::StartsWith;
 using ::testing::StrCaseEq;
 using ::testing::UnorderedElementsAre;
 
-using RemovedItem = ::mathtrader::parser::TradeRequest::RemovedItem;
+using RemovedItem = ::mathtrader::common::TradeRequest::RemovedItem;
 
 // Base test case with official item names and wantlists. Each wantlist defines
 // three (3) non-dummy items.

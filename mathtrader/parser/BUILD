@@ -17,26 +17,10 @@
 
 # Defines internal BUILD rules for the "officialwants" file parser.
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
 package(
     default_visibility = ["//mathtrader:__subpackages__"],
-)
-
-# mathtrader request to solve a particular trade.
-proto_library(
-    name = "trade_request_proto",
-    srcs = ["trade_request.proto"],
-    deps = [
-        "//mathtrader/common:item_proto",
-        "//mathtrader/common:wantlist_proto",
-    ],
-)
-
-cc_proto_library(
-    name = "trade_request_cc_proto",
-    deps = [":trade_request_proto"],
 )
 
 # Parser of "officialwants" files.
@@ -45,7 +29,7 @@ cc_library(
     srcs = ["math_parser.cc"],
     hdrs = ["math_parser.h"],
     deps = [
-        ":trade_request_cc_proto",
+        "//mathtrader/common:trade_request_cc_proto",
         "//mathtrader/parser/internal:internal_parser",
         "@com_google_absl//absl/status:statusor",
     ],
@@ -72,8 +56,8 @@ cc_test(
     data = ["//mathtrader/parser/test_data:olwlg_test_data"],
     deps = [
         ":math_parser",
-        ":trade_request_cc_proto",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:trade_request_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "@com_google_absl//absl/status:statusor",
         "@com_google_googletest//:gtest_main",

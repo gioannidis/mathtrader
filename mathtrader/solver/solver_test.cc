@@ -29,15 +29,15 @@
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/trade_response.pb.h"
-#include "mathtrader/parser/trade_request.pb.h"
 #include "mathtrader/solver/internal/trade_request_extensions.pb.h"
 
 namespace {
 using ::mathtrader::common::Item;
 using ::mathtrader::common::TradePair;
+using ::mathtrader::common::TradeRequest;
 using ::mathtrader::common::TradeResponse;
-using ::mathtrader::parser::TradeRequest;
 using ::mathtrader::solver::Solver;
 using ::mathtrader::solver::internal::TradeRequestExtensions;
 using ::testing::AllOf;

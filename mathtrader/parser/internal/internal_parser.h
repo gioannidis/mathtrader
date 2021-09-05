@@ -31,9 +31,9 @@
 #include "re2/re2.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/parser/internal/item_parser.h"
 #include "mathtrader/parser/internal/wantlist_parser.h"
-#include "mathtrader/parser/trade_request.pb.h"
 
 namespace mathtrader::parser::internal {
 class InternalParser {
@@ -53,10 +53,10 @@ class InternalParser {
   ABSL_MUST_USE_RESULT absl::Status ParseText(std::string_view data);
 
   // Returns the parsed TradeRequest.
-  const TradeRequest& trade_request() const { return trade_request_; }
+  const common::TradeRequest& trade_request() const { return trade_request_; }
 
   // Returns a mutable pointer to the parsed TradeRequest.
-  TradeRequest* mutable_trade_request() { return &trade_request_; }
+  common::TradeRequest* mutable_trade_request() { return &trade_request_; }
 
   // Returns the number of parsed lines.
   const int64_t get_line_count() const { return line_count_; }
@@ -134,7 +134,7 @@ class InternalParser {
   absl::flat_hash_map<std::string, int32_t> missing_items_;
 
   // The trade input to return.
-  TradeRequest trade_request_;
+  common::TradeRequest trade_request_;
 };
 }  // namespace mathtrader::parser::internal
 #endif  // MATHTRADER_PARSER_INTERNAL_INTERNAL_PARSER_H_

@@ -24,12 +24,12 @@
 #include "gtest/gtest.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/trade_request.pb.h"
 
 namespace {
+using ::mathtrader::common::TradeRequest;
 using ::mathtrader::common::Wantlist;
-using ::mathtrader::parser::TradeRequest;
 using ::mathtrader::parser::internal::InternalParser;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -45,7 +45,7 @@ using ::testing::StrCaseEq;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
-using RemovedItem = ::mathtrader::parser::TradeRequest::RemovedItem;
+using RemovedItem = ::mathtrader::common::TradeRequest::RemovedItem;
 
 // Tests a basic use-case.
 TEST(InternalParser, TestOnlyComments) {

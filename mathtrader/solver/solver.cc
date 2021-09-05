@@ -28,12 +28,12 @@
 #include "ortools/sat/sat_parameters.pb.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/trade_request.pb.h"
 
 namespace mathtrader::solver {
 namespace {
-using ::mathtrader::parser::TradeRequest;
+using ::mathtrader::common::TradeRequest;
 
 // Extracts the item ids from `trade_request`. Returns a vector with the
 // extracted item ids.

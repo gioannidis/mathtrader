@@ -32,14 +32,14 @@
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
-#include "mathtrader/parser/trade_request.pb.h"
 
 namespace {
 using ::mathtrader::common::Item;
+using ::mathtrader::common::TradeRequest;
 using ::mathtrader::common::Wantlist;
 using ::mathtrader::parser::MathParser;
-using ::mathtrader::parser::TradeRequest;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Contains;
@@ -57,7 +57,7 @@ using ::testing::StartsWith;
 using ::testing::StrCaseEq;
 using ::testing::StrEq;
 
-using RemovedItem = ::mathtrader::parser::TradeRequest::RemovedItem;
+using RemovedItem = ::mathtrader::common::TradeRequest::RemovedItem;
 }  // namespace
 
 // Opens the same namespace that defines the protobuf Map in order to specialize

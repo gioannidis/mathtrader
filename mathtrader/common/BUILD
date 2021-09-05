@@ -59,7 +59,22 @@ cc_proto_library(
     deps = [":wantlist_proto"],
 )
 
-# The response to a TradeRequest.
+# Build rules for mathtrader request to solve a trade.
+proto_library(
+    name = "trade_request_proto",
+    srcs = ["trade_request.proto"],
+    deps = [
+        ":item_proto",
+        ":wantlist_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "trade_request_cc_proto",
+    deps = [":trade_request_proto"],
+)
+
+# Build rules for mathtrader response to a TradeRequest.
 proto_library(
     name = "trade_response_proto",
     srcs = ["trade_response.proto"],
