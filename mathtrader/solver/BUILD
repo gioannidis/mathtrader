@@ -58,6 +58,7 @@ cc_test(
     name = "solver_test",
     size = "small",
     srcs = ["solver_test.cc"],
+    data = ["//mathtrader/solver/test_data:trade_request_textproto"],
     deps = [
         ":solver",
         "//mathtrader/common:item_cc_proto",
@@ -66,6 +67,7 @@ cc_test(
         "//mathtrader/solver/internal:trade_request_extensions_cc_proto",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
+        "@com_google_or_tools//ortools/base:file",
         "@com_google_or_tools//ortools/base:map_util",
     ],
 )

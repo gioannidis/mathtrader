@@ -17,6 +17,7 @@
 
 #include "mathtrader/solver/solver.h"
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 
@@ -24,6 +25,7 @@
 #include "gmock/gmock.h"
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
+#include "ortools/base/file.h"
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
@@ -43,6 +45,9 @@ using ::testing::IsEmpty;
 using ::testing::Property;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
+
+// Maximum buffer length in bytes when reading an entire file to string.
+static constexpr int64_t kReadToStringMaxLength = 2'000;
 
 // Matches a TradePair message, encapsulating an offered and a wanted item.
 MATCHER_P2(TradePairIs, offered_id, wanted_id, "") {
@@ -77,13 +82,13 @@ TradeRequest BuildTradeRequest(std::string_view text_proto) {
   return parser_proto;
 }
 
-// Solves the math trade defined by the input, verifies that we have found a
-// solution and returns the response. If `has_usernames` has been given, builds
-// also an items map from the internal `TradeRequestExtensions`.
-const TradeResponse SolveTrade(std::string_view input,
-                               bool has_usernames = false) {
-  Solver solver;
-  TradeRequest trade_request = BuildTradeRequest(input);
+// Solves the math trade defined by the input textproto, verifies that we have
+// found a solution and returns the response. If `has_usernames` has been given,
+// builds also an items map from the internal `TradeRequestExtensions`.
+TradeResponse SolveTrade(std::string_view textproto,
+                         bool has_usernames = false) {
+  // Builds the trade request.
+  TradeRequest trade_request = BuildTradeRequest(textproto);
 
   // Creates usernames if specified.
   if (has_usernames) {
@@ -101,11 +106,28 @@ const TradeResponse SolveTrade(std::string_view input,
       }
     }
   }
+  // Solves the math trade problem.
+  Solver solver;
   solver.BuildModel(trade_request);
 
   const auto status = solver.SolveModel();
   CHECK(status.ok()) << status.message();
   return solver.response();
+}
+
+// As above, but reads the textproto from a file.
+TradeResponse SolveTradeFromFile(std::string_view textproto_pathname,
+                                 bool has_usernames = false) {
+  // Opens the textproto file with default options.
+  File* textproto_file =
+      file::OpenOrDie(/*filename=*/textproto_pathname, /*mode=*/"r",
+                      /*flags=*/file::Defaults());
+
+  // Reads the textproto file to string.
+  std::string textproto;
+  textproto_file->ReadToString(&textproto, kReadToStringMaxLength);
+
+  return SolveTrade(textproto, has_usernames);
 }
 
 // Tests that no items trade with empty wantlists.
@@ -235,14 +257,13 @@ TEST(SolverTest, ThreeItemsWithPriorities) {
                                    TradePairIs("Carcassonne", "Pandemic")));
 }
 
-// Test suite: solving with usernames. The use case is as follows:
+// Test suite: disconnected item chains with multiple users. Use case:
 // - Alice (U1) and Bob (U2) trade with each other their respective G1 items.
 // U1G1 -> U2G1
 // U2G1 -> U1G1
 //
 // - Charlie (U3) and Daniel (U4) trade with each other their respective G1
 //   items.
-//
 // U3G1 -> U4G1
 // U3G1 -> U3G1
 //
@@ -253,77 +274,13 @@ TEST(SolverTest, ThreeItemsWithPriorities) {
 // U2G2 -> U3G2
 // U3G2 -> U4G2
 // U4G2 -> U1G2
-
-static constexpr std::string_view kSolverWithUsernamesTestUseCase = R"pb(
-  wantlists {
-    offered: "U1G1"
-    wanted { id: "U2G1" }
-  }
-  wantlists {
-    offered: "U2G1"
-    wanted { id: "U1G1" }
-  }
-
-  wantlists {
-    offered: "U3G1"
-    wanted { id: "U4G1" }
-  }
-  wantlists {
-    offered: "U4G1"
-    wanted { id: "U3G1" }
-  }
-
-  wantlists {
-    offered: "U5G1"
-    wanted { id: "U1G2" }
-  }
-  wantlists {
-    offered: "U1G2"
-    wanted { id: "U2G2" }
-    wanted { id: "U5G1" }
-  }
-  wantlists {
-    offered: "U2G2"
-    wanted { id: "U3G2" }
-  }
-  wantlists {
-    offered: "U3G2"
-    wanted { id: "U4G2" }
-  }
-  wantlists {
-    offered: "U4G2"
-    wanted { id: "U1G2" }
-  }
-
-  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
-    username: "Alice"
-    items: "U1G1"
-    items: "U1G2"
-  }
-  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
-    username: "Bob"
-    items: "U2G1"
-    items: "U2G2"
-  }
-  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
-    username: "Charlie"
-    items: "U3G1"
-    items: "U3G2"
-  }
-  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
-    username: "Daniel"
-    items: "U4G1"
-    items: "U4G2"
-  }
-  [mathtrader.solver.internal.TradeRequestExtensions.owners] {
-    username: "Eve"
-    items: "U5G1"
-  }
-)pb";
+static constexpr std::string_view kDisconnectedChainsPathname =
+    "mathtrader/solver/test_data/disconnected_chains.textproto";
 
 // Baseline: no usernames are given.
-TEST(SolverWithUsernamesTest, NoUsernames) {
-  const TradeResponse& response = SolveTrade(kSolverWithUsernamesTestUseCase);
+TEST(DisconnectedChainsTest, NoUsernames) {
+  const TradeResponse& response =
+      SolveTradeFromFile(kDisconnectedChainsPathname);
   EXPECT_THAT(response.trade_pairs(),
               UnorderedElementsAre(
                   TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),
@@ -333,9 +290,9 @@ TEST(SolverWithUsernamesTest, NoUsernames) {
 }
 
 // Defines usernames for all items.
-TEST(SolverWithUsernamesTest, WithUsernames) {
+TEST(DisconnectedChainsTest, WithUsernames) {
   const TradeResponse& response =
-      SolveTrade(kSolverWithUsernamesTestUseCase, /*has_usernames=*/true);
+      SolveTradeFromFile(kDisconnectedChainsPathname, /*has_usernames=*/true);
   EXPECT_THAT(response.trade_pairs(),
               UnorderedElementsAre(
                   TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),

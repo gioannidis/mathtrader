@@ -1,0 +1,64 @@
+wantlists {
+  offered: "U1G1"
+  wanted { id: "U2G1" }
+}
+wantlists {
+  offered: "U2G1"
+  wanted { id: "U1G1" }
+}
+
+wantlists {
+  offered: "U3G1"
+  wanted { id: "U4G1" }
+}
+wantlists {
+  offered: "U4G1"
+  wanted { id: "U3G1" }
+}
+
+wantlists {
+  offered: "U5G1"
+  wanted { id: "U1G2" }
+}
+wantlists {
+  offered: "U1G2"
+  wanted { id: "U2G2" }
+  wanted { id: "U5G1" }
+}
+wantlists {
+  offered: "U2G2"
+  wanted { id: "U3G2" }
+}
+wantlists {
+  offered: "U3G2"
+  wanted { id: "U4G2" }
+}
+wantlists {
+  offered: "U4G2"
+  wanted { id: "U1G2" }
+}
+
+[mathtrader.solver.internal.TradeRequestExtensions.owners] {
+  username: "Alice"
+  items: "U1G1"
+  items: "U1G2"
+}
+[mathtrader.solver.internal.TradeRequestExtensions.owners] {
+  username: "Bob"
+  items: "U2G1"
+  items: "U2G2"
+}
+[mathtrader.solver.internal.TradeRequestExtensions.owners] {
+  username: "Charlie"
+  items: "U3G1"
+  items: "U3G2"
+}
+[mathtrader.solver.internal.TradeRequestExtensions.owners] {
+  username: "Daniel"
+  items: "U4G1"
+  items: "U4G2"
+}
+[mathtrader.solver.internal.TradeRequestExtensions.owners] {
+  username: "Eve"
+  items: "U5G1"
+}
