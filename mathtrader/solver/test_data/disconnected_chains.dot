@@ -1,0 +1,55 @@
+// This file is part of mathtrader.
+//
+// Copyright (C) 2021 George Ioannidis
+//
+// mathtrader is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// mathtrader is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with mathtrader. If not, see <http://www.gnu.org/licenses/>.
+
+// Defines a directed graph representing the following trade scenario.
+// Users U1, U2, U3, U4, and U5 offer items for trade. U5 offers a single item,
+// all other users offer 2 items each. U1, U2, U3, and U4 always trade at least
+// one item. There are two distinct scenarios for the rest of the items:
+//
+// 1. Maximize trading items: users U1, U2, U3, and U4 trade their second items,
+//    forming a large chain. U5 does not trade. Only 1 item is not traded.
+//
+// 2. Maximize trading users: U1 trades 2 items, all others trade 1 item each.
+//    All users trade. 3 items are not traded.
+digraph {
+  node [color=red];
+  U1G1;
+  U1G2;
+  node [color=blue];
+  U2G1;
+  U2G2;
+  node [color=green];
+  U3G1;
+  U3G2;
+  node [color=magenta];
+  U4G1;
+  U4G2;
+  node [color=black];
+  U5G1 [label="U5"];
+
+  U1G1 -> U2G1;
+  U2G1 -> U1G1;
+
+  U3G1 -> U4G1;
+  U4G1 -> U3G1;
+
+  U1G2 -> {U2G2 U5G1};
+  U2G2 -> U3G2;
+  U3G2 -> U4G2;
+  U4G2 -> U1G2;
+  U5G1 -> U1G2;
+}
