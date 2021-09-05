@@ -67,6 +67,11 @@ class Solver {
     num_search_workers_ = num_search_workers;
   }
 
+  // Sets whether the solver should stop after the first solution.
+  void set_stop_after_first_solution(bool stop_after_first_solution) {
+    stop_after_first_solution_ = stop_after_first_solution;
+  }
+
  private:
   // The model that represents the math trade.
   internal::TradeModel trade_model_;
@@ -74,11 +79,16 @@ class Solver {
   // The response with the solved trade.
   common::TradeResponse response_;
 
+  /* --- SAT Parameters --- */
+
   // Maximum time in seconds to run the Solver.
   double max_time_in_seconds_{};
 
   // Number of parallel workers.
   int32_t num_search_workers_ = 1;
+
+  // Stops the solver when it finds the first solution.
+  bool stop_after_first_solution_ = false;
 };
 }  // namespace mathtrader::solver
 #endif  // MATHTRADER_SOLVER_SOLVER_H_

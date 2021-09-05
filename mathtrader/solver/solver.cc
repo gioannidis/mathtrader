@@ -100,6 +100,9 @@ absl::Status Solver::SolveModel() {
   // Sets the number of parallel search workers.
   parameters.set_num_search_workers(num_search_workers_);
 
+  // Sets whether the solver should stop after the first solution.
+  parameters.set_stop_after_first_solution(stop_after_first_solution_);
+
   // Declares a generic wrapper to wire the solver and the parameters.
   operations_research::sat::Model model;
   model.Add(operations_research::sat::NewSatParameters(parameters));
