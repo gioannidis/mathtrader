@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "ortools/sat/cp_model.pb.h"
 #include "ortools/sat/sat_parameters.pb.h"
 
@@ -106,10 +106,33 @@ absl::Status Solver::SolveModel() {
   const CpSolverResponse response =
       operations_research::sat::SolveCpModel(cp_model.Build(), &model);
 
-  if (response.status() != CpSolverStatus::OPTIMAL &&
-      response.status() != CpSolverStatus::FEASIBLE) {
-    return absl::NotFoundError(absl::StrCat(
-        "No solution found. Solver returned status: ", response.status()));
+  switch (response.status()) {
+    case CpSolverStatus::OPTIMAL: {
+      break;
+    }
+    case CpSolverStatus::FEASIBLE: {
+      break;
+    }
+    case CpSolverStatus::UNKNOWN: {
+      return absl::UnknownError(
+          "Solver reached a search limit before a solution could be "
+          "determined.");
+    }
+    case CpSolverStatus::MODEL_INVALID: {
+      return absl::InternalError("The generated CpModel is invalid.");
+    }
+    case CpSolverStatus::INFEASIBLE: {
+      return absl::NotFoundError(
+          "No solution was found. This indicates an issue with the generated "
+          "CpModel, because a solution where no item trades can always be "
+          "found.");
+    }
+    default: {
+      return absl::UnimplementedError(absl::StrFormat(
+          "No implementation to handle CpSolverResponse status: %d",
+          response.status()));
+      break;
+    }
   }
 
   // Populates the trade_response with the trading items.
