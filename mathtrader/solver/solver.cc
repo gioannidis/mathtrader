@@ -89,12 +89,25 @@ absl::Status Solver::SolveModel() {
   // First, commits the objective function.
   trade_model_.CommitObjectiveFunction();
 
+  // Defines SAT parameters to pass to the solver.
+  operations_research::sat::SatParameters parameters;
+
+  // Sets a time limit, if specified.
+  if (max_time_in_seconds_ > 0) {
+    parameters.set_max_time_in_seconds(max_time_in_seconds_);
+  }
+
+  // Declares a generic wrapper to wire the solver and the parameters.
+  operations_research::sat::Model model;
+  model.Add(operations_research::sat::NewSatParameters(parameters));
+
   // Solves the CP model objective.
   const auto& cp_model = trade_model_.cp_model();
   const CpSolverResponse response =
-      operations_research::sat::Solve(cp_model.Build());
+      operations_research::sat::SolveCpModel(cp_model.Build(), &model);
 
-  if (response.status() != CpSolverStatus::OPTIMAL) {
+  if (response.status() != CpSolverStatus::OPTIMAL &&
+      response.status() != CpSolverStatus::FEASIBLE) {
     return absl::NotFoundError(absl::StrCat(
         "No solution found. Solver returned status: ", response.status()));
   }

@@ -43,11 +43,20 @@ class Solver {
   // generated input.
   void BuildModel(const common::TradeRequest& trade_request);
 
-  // Solves the CP model.
+  // Solves the CP model. Return `OkStatus` if an optimal or feasible solution
+  // has been found.
   ABSL_MUST_USE_RESULT absl::Status SolveModel();
 
+  // Returns the solution to the math trade.
   ABSL_MUST_USE_RESULT const common::TradeResponse& response() const {
     return response_;
+  }
+
+  // Sets the maximum time in seconds to run the Solver when `SolveModel()` is
+  // called. If the Solver has not found the optimal solution when the time
+  // limit is reached, it will return a feasible solution, if it has found any.
+  void set_max_time_in_seconds(double max_time_in_seconds) {
+    max_time_in_seconds_ = max_time_in_seconds;
   }
 
  private:
@@ -56,6 +65,9 @@ class Solver {
 
   // The response with the solved trade.
   common::TradeResponse response_;
+
+  // Maximum time in seconds to run the Solver.
+  double max_time_in_seconds_{};
 };
 }  // namespace mathtrader::solver
 #endif  // MATHTRADER_SOLVER_SOLVER_H_
