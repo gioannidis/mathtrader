@@ -299,4 +299,44 @@ TEST(DisconnectedChainsTest, WithUsernames) {
                   TradePairIs("U3G1", "U4G1"), TradePairIs("U4G1", "U3G1"),
                   TradePairIs("U1G2", "U5G1"), TradePairIs("U5G1", "U1G2")));
 }
+
+// Test suite: five small item chains or one bigger chain. Use case:
+// - Alice (U1) and Bob (U2) trade with each other their respective G1-G5 items.
+// U1GN -> U2GN -> U1GN
+// for N = 1..5
+//
+// - Charlie (U3) offers one item, creating the following bigger chain:
+// U3G1 -> U2G1 -> U1G2 -> U2G3 -> U1G4 -> U2G5 -> U3G1
+//
+// If Charlie's bigger chain trades, then 5 items do not trade, but all users
+// trade at least one item. Otherwise, Alice and Bob trade all their items,
+// while Charlie's one item does not trade.
+static constexpr std::string_view kMultipleSmallAndOneBigChainPathname =
+    "mathtrader/solver/test_data/multiple_small_and_one_big_chain.textproto";
+
+// Baseline: no usernames are given. Alice and Bob trade all their items.
+// Charlie does not trade.
+TEST(MultipleSmallAndOneBigChainTest, NoUsernames) {
+  const TradeResponse& response =
+      SolveTradeFromFile(kMultipleSmallAndOneBigChainPathname);
+  EXPECT_THAT(response.trade_pairs(),
+              UnorderedElementsAre(
+                  TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),
+                  TradePairIs("U1G2", "U2G2"), TradePairIs("U2G2", "U1G2"),
+                  TradePairIs("U1G3", "U2G3"), TradePairIs("U2G3", "U1G3"),
+                  TradePairIs("U1G4", "U2G4"), TradePairIs("U2G4", "U1G4"),
+                  TradePairIs("U1G5", "U2G5"), TradePairIs("U2G5", "U1G5")));
+}
+
+// Defines usernames for all items. Alice trades 3 items, Bob trades 2 items,
+// Charlie trades their single item. All users trade at least one item.
+TEST(MultipleSmallAndOneBigChainTest, WithUsernames) {
+  const TradeResponse& response = SolveTradeFromFile(
+      kMultipleSmallAndOneBigChainPathname, /*has_usernames=*/true);
+  EXPECT_THAT(response.trade_pairs(),
+              UnorderedElementsAre(
+                  TradePairIs("U2G1", "U1G2"), TradePairIs("U1G2", "U2G3"),
+                  TradePairIs("U2G3", "U1G4"), TradePairIs("U1G4", "U2G5"),
+                  TradePairIs("U2G5", "U3G1"), TradePairIs("U3G1", "U2G1")));
+}
 }  // namespace
