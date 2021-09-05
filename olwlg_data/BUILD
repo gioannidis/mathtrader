@@ -20,7 +20,7 @@
 filegroup(
     name = "olwlg_test_data",
     srcs = glob(["*-officialwants.txt"]),
-    visibility = ["//mathtrader/parser:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 sh_binary(

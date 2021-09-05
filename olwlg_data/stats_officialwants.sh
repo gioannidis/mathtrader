@@ -11,7 +11,7 @@
 #
 # mathtrader is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -23,7 +23,7 @@
 # Therefore, it is intended to be run in a Linux environment
 # Run as:
 #
-#   bazel run //mathtrader/parser/test_data:stats_officialwants
+#   bazel run //olwlg_data:stats_officialwants
 
 # Retrieves statistics from a given official wants file.
 function GetStatsFromOfficialwantsFile {
@@ -86,6 +86,6 @@ for required_binary in ${required_binaries[@]}; do
 done
 
 # Parses each individual file.
-for officialwants_file in mathtrader/parser/test_data/*-officialwants.txt; do
+for officialwants_file in olwlg_data/*-officialwants.txt; do
   GetStatsFromOfficialwantsFile ${officialwants_file}
 done

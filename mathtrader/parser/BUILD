@@ -53,7 +53,7 @@ cc_test(
     name = "math_parser_olwlg_test",
     size = "medium",
     srcs = ["math_parser_olwlg_test.cc"],
-    data = ["//mathtrader/parser/test_data:olwlg_test_data"],
+    data = ["//olwlg_data:olwlg_test_data"],
     deps = [
         ":math_parser",
         "//mathtrader/common:item_cc_proto",
