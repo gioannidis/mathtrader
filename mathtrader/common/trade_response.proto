@@ -30,6 +30,7 @@ message TradePair {
 }
 
 // Message encapsulating the results of the math trade.
+// Next id: 5
 message TradeResponse {
   // All successful trading pairs.
   repeated TradePair trade_pairs = 1;
@@ -39,4 +40,7 @@ message TradeResponse {
 
   // Information about the found solution.
   optional string solution_info = 3;
+
+  // Indicates that this solution has been proven to be optimal.
+  optional bool is_optimal = 4;
 }

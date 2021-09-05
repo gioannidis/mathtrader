@@ -103,11 +103,12 @@ absl::Status Solver::SolveModel() {
 
   // Solves the CP model objective.
   const auto& cp_model = trade_model_.cp_model();
-  const CpSolverResponse response =
+  const CpSolverResponse cp_solver_response =
       operations_research::sat::SolveCpModel(cp_model.Build(), &model);
 
-  switch (response.status()) {
+  switch (cp_solver_response.status()) {
     case CpSolverStatus::OPTIMAL: {
+      response_.set_is_optimal(true);
       break;
     }
     case CpSolverStatus::FEASIBLE: {
@@ -130,17 +131,17 @@ absl::Status Solver::SolveModel() {
     default: {
       return absl::UnimplementedError(absl::StrFormat(
           "No implementation to handle CpSolverResponse status: %d",
-          response.status()));
+          cp_solver_response.status()));
       break;
     }
   }
 
   // Populates the trade_response with the trading items.
-  trade_model_.PopulateResponse(response, response_);
+  trade_model_.PopulateResponse(cp_solver_response, response_);
 
   response_.set_cp_model_stats(
       operations_research::sat::CpModelStats(cp_model.Proto()));
-  response_.set_solution_info(response.solution_info());
+  response_.set_solution_info(cp_solver_response.solution_info());
 
   return absl::OkStatus();
 }
