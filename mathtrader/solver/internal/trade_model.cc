@@ -33,14 +33,14 @@ namespace mathtrader::solver::internal {
 namespace {
 // The trade cost of an item not trading. This is set to a large number to guide
 // the CP Solver to trade as many items as possible.
-static constexpr int64_t kSelfTradeCost = 1'000'000;
+static constexpr int64_t kSelfTradeCost = 10'000;
 
 // The trade cost of a user not trading. This is set to a large number to guide
 // the CP Solver towards solutions where users trade at least one item. Note
 // that it should be at least one order of magnitude larger than
 // `kSelfTradeCost` so that the CP Solver prioritizes more trading users over
 // more trading items.
-static constexpr int64_t kNonTradingUserCost = 10'000'000;
+static constexpr int64_t kNonTradingUserCost = 100'000'000;
 }  // namespace
 
 TradeModel::TradeModel(absl::Span<const std::string_view> items) {
