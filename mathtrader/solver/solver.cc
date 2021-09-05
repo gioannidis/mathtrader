@@ -97,6 +97,9 @@ absl::Status Solver::SolveModel() {
     parameters.set_max_time_in_seconds(max_time_in_seconds_);
   }
 
+  // Sets the number of parallel search workers.
+  parameters.set_num_search_workers(num_search_workers_);
+
   // Declares a generic wrapper to wire the solver and the parameters.
   operations_research::sat::Model model;
   model.Add(operations_research::sat::NewSatParameters(parameters));

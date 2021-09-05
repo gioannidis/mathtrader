@@ -20,6 +20,8 @@
 #ifndef MATHTRADER_SOLVER_SOLVER_H_
 #define MATHTRADER_SOLVER_SOLVER_H_
 
+#include <cstdint>
+
 #include "absl/base/attributes.h"
 #include "absl/status/status.h"
 
@@ -59,6 +61,12 @@ class Solver {
     max_time_in_seconds_ = max_time_in_seconds;
   }
 
+  // Sets the number of parallel workers to use during search. A number <= 1
+  // means no parallelism.
+  void set_num_search_workers(int32_t num_search_workers) {
+    num_search_workers_ = num_search_workers;
+  }
+
  private:
   // The model that represents the math trade.
   internal::TradeModel trade_model_;
@@ -68,6 +76,9 @@ class Solver {
 
   // Maximum time in seconds to run the Solver.
   double max_time_in_seconds_{};
+
+  // Number of parallel workers.
+  int32_t num_search_workers_ = 1;
 };
 }  // namespace mathtrader::solver
 #endif  // MATHTRADER_SOLVER_SOLVER_H_
