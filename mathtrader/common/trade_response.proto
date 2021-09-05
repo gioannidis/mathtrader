@@ -20,7 +20,7 @@
 
 syntax = "proto2";
 
-package mathtrader.solver;
+package mathtrader.common;
 
 // Encapsulates a successful trade. `offered` item is given away in exchange
 // for `wanted` item.

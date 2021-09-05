@@ -58,3 +58,18 @@ cc_proto_library(
     name = "wantlist_cc_proto",
     deps = [":wantlist_proto"],
 )
+
+# The response to a TradeRequest.
+proto_library(
+    name = "trade_response_proto",
+    srcs = ["trade_response.proto"],
+    deps = [
+        ":item_proto",
+        ":wantlist_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "trade_response_cc_proto",
+    deps = [":trade_response_proto"],
+)

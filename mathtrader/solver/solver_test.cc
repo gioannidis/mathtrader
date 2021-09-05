@@ -29,16 +29,16 @@
 #include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
+#include "mathtrader/common/trade_response.pb.h"
 #include "mathtrader/parser/trade_request.pb.h"
 #include "mathtrader/solver/internal/trade_request_extensions.pb.h"
-#include "mathtrader/solver/trade_response.pb.h"
 
 namespace {
 using ::mathtrader::common::Item;
+using ::mathtrader::common::TradePair;
+using ::mathtrader::common::TradeResponse;
 using ::mathtrader::parser::TradeRequest;
 using ::mathtrader::solver::Solver;
-using ::mathtrader::solver::TradePair;
-using ::mathtrader::solver::TradeResponse;
 using ::mathtrader::solver::internal::TradeRequestExtensions;
 using ::testing::AllOf;
 using ::testing::IsEmpty;
@@ -274,6 +274,8 @@ TEST(SolverTest, ThreeItemsWithPriorities) {
 // U2G2 -> U3G2
 // U3G2 -> U4G2
 // U4G2 -> U1G2
+//
+// See the `./test_data` subfolder for a visualization.
 static constexpr std::string_view kDisconnectedChainsPathname =
     "mathtrader/solver/test_data/disconnected_chains.textproto";
 
@@ -311,6 +313,8 @@ TEST(DisconnectedChainsTest, WithUsernames) {
 // If Charlie's bigger chain trades, then 5 items do not trade, but all users
 // trade at least one item. Otherwise, Alice and Bob trade all their items,
 // while Charlie's one item does not trade.
+//
+// See the `./test_data` subfolder for a visualization.
 static constexpr std::string_view kMultipleSmallAndOneBigChainPathname =
     "mathtrader/solver/test_data/multiple_small_and_one_big_chain.textproto";
 

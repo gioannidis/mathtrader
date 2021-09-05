@@ -24,9 +24,10 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "ortools/base/map_util.h"
-
-#include "mathtrader/util/str_indexer.h"
 #include "ortools/sat/cp_model.pb.h"
+
+#include "mathtrader/common/trade_response.pb.h"
+#include "mathtrader/util/str_indexer.h"
 
 namespace mathtrader::solver::internal {
 namespace {
@@ -183,7 +184,7 @@ void TradeModel::BuildNonTradingUserCosts() {
 
 void TradeModel::PopulateResponse(
     const operations_research::sat::CpSolverResponse& response,
-    TradeResponse& trade_response) const {
+    common::TradeResponse& trade_response) const {
   using ::operations_research::sat::SolutionBooleanValue;
 
   // Avoids comparing signed with unsigned;
@@ -200,7 +201,7 @@ void TradeModel::PopulateResponse(
         // Adds the trading pair to the trade_response.
         const std::string& offered_item = indexer_.ValueOrDie(offered_id);
         const std::string& wanted_item = indexer_.ValueOrDie(wanted_id);
-        TradePair* const trade_pair = trade_response.add_trade_pairs();
+        common::TradePair* const trade_pair = trade_response.add_trade_pairs();
         trade_pair->set_offered(offered_item);
         trade_pair->set_wanted(wanted_item);
       }

@@ -29,7 +29,7 @@
 #include "ortools/sat/cp_model.h"
 #include "ortools/sat/cp_model.pb.h"
 
-#include "mathtrader/solver/trade_response.pb.h"
+#include "mathtrader/common/trade_response.pb.h"
 #include "mathtrader/util/str_indexer.h"
 
 // CpModelBuilder wrapper to model a math trade.
@@ -137,7 +137,7 @@ class TradeModel {
   // response
   void PopulateResponse(
       const operations_research::sat::CpSolverResponse& response,
-      TradeResponse& trade_response) const;
+      common::TradeResponse& trade_response) const;
 
   // Returns the internal CP model.
   const operations_research::sat::CpModelBuilder& cp_model() const {

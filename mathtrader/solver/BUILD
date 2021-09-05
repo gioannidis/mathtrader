@@ -17,25 +17,10 @@
 
 # Defines BUILD rules for the module that solves the math trade.
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
 package(
     default_visibility = ["//mathtrader:__subpackages__"],
-)
-
-proto_library(
-    name = "trade_response_proto",
-    srcs = ["trade_response.proto"],
-    deps = [
-        "//mathtrader/common:item_proto",
-        "//mathtrader/common:wantlist_proto",
-    ],
-)
-
-cc_proto_library(
-    name = "trade_response_cc_proto",
-    deps = [":trade_response_proto"],
 )
 
 cc_library(
@@ -43,8 +28,8 @@ cc_library(
     srcs = ["solver.cc"],
     hdrs = ["solver.h"],
     deps = [
-        ":trade_response_cc_proto",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:trade_response_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/parser:trade_request_cc_proto",
         "//mathtrader/solver/internal:trade_model",
@@ -62,8 +47,8 @@ cc_test(
     deps = [
         ":solver",
         "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:trade_response_cc_proto",
         "//mathtrader/parser:trade_request_cc_proto",
-        "//mathtrader/solver:trade_response_cc_proto",
         "//mathtrader/solver/internal:trade_request_extensions_cc_proto",
         "@com_google_absl//absl/types:span",
         "@com_google_googletest//:gtest_main",
