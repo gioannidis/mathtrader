@@ -112,6 +112,12 @@ absl::Status Solver::SolveModel() {
   const CpSolverResponse cp_solver_response =
       operations_research::sat::SolveCpModel(cp_model.Build(), &model);
 
+  // Propagates the statistics.
+  response_.set_cp_model_stats(
+      operations_research::sat::CpModelStats(cp_model.Proto()));
+  response_.set_solution_info(cp_solver_response.solution_info());
+
+  // Handles the CpSolverResponse status.
   switch (cp_solver_response.status()) {
     case CpSolverStatus::OPTIMAL: {
       response_.set_is_optimal(true);
@@ -144,10 +150,6 @@ absl::Status Solver::SolveModel() {
 
   // Populates the trade_response with the trading items.
   trade_model_.PopulateResponse(cp_solver_response, response_);
-
-  response_.set_cp_model_stats(
-      operations_research::sat::CpModelStats(cp_model.Proto()));
-  response_.set_solution_info(cp_solver_response.solution_info());
 
   return absl::OkStatus();
 }
