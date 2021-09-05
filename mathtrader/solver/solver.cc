@@ -118,6 +118,8 @@ absl::Status Solver::SolveModel() {
   response_.set_cp_model_stats(
       operations_research::sat::CpModelStats(cp_model.Proto()));
   response_.set_solution_info(cp_solver_response.solution_info());
+  response_.set_user_time(cp_solver_response.user_time());
+  response_.set_wall_time(cp_solver_response.wall_time());
 
   // Handles the CpSolverResponse status.
   switch (cp_solver_response.status()) {
@@ -129,9 +131,11 @@ absl::Status Solver::SolveModel() {
       break;
     }
     case CpSolverStatus::UNKNOWN: {
-      return absl::UnknownError(
+      return absl::UnknownError(absl::StrFormat(
           "Solver reached a search limit before a solution could be "
-          "determined.");
+          "determined. Tip: consider raising the imposed time limit of %lfs. "
+          "Solver wall time: %lfs. Solver user time: %lfs.",
+          max_time_in_seconds_, response_.wall_time(), response_.user_time()));
     }
     case CpSolverStatus::MODEL_INVALID: {
       return absl::InternalError("The generated CpModel is invalid.");

@@ -30,7 +30,7 @@ message TradePair {
 }
 
 // Message encapsulating the results of the math trade.
-// Next id: 5
+// Next id: 7
 message TradeResponse {
   // All successful trading pairs.
   repeated TradePair trade_pairs = 1;
@@ -38,9 +38,15 @@ message TradeResponse {
   // Statistics on the internal CP model.
   optional string cp_model_stats = 2;
 
-  // Information about the found solution.
-  optional string solution_info = 3;
-
   // Indicates that this solution has been proven to be optimal.
-  optional bool is_optimal = 4;
+  optional bool is_optimal = 3;
+
+  // Information about the found solution.
+  optional string solution_info = 4;
+
+  // User runtime of the solver.
+  optional double user_time = 5;
+
+  // Wall runtime of the solver.
+  optional double wall_time = 6;
 }
