@@ -29,7 +29,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
-#include "ortools/base/map_util.h"
+#include "glog/logging.h"
 #include "re2/re2.h"
 
 #include "mathtrader/common/item.pb.h"
@@ -71,9 +71,7 @@ std::string_view StripPrefix(std::string_view line) {
 
 // Identifies and removes duplicate items from a wantlist, reporting them to
 // trade_request.
-void RemoveDuplicateItems(
-    Wantlist& wantlist,             // NOLINT(runtime/references)
-    TradeRequest& trade_request) {  // NOLINT(runtime/references)
+void RemoveDuplicateItems(Wantlist& wantlist, TradeRequest& trade_request) {
   // Tracks the frequency of each wanted item in the wantlist.
   // key: item ID in wantlist.
   // mapped: frequency
@@ -92,19 +90,18 @@ void RemoveDuplicateItems(
 
           // Lambda: decides whether an item should be erased.
           [&frequencies, &duplicates](const Wantlist::WantedItem& wanted_item) {
-            const std::string& id = wanted_item.id();
+            const std::string_view id = wanted_item.id();
 
             // Retrieves the item's frequency, if previously defined,
             // otherwise initializes it.
-            int32_t& frequency =
-                gtl::LookupOrInsert(&frequencies, id, /*value=*/0);
+            int32_t& frequency = frequencies[id];
             ++frequency;
 
             // Removes item if we have already encountered it, adding
             // it to `duplicates`.
             const bool is_duplicate = (frequency > 1);
             if (is_duplicate) {
-              gtl::InsertIfNotPresent(&duplicates, id);
+              duplicates.emplace(id);
             }
             return is_duplicate;
           }),
@@ -112,13 +109,11 @@ void RemoveDuplicateItems(
 
   // Populates the `trade_request` with the duplicate items that appear 2+ times
   // in the wantlist.
-  for (const std::string& duplicate_id : duplicates) {
+  for (const std::string_view duplicate_id : duplicates) {
     // The offered item and the duplicate wanted item must both exist, because
     // the wantlist has been fully parsed by this point.
-    const Item& offered_item =
-        gtl::FindOrDie(trade_request.items(), wantlist.offered());
-    const Item& wanted_item =
-        gtl::FindOrDie(trade_request.items(), duplicate_id);
+    const Item& offered_item = trade_request.items().at(wantlist.offered());
+    const Item& wanted_item = trade_request.items().at(duplicate_id);
 
     // Creates a new duplicate wanted item.
     auto* const duplicate_item = trade_request.add_duplicate_items();
@@ -126,7 +121,7 @@ void RemoveDuplicateItems(
     duplicate_item->set_wanted_item_id(wanted_item.id());
 
     // Retrieves the frequency from the `frequencies` map and sets it.
-    const int32_t frequency = gtl::FindOrDie(frequencies, duplicate_id);
+    const int32_t frequency = frequencies.at(duplicate_id);
     CHECK_GT(frequency, 1);
     duplicate_item->set_frequency(frequency);
   }
@@ -136,9 +131,8 @@ void RemoveDuplicateItems(
 // `missing_items`.
 void RemoveMissingItems(
     const google::protobuf::Map<std::string, Item>& official_items,
-    Wantlist& wantlist,                         // NOLINT(runtime/references)
-    absl::flat_hash_map<std::string, int32_t>&  // NOLINT(runtime/references)
-        missing_items) {
+    Wantlist& wantlist,
+    absl::flat_hash_map<std::string, int32_t>& missing_items) {
   auto* const wanted_items = wantlist.mutable_wanted();
 
   // Checks if a wanted item is missing and, if so, records it as a missing
@@ -149,7 +143,7 @@ void RemoveMissingItems(
                      // Lambda: decides whether an item should be erased.
                      [&official_items,
                       &missing_items](const Wantlist::WantedItem& wanted_item) {
-                       const std::string& id = wanted_item.id();
+                       const std::string_view id = wanted_item.id();
 
                        // Does not erase the item if it has an official name.
                        if (official_items.contains(id)) {
@@ -157,8 +151,7 @@ void RemoveMissingItems(
                        }
                        // Initializes the frequency of the missing item to zero
                        // or retrieves it if present.
-                       int32_t& frequency =
-                           gtl::LookupOrInsert(&missing_items, id, /*value=*/0);
+                       int32_t& frequency = missing_items[id];
                        ++frequency;
                        return true;
                      }),
@@ -167,9 +160,7 @@ void RemoveMissingItems(
 
 // Identifies and removes non-dummy owned items that are wanted in a wantlist,
 // reporting them to trade_request.
-void RemoveOwnedItems(
-    Wantlist& wantlist,             // NOLINT(runtime/references)
-    TradeRequest& trade_request) {  // NOLINT(runtime/references)
+void RemoveOwnedItems(Wantlist& wantlist, TradeRequest& trade_request) {
   // Key to identify a removed item:
   using MapKey = std::pair<const std::string, const std::string>;
 
@@ -179,8 +170,8 @@ void RemoveOwnedItems(
   // Retrieves the username of an item id. Assumes that the item exists in
   // `trade_request.items()`.
   const auto GetUsername =
-      [&const_trade_request](const std::string& id) -> const std::string& {
-    const Item& item = gtl::FindOrDie(const_trade_request.items(), id);
+      [&const_trade_request](const std::string_view id) -> const std::string& {
+    const Item& item = const_trade_request.items().at(id);
     return item.username();
   };
 
@@ -224,9 +215,7 @@ void RemoveOwnedItems(
 
                        // Retrieves the item's frequency, if previously
                        // defined, otherwise initializes it.
-                       // TODO(gioannidis) implement with emplace.
-                       int32_t& frequency =
-                           gtl::LookupOrInsert(&frequencies, key, /*value=*/0);
+                       int32_t& frequency = frequencies[key];
                        ++frequency;
                        return true;
                      }),
@@ -311,17 +300,23 @@ absl::Status InternalParser::ParseItem(std::string_view line) {
   const auto item = items_parser_.ParseItem(line);
   if (!item.ok()) {
     return item.status();
-
-  } else if (const std::string& id = item->id(); !gtl::InsertIfNotPresent(
-                 trade_request_.mutable_items(), id, *item)) {
-    // Failed to insert the item; already exists.
-    return absl::AlreadyExistsError(absl::StrFormat(
-        "Duplicate declaration of official item %s not allowed.", id));
   }
 
-  // Registers the username.
-  if (std::string_view username = item->username(); !username.empty()) {
-    gtl::InsertIfNotPresent(&users_, static_cast<std::string>(username));
+  const std::string_view item_id = item->id();
+  if (trade_request_.items().contains(item_id)) {
+    // Failed to insert the item; already exists.
+    return absl::AlreadyExistsError(absl::StrFormat(
+        "Duplicate declaration of official item %s not allowed.", item_id));
+  }
+
+  // Inserts the new item in the item map.
+  // Always succeeds, because we have just verified that `items` does not
+  // contain the `item_id`.
+  (*trade_request_.mutable_items())[item_id] = *item;
+
+  // Registers the username, if available.
+  if (std::string username = item->username(); !username.empty()) {
+    users_.emplace(std::move(username));
   }
 
   return absl::OkStatus();

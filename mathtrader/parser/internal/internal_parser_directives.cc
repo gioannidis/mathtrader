@@ -22,7 +22,6 @@
 #include <string_view>
 
 #include "absl/strings/str_format.h"
-#include "ortools/base/map_util.h"
 
 namespace mathtrader::parser::internal {
 namespace {
@@ -82,8 +81,7 @@ absl::Status InternalParser::ParseDirective(std::string_view line) {
   } else if (line == kDirectiveOfficialNamesEnd) {
     // Directs the parser to stop reading official item names and start reading
     // wantlists.
-    if (!gtl::FindOrNull(directives_,
-                         std::string(kDirectiveOfficialNamesBegin))) {
+    if (!directives_.contains(kDirectiveOfficialNamesBegin)) {
       return absl::InvalidArgumentError(absl::StrFormat(
           "Declaring directive %s requires previous declaration of directive "
           "%s, which is missing.",

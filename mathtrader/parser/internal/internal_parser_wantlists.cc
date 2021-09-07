@@ -25,7 +25,7 @@
 #include "absl/base/attributes.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
-#include "ortools/base/map_util.h"
+#include "glog/logging.h"
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/parser/internal/internal_wantlist.pb.h"
@@ -47,13 +47,13 @@ const std::string& GetUnmodifiedId(const Item& item) {
 // * Non-dummy with official names: checks if official name has been given.
 ABSL_MUST_USE_RESULT absl::Status RegisterOfferedItem(
     std::string_view offered_id, std::string_view username, bool is_existing,
-    google::protobuf::Map<std::string, Item>&
-        item_map) {  // NOLINT(runtime/references)
+    google::protobuf::Map<std::string, Item>& item_map) {
   // Creates and registers non-dummy items if they are not expected to exist.
   // Dummy items are always registered.
   if (!is_existing || util::IsDummyItem(offered_id)) {
-    gtl::InsertOrDie(&item_map, std::string(offered_id),
-                     util::MakeItem(offered_id, username));
+    // TODO(gioannidis) replace with flat_hash_map and use try_emplace.
+    CHECK(!item_map.contains(offered_id));
+    item_map[offered_id] = util::MakeItem(offered_id, username);
   } else {
     // Verifies that the non-dummy offered item exists.
     if (!item_map.contains(offered_id)) {
@@ -75,15 +75,15 @@ absl::Status InternalParser::ParseWantlist(std::string_view line) {
   if (!wantlist.ok()) {
     return wantlist.status();
   }
-  const std::string& offered_id = wantlist->offered();
-  const std::string& username =
+  const std::string_view offered_id = wantlist->offered();
+  const std::string_view username =
       wantlist->GetExtension(InternalWantlist::username);
 
   // Registers the username, if it has been given. An empty username is possible
   // if no official names where previously given and this is the first wantlist
   // for this username.
   if (!username.empty()) {
-    gtl::InsertIfNotPresent(&users_, username);
+    users_.emplace(username);
   }
 
   // Registers the wantlist and verifies that no other wantlist has been
@@ -92,7 +92,7 @@ absl::Status InternalParser::ParseWantlist(std::string_view line) {
           wantlist_of_item_.emplace(offered_id, line_count_);
       !inserted) {
     // Reports the line number of the existing wantlist.
-    const Item& duplicate = gtl::FindOrDie(trade_request_.items(), offered_id);
+    const Item& duplicate = trade_request_.items().at(offered_id);
     return absl::AlreadyExistsError(absl::StrFormat(
         "Cannot declare multiple wantlists for item %s%s. Previous wantlist "
         "declared in line %d.",
