@@ -17,6 +17,7 @@
 
 #include "mathtrader/solver/internal/trade_model.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <string_view>
 #include <utility>
@@ -216,6 +217,14 @@ void TradeModel::PopulateResponse(
     }
     ++offered_id;
   }
+
+  // Sets the number of trading users. Iterates the `owners_` map and counts the
+  // owners where the respective `is_trading` variable has been set by the
+  // CpSolverResponse.
+  trade_response.set_trading_users(std::count_if(
+      owners_.begin(), owners_.end(), [&response](const auto& owner_node) {
+        return SolutionBooleanValue(response, owner_node.second.is_trading);
+      }));
 }
 
 std::vector<TradeModel::Assignment> TradeModel::assignments() const {

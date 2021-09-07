@@ -300,6 +300,9 @@ TEST(DisconnectedChainsTest, WithUsernames) {
                   TradePairIs("U1G1", "U2G1"), TradePairIs("U2G1", "U1G1"),
                   TradePairIs("U3G1", "U4G1"), TradePairIs("U4G1", "U3G1"),
                   TradePairIs("U1G2", "U5G1"), TradePairIs("U5G1", "U1G2")));
+
+  // Trading: Alice, Bob, Charlie, Daniel, Eve.
+  EXPECT_EQ(response.trading_users(), 5);
 }
 
 // Test suite: five small item chains or one bigger chain. Use case:
@@ -342,5 +345,8 @@ TEST(MultipleSmallAndOneBigChainTest, WithUsernames) {
                   TradePairIs("U2G1", "U1G2"), TradePairIs("U1G2", "U2G3"),
                   TradePairIs("U2G3", "U1G4"), TradePairIs("U1G4", "U2G5"),
                   TradePairIs("U2G5", "U3G1"), TradePairIs("U3G1", "U2G1")));
+
+  // Trading: Alice, Bob, Charlie.
+  EXPECT_EQ(response.trading_users(), 3);
 }
 }  // namespace

@@ -134,7 +134,7 @@ class TradeModel {
   void BuildConstraints();
 
   // Populates the solver result with the trading items from the solver
-  // response
+  // response and other statistics.
   void PopulateResponse(
       const operations_research::sat::CpSolverResponse& response,
       common::TradeResponse& trade_response) const;
