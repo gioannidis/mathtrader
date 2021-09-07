@@ -7,12 +7,10 @@
 These repositories are required to build `mathtrader`:
 
 - [Abseil][abseil ref] common libraries.
+- [Google Logging][glog ref] library.
 - [GoogleTest][gtest ref] testing and mocking framework.
 - [OR-Tools][ortools ref] optimization
 - [RE2][re2 ref] regular expression library.
-
-*Note: earlier versions would also depend on the [Google Logging][glog ref]
-Library, until it was replaced by the OR-Tools provided implementation.*
 
 ## Development Tools
 

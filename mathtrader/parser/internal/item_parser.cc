@@ -22,7 +22,7 @@
 
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
-#include "ortools/base/logging.h"
+#include "glog/logging.h"
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/offered_item.pb.h"

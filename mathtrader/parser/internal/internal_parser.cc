@@ -29,7 +29,6 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
-#include "ortools/base/logging.h"
 #include "ortools/base/map_util.h"
 #include "re2/re2.h"
 
