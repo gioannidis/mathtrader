@@ -171,6 +171,16 @@ class TradeModel {
     int64_t cost{};
   };
 
+  // Represents data associated with item owners. An owner typically submits
+  // multiple items in a math trade.
+  struct OwnerData {
+    // Items owned by the specific owner.
+    std::vector<int32_t> items;
+
+    // Boolean variable indicating whether this owner trades at least one item.
+    operations_research::sat::BoolVar is_trading;
+  };
+
   // Adds a self trade on an item, representing the item not being traded.
   void AddSelfAssignment(std::string_view item);
 
@@ -197,7 +207,7 @@ class TradeModel {
   std::vector<absl::flat_hash_map<int32_t, InternalAssignment>> assignments_;
 
   // Stores the item owners. Maps an owner to their owned item indexes.
-  absl::flat_hash_map<std::string, std::vector<int32_t>> owners_;
+  absl::flat_hash_map<std::string, OwnerData> owners_;
 };
 }  // namespace mathtrader::solver::internal
 #endif  // MATHTRADER_SOLVER_INTERNAL_TRADE_MODEL_H_

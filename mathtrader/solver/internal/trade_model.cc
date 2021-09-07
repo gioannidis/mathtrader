@@ -77,10 +77,18 @@ void TradeModel::AddAssignment(std::string_view offered,
 void TradeModel::AddOwner(std::string_view owner, std::string_view item) {
   const int32_t item_id = indexer_.IndexOrDie(item);
 
-  // Retrieves the owned items for this owner. Creates an empty container if the
-  // owner doesn't exist.
-  auto& owned_items = gtl::LookupOrInsert(&owners_, std::string(owner), {});
-  owned_items.emplace_back(item_id);
+  // Retrieves existing owner data or creates new data.
+  auto [iter, was_inserted] = owners_.try_emplace(owner);
+  OwnerData& owner_data = iter->second;
+
+  // If it's a new user, creates a boolean variable to mark whether the user
+  // trades at least one item.
+  if (was_inserted) {
+    owner_data.is_trading = cp_model_.NewBoolVar();
+  }
+
+  // Adds the new item to the vector of items owned by `owner`.
+  owner_data.items.emplace_back(item_id);
 }
 
 void TradeModel::BuildConstraints() {
@@ -152,13 +160,13 @@ void TradeModel::BuildNonTradingUserCosts() {
   using operations_research::sat::LinearExpr;
   using operations_research::sat::Not;
 
-  for (const auto& [owner, items] : owners_) {
+  for (const auto& [owner, owner_data] : owners_) {
     // Represents the number of items that are trading. Implemented as:
     // `sum{ Not(assignment[i][i]) }`. The variable `assignment[i][i]`
     // represents the item not trading (self-trade), so we take its inversion.
     LinearExpr trading_items_sum;
 
-    for (const int32_t item_id : items) {
+    for (const int32_t item_id : owner_data.items) {
       // Retrieves the self-trading assignment of the given item. Equivalent to:
       // `assignment_[item_id][item_id]`.
       const auto& assignment = gtl::FindOrDie(assignments_[item_id], item_id);
@@ -167,9 +175,9 @@ void TradeModel::BuildNonTradingUserCosts() {
       trading_items_sum.AddVar(assignment.var.Not());
     }
 
-    // Declares an intermediate boolean variable that represents whether the
-    // given user trades at least one item or not.
-    const BoolVar user_trades = cp_model_.NewBoolVar();
+    // Intermediate boolean variable that represents whether the given user
+    // trades at least one item or not.
+    const BoolVar user_trades = owner_data.is_trading;
 
     // Implements user_trades = (trading_items_sum >= 1).
     cp_model_.AddGreaterOrEqual(trading_items_sum, 1)
@@ -232,10 +240,10 @@ std::vector<TradeModel::Assignment> TradeModel::assignments() const {
 
 std::vector<TradeModel::Owner> TradeModel::owners() const {
   std::vector<Owner> owners;
-  for (const auto& [owner_name, items] : owners_) {
+  for (const auto& [owner_name, owner_data] : owners_) {
     Owner owner;
     owner.owner = owner_name;
-    for (const int32_t item_id : items) {
+    for (const int32_t item_id : owner_data.items) {
       owner.items.emplace_back(indexer_.ValueOrDie(item_id));
     }
     owners.emplace_back(std::move(owner));
