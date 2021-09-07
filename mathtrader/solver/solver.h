@@ -24,6 +24,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/status/status.h"
+#include "ortools/sat/sat_parameters.pb.h"
 
 #include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/trade_response.pb.h"
@@ -45,6 +46,21 @@ class Solver {
   // generated input.
   void BuildModel(const common::TradeRequest& trade_request);
 
+  // Trivial setter for the SAT parameters of the solver. You must set any
+  // parameters before calling `Solve()`.
+  void set_parameters(
+      const operations_research::sat::SatParameters& sat_parameters) {
+    sat_parameters_ = sat_parameters;
+  }
+
+  // Trivial setter for the SAT parameters of the solver, which consumes the
+  // `sat_parameters` argument. You must set any parameters before calling
+  // `Solve()`.
+  void set_parameters(
+      operations_research::sat::SatParameters&& sat_parameters) {
+    sat_parameters_ = std::move(sat_parameters);
+  }
+
   // Solves the CP model. Return `OkStatus` if an optimal or feasible solution
   // has been found.
   ABSL_MUST_USE_RESULT absl::Status SolveModel();
@@ -54,41 +70,15 @@ class Solver {
     return response_;
   }
 
-  // Sets the maximum time in seconds to run the Solver when `SolveModel()` is
-  // called. If the Solver has not found the optimal solution when the time
-  // limit is reached, it will return a feasible solution, if it has found any.
-  void set_max_time_in_seconds(double max_time_in_seconds) {
-    max_time_in_seconds_ = max_time_in_seconds;
-  }
-
-  // Sets the number of parallel workers to use during search. A number <= 1
-  // means no parallelism.
-  void set_num_search_workers(int32_t num_search_workers) {
-    num_search_workers_ = num_search_workers;
-  }
-
-  // Sets whether the solver should stop after the first solution.
-  void set_stop_after_first_solution(bool stop_after_first_solution) {
-    stop_after_first_solution_ = stop_after_first_solution;
-  }
-
  private:
   // The model that represents the math trade.
   internal::TradeModel trade_model_;
 
+  // Parameters to configure the solver.
+  operations_research::sat::SatParameters sat_parameters_;
+
   // The response with the solved trade.
   common::TradeResponse response_;
-
-  /* --- SAT Parameters --- */
-
-  // Maximum time in seconds to run the Solver.
-  double max_time_in_seconds_{};
-
-  // Number of parallel workers.
-  int32_t num_search_workers_{};
-
-  // Stops the solver when it finds the first solution.
-  bool stop_after_first_solution_ = false;
 };
 }  // namespace mathtrader::solver
 #endif  // MATHTRADER_SOLVER_SOLVER_H_

@@ -89,25 +89,9 @@ absl::Status Solver::SolveModel() {
   // First, commits the objective function.
   trade_model_.CommitObjectiveFunction();
 
-  // Defines SAT parameters to pass to the solver.
-  operations_research::sat::SatParameters parameters;
-
-  // Sets a time limit, if specified.
-  if (max_time_in_seconds_ > 0) {
-    parameters.set_max_time_in_seconds(max_time_in_seconds_);
-  }
-
-  // Sets the number of parallel search workers.
-  if (num_search_workers_ > 0) {
-    parameters.set_num_search_workers(num_search_workers_);
-  }
-
-  // Sets whether the solver should stop after the first solution.
-  parameters.set_stop_after_first_solution(stop_after_first_solution_);
-
-  // Declares a generic wrapper to wire the solver and the parameters.
+  // Declares a generic wrapper to wire the solver and the sat parameters.
   operations_research::sat::Model model;
-  model.Add(operations_research::sat::NewSatParameters(parameters));
+  model.Add(operations_research::sat::NewSatParameters(sat_parameters_));
 
   // Solves the CP model objective.
   const auto& cp_model = trade_model_.cp_model();
@@ -135,7 +119,8 @@ absl::Status Solver::SolveModel() {
           "Solver reached a search limit before a solution could be "
           "determined. Tip: consider raising the imposed time limit of %lfs. "
           "Solver wall time: %lfs. Solver user time: %lfs.",
-          max_time_in_seconds_, response_.wall_time(), response_.user_time()));
+          sat_parameters_.max_time_in_seconds(), response_.wall_time(),
+          response_.user_time()));
     }
     case CpSolverStatus::MODEL_INVALID: {
       return absl::InternalError("The generated CpModel is invalid.");
