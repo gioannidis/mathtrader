@@ -30,10 +30,14 @@ message TradePair {
 }
 
 // Message encapsulating the results of the math trade.
-// Next id: 7
+// Next id: 8
 message TradeResponse {
   // All successful trading pairs.
   repeated TradePair trade_pairs = 1;
+
+  // Number of trading users. This number can be computed by processing the
+  // `trade_pairs` field, but is explicitly provided for convenience.
+  optional int64 trading_users = 7;
 
   // Statistics on the internal CP model.
   optional string cp_model_stats = 2;
