@@ -23,6 +23,7 @@ package(
     default_visibility = ["//mathtrader:__subpackages__"],
 )
 
+# Build rules for the mathtrader solver.
 cc_library(
     name = "solver",
     srcs = ["solver.cc"],
@@ -55,5 +56,26 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_or_tools//ortools/base:file",
         "@com_google_or_tools//ortools/base:map_util",
+    ],
+)
+
+# Integration tests with OLWLG data.
+cc_test(
+    name = "solver_olwlg_test",
+    size = "small",
+    timeout = "eternal",
+    srcs = ["solver_olwlg_test.cc"],
+    data = ["//olwlg_data:olwlg_test_data"],
+    deps = [
+        ":solver",
+        "//mathtrader/common:item_cc_proto",
+        "//mathtrader/common:trade_request_cc_proto",
+        "//mathtrader/common:wantlist_cc_proto",
+        "//mathtrader/parser:math_parser",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/status",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_or_tools//ortools/base",
+        "@com_google_or_tools//ortools/sat:cp_model",
     ],
 )
