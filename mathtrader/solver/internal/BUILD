@@ -33,7 +33,6 @@ cc_library(
         "//mathtrader/util:str_indexer",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/types:span",
-        "@com_google_or_tools//ortools/base:map_util",
         "@com_google_or_tools//ortools/sat:cp_model",
     ],
 )

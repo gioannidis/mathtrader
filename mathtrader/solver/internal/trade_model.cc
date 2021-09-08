@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
-#include "ortools/base/map_util.h"
 #include "ortools/sat/cp_model.pb.h"
 
 #include "mathtrader/common/trade_response.pb.h"
@@ -72,7 +71,14 @@ void TradeModel::AddAssignment(std::string_view offered,
 
   // Registers the allowed assignment between the `offered` and the `wanted`
   // items.
-  gtl::InsertOrDie(&assignments_[offered_id], wanted_id, assignment);
+  const auto [unused_it, was_inserted] =
+      assignments_[offered_id].try_emplace(wanted_id, assignment);
+
+  // This must be the first such assignment; caller is not allowed to declare
+  // the same assignment twice.
+  // TODO(gioannidis) this is defined in ortools logging, which is included via
+  // cp_model->model->logging. Use glog instead.
+  CHECK(was_inserted);
 }
 
 void TradeModel::AddOwner(std::string_view owner, std::string_view item) {
@@ -110,8 +116,7 @@ void TradeModel::BuildConstraints() {
     for (const auto& [wanted_id, assignment] : assignment_row) {
       // Retrieves the sum of offered items that trade with `wanted id`. Creates
       // it if they do not exist.
-      LinearExpr& wanted_sum =
-          gtl::LookupOrInsert(&wanted_sums, wanted_id, LinearExpr());
+      LinearExpr& wanted_sum = wanted_sums[wanted_id];
 
       // Adds the BoolVar[i][j] to offered_sum[i] and wanted_sum[j].
       offered_sum.AddVar(assignment.var);
@@ -170,7 +175,7 @@ void TradeModel::BuildNonTradingUserCosts() {
     for (const int32_t item_id : owner_data.items) {
       // Retrieves the self-trading assignment of the given item. Equivalent to:
       // `assignment_[item_id][item_id]`.
-      const auto& assignment = gtl::FindOrDie(assignments_[item_id], item_id);
+      const auto& assignment = assignments_[item_id].at(item_id);
 
       // Adds the inversion of the self-trading variable.
       trading_items_sum.AddVar(assignment.var.Not());
