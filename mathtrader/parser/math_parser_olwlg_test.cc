@@ -29,7 +29,6 @@
 #include "absl/status/statusor.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/trade_request.pb.h"
@@ -131,12 +130,14 @@ MATCHER(HasIdAsKey, "") {
 // Matches a `RemovedItem` arg whose owner is `username`, ignoring case. The
 // item is retrieved from item_map.
 MATCHER_P2(WantlistOwnerOfRemovedStrCaseEq, username, item_map, "") {
-  const Item* item = gtl::FindOrNull(item_map, arg.offered_item_id());
-  if (!item) {
-    return ExplainMatchResult(testing::NotNull(), item, result_listener);
+  const auto it = item_map.find(arg.offered_item_id());
+  if (it != item_map.end()) {
+    const Item& item = it->second;
+    return ExplainMatchResult(StrCaseEq(username), item.username(),
+                              result_listener);
+  } else {
+    return true;
   }
-  return ExplainMatchResult(StrCaseEq(username), item->username(),
-                            result_listener);
 }
 
 // Runs a number of checks against the given TradeRequest.
