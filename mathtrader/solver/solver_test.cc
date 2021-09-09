@@ -26,7 +26,6 @@
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
 #include "ortools/base/file.h"
-#include "ortools/base/map_util.h"
 
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/trade_request.pb.h"
@@ -62,12 +61,11 @@ MATCHER_P2(TradePairIs, offered_id, wanted_id, "") {
 void BuildItemMap(TradeRequest& trade_request) {
   for (const auto& wantlist : trade_request.wantlists()) {
     // Inserts the offered item.
-    gtl::InsertIfNotPresent(trade_request.mutable_items(), wantlist.offered(),
-                            Item());
+    trade_request.mutable_items()->insert({wantlist.offered(), Item()});
+
     // Inserts all wanted items.
     for (const auto& wanted : wantlist.wanted()) {
-      gtl::InsertIfNotPresent(trade_request.mutable_items(), wanted.id(),
-                              Item());
+      trade_request.mutable_items()->insert({wanted.id(), Item()});
     }
   }
 }
