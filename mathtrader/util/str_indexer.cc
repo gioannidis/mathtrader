@@ -23,7 +23,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/types/span.h"
-#include "ortools/base/map_util.h"
+#include "glog/logging.h"
 
 namespace mathtrader::util {
 void StrIndexer::BuildIndexes(absl::Span<const std::string_view> strings) {
@@ -32,18 +32,28 @@ void StrIndexer::BuildIndexes(absl::Span<const std::string_view> strings) {
 
   int32_t next_index = 0;
   for (const std::string_view str : strings) {
-    gtl::InsertOrDie(&index_to_str_, next_index, std::string(str));
-    gtl::InsertOrDie(&str_to_index_, std::string(str), next_index);
+    // Creates index->string mapping. Dies if it fails.
+    {
+      const auto [unused_it, was_inserted] =
+          index_to_str_.try_emplace(next_index, str);
+      CHECK(was_inserted) << "Duplicate index key: " << next_index;
+    }
+    // Creates string->index mapping. Dies if it fails.
+    {
+      const auto [unused_it, was_inserted] =
+          str_to_index_.try_emplace(str, next_index);
+      CHECK(was_inserted) << "Duplicate string key: " << str;
+    }
     ++next_index;
   }
   CHECK_EQ(str_to_index_.size(), index_to_str_.size());
 }
 
 const std::string& StrIndexer::ValueOrDie(int32_t index) const {
-  return gtl::FindOrDie(index_to_str_, index);
+  return index_to_str_.at(index);
 }
 
 int32_t StrIndexer::IndexOrDie(std::string_view value) const {
-  return gtl::FindOrDie(str_to_index_, std::string(value));
+  return str_to_index_.at(value);
 }
 }  // namespace mathtrader::util
