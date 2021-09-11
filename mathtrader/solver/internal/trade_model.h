@@ -30,7 +30,6 @@
 #include "ortools/sat/cp_model.pb.h"
 
 #include "mathtrader/common/trade_response.pb.h"
-#include "mathtrader/util/str_indexer.h"
 
 // CpModelBuilder wrapper to model a math trade.
 
@@ -74,23 +73,14 @@ class TradeModel {
 
   TradeModel() = default;
 
-  // Directly indexes the trading items. Equivalent to calling:
-  //   TradeModel model;
-  //   model.IndexItems(items);
-  explicit TradeModel(absl::Span<const std::string_view> items);
-
   // Disables copy constructor and assignment operator.
   TradeModel(const TradeModel&) = delete;
   TradeModel& operator=(const TradeModel&) = delete;
 
   ~TradeModel() = default;
 
-  // Indexes the given span of items that will be used in this math trade. You
-  // must call this operation first.
-  void IndexItems(absl::Span<const std::string_view> items);
-
   // Adds an assignment between an offered and a wanted item, representing an
-  // allowed trade.
+  // allowed trade. The two items must be different.
   void AddAssignment(std::string_view offered, std::string_view wanted,
                      int64_t cost);
 
@@ -175,20 +165,18 @@ class TradeModel {
   // multiple items in a math trade.
   struct OwnerData {
     // Items owned by the specific owner.
-    std::vector<int32_t> items;
+    std::vector<std::string> items;
 
     // Boolean variable indicating whether this owner trades at least one item.
     operations_research::sat::BoolVar is_trading;
   };
 
-  // Adds a self trade on an item, representing the item not being traded.
-  void AddSelfAssignment(std::string_view item);
-
-  // Creates a pair of item indexes, given the actual item ids. The first
-  // element represents the offered item, the second element represents the
-  // wanted item.
-  std::pair<int32_t, int32_t> MakeItemPair(std::string_view offered,
-                                           std::string_view wanted) const;
+  // Internal implementation of adding an assignment between an offered and a
+  // wanted item. This allows to call `InternalAddAssignment` to add self-trade
+  // assignments. Returns `true` if the assignment was successfully added,
+  // `false` if it already exists.
+  bool InternalAddAssignment(std::string_view offered, std::string_view wanted,
+                             int64_t cost);
 
   // The actual CP Model that represents that math trade.
   operations_research::sat::CpModelBuilder cp_model_;
@@ -196,15 +184,14 @@ class TradeModel {
   // The linear expression that represents the total cost of the trade.
   operations_research::sat::LinearExpr total_cost_;
 
-  // Maps each item to a 1:1 index. This avoids hashing entire strings.
-  util::StrIndexer indexer_;
-
   // Stores the allowed assignments. Each `assignment_[i][j]` represents an
   // allowed trade between the offered item `i` and the wanted item `j`. The
   // value of the boolean variable `assignment_[i][j].var` represents whether
   // this trade takes place or not. We define `assignment_[i][i]` for every
   // item, representing a self-trade, i.e., the item not being traded.
-  std::vector<absl::flat_hash_map<int32_t, InternalAssignment>> assignments_;
+  absl::flat_hash_map<std::string,
+                      absl::flat_hash_map<std::string, InternalAssignment>>
+      assignments_;
 
   // Stores the item owners. Maps an owner to their owned item indexes.
   absl::flat_hash_map<std::string, OwnerData> owners_;

@@ -36,25 +36,8 @@ using ::testing::UnorderedElementsAre;
 static constexpr std::array<std::string_view, 6> kItems = {
     "Pandemic", "MageKnight", "PuertoRico", "SanJuan", "a", "1"};
 
-// Verifies that the constructor builds self-arcs.
-TEST(TradeModelTest, HasSelfTrades) {
-  const TradeModel model(kItems);
-  const auto assignments = model.assignments();
-
-  // One self-assignment has been creates for every item.
-  EXPECT_THAT(assignments, SizeIs(kItems.size()));
-
-  // Verifies the actual self-assignments for each item. The self-trading cost
-  // is expected to be a big number.
-  for (const std::string_view item : kItems) {
-    EXPECT_THAT(assignments,
-                Contains(FieldsAre(/*offered=*/item, /*wanted=*/item,
-                                   /*cost=*/Gt(1'000))));
-  }
-}
-
 TEST(TradeModelTest, OneAssignmentPerItem) {
-  TradeModel model(kItems);
+  TradeModel model;
 
   // Each item but the last is assigned to its next item.
   for (unsigned i = 0; i < kItems.size() - 1; ++i) {
@@ -76,7 +59,7 @@ TEST(TradeModelTest, OneAssignmentPerItem) {
 }
 
 TEST(TradeModelTest, MultipleAssignmentsPerItem) {
-  TradeModel model(kItems);
+  TradeModel model;
 
   model.AddAssignment("Pandemic", "MageKnight", 1);
   model.AddAssignment("Pandemic", "PuertoRico", 2);
@@ -94,7 +77,7 @@ TEST(TradeModelTest, MultipleAssignmentsPerItem) {
 // the costs.
 TEST(TradeModelTest, BigStepCost) {
   static constexpr int64_t kBigStepCost = 42;
-  TradeModel model(kItems);
+  TradeModel model;
 
   model.AddAssignment("Pandemic", "MageKnight", 1);
   model.AddAssignment("Pandemic", "PuertoRico", kBigStepCost);
@@ -108,18 +91,12 @@ TEST(TradeModelTest, BigStepCost) {
               Contains(FieldsAre("Pandemic", "SanJuan", kBigStepCost + 1)));
 }
 
-// Tests the cost coefficients for self-trading items.
-TEST(TradeModelTest, SelfAssignmentCoefficients) {
-  TradeModel model(kItems);
-  model.BuildItemTradingCost();
-  EXPECT_THAT(model.cost_coefficients(),
-              Contains(Gt(1'000)).Times(kItems.size()));
-}
-
 // Tests the cost coefficients for allowed trades.
 TEST(TradeModelTest, AssignmentCoefficients) {
-  TradeModel model(kItems);
+  static constexpr int32_t kNumAssignments = 8;
+  TradeModel model;
 
+  // Below: `kNumAssignments` calls of `AddAssignment`.
   model.AddAssignment("Pandemic", "MageKnight", 1);
   model.AddAssignment("Pandemic", "PuertoRico", 2);
   model.AddAssignment("Pandemic", "a", 3);
@@ -136,10 +113,18 @@ TEST(TradeModelTest, AssignmentCoefficients) {
   const auto assignments = model.assignments();
   EXPECT_THAT(model.cost_coefficients(),
               IsSupersetOf({1, 2, 3, 1, 1, 2, 3, 4}));
+
+  // Tests the cost coefficients for self-trading items.
+  EXPECT_THAT(model.cost_coefficients(),
+              Contains(Gt(1'000)).Times(kItems.size()));
+
+  // Tests that there are no more coefficients.
+  EXPECT_THAT(model.cost_coefficients(),
+              SizeIs(kItems.size() + kNumAssignments));
 }
 
 TEST(TradeModelTest, AddOwner) {
-  TradeModel model(kItems);
+  TradeModel model;
 
   model.AddOwner(/*owner=*/"Knuth", /*item=*/"Pandemic");
   model.AddOwner(/*owner=*/"Turin", /*item=*/"SanJuan");

@@ -27,7 +27,6 @@
 #include "ortools/sat/cp_model.pb.h"
 
 #include "mathtrader/common/trade_response.pb.h"
-#include "mathtrader/util/str_indexer.h"
 
 namespace mathtrader::solver::internal {
 namespace {
@@ -43,47 +42,24 @@ static constexpr int64_t kSelfTradeCost = 10'000;
 static constexpr int64_t kNonTradingUserCost = 100'000'000;
 }  // namespace
 
-TradeModel::TradeModel(absl::Span<const std::string_view> items) {
-  IndexItems(items);
-}
-
-void TradeModel::IndexItems(absl::Span<const std::string_view> items) {
-  // Resizes the `assignments_` vector to accomondate each offered item.
-  assignments_.resize(items.size());
-
-  // Creates the indexes for each item.
-  indexer_.BuildIndexes(items);
-
-  // Builds a self-trade trade for each item, representing the item not being
-  // traded. This is required so that the solver always finds a solution.
-  for (const std::string_view item : items) {
-    AddSelfAssignment(item);
-  }
-}
-
 void TradeModel::AddAssignment(std::string_view offered,
                                std::string_view wanted, int64_t cost) {
-  const int32_t offered_id = indexer_.IndexOrDie(offered);
-  const int32_t wanted_id = indexer_.IndexOrDie(wanted);
-
-  // Creates a new BoolVar representing the allowed trade.
-  InternalAssignment assignment = {cp_model_.NewBoolVar(), cost};
-
-  // Registers the allowed assignment between the `offered` and the `wanted`
-  // items.
-  const auto [unused_it, was_inserted] =
-      assignments_[offered_id].try_emplace(wanted_id, assignment);
+  CHECK_NE(offered, wanted) << "Offered and Wanted items must be different";
 
   // This must be the first such assignment; caller is not allowed to declare
   // the same assignment twice.
   // TODO(gioannidis) this is defined in ortools logging, which is included via
   // cp_model->model->logging. Use glog instead.
-  CHECK(was_inserted);
+  CHECK(InternalAddAssignment(offered, wanted, cost));
+
+  // Also adds the self-costs for the offered and wanted items, if they do not
+  // already exist. This allows to ignore items that do not appear in any
+  // wantlist.
+  InternalAddAssignment(offered, offered, kSelfTradeCost);
+  InternalAddAssignment(wanted, wanted, kSelfTradeCost);
 }
 
 void TradeModel::AddOwner(std::string_view owner, std::string_view item) {
-  const int32_t item_id = indexer_.IndexOrDie(item);
-
   // Retrieves existing owner data or creates new data.
   auto [iter, was_inserted] = owners_.try_emplace(owner);
   OwnerData& owner_data = iter->second;
@@ -95,28 +71,24 @@ void TradeModel::AddOwner(std::string_view owner, std::string_view item) {
   }
 
   // Adds the new item to the vector of items owned by `owner`.
-  owner_data.items.emplace_back(item_id);
+  owner_data.items.emplace_back(item);
 }
 
 void TradeModel::BuildConstraints() {
   using ::operations_research::sat::LinearExpr;
 
   // wanted_sums[j] = sum{ BoolVar[i][j] } for all `i`.
-  // Represents the sum of how many offered items trade with the wanted item
-  // `j`.
-  absl::flat_hash_map<int32_t, LinearExpr> wanted_sums;
+  // Represents the sum of offered items that trade with the wanted item `j`.
+  absl::flat_hash_map<std::string_view, LinearExpr> wanted_sums;
 
-  // The index of the offered item. We increment it within the loop to avoid
-  // mixing signed with unsigned types.
-  int32_t offered_id = 0;
-  for (const auto& assignment_row : assignments_) {
-    // The sum of wanted items that trade with `offered_id`.
+  for (const auto& [offered, assignments_of_offered] : assignments_) {
+    // The sum of wanted items that trade with `offered` item.
     LinearExpr offered_sum;
 
-    for (const auto& [wanted_id, assignment] : assignment_row) {
+    for (const auto& [wanted, assignment] : assignments_of_offered) {
       // Retrieves the sum of offered items that trade with `wanted id`. Creates
       // it if they do not exist.
-      LinearExpr& wanted_sum = wanted_sums[wanted_id];
+      LinearExpr& wanted_sum = wanted_sums[wanted];
 
       // Adds the BoolVar[i][j] to offered_sum[i] and wanted_sum[j].
       offered_sum.AddVar(assignment.var);
@@ -124,12 +96,10 @@ void TradeModel::BuildConstraints() {
     }
     // Mandates that the offered item trades with exactly one wanted item.
     cp_model_.AddEquality(offered_sum, 1);
-
-    ++offered_id;
   }
 
   // Mandates that each wanted item trades with exactly one offered item.
-  for (const auto& [index, wanted_sum] : wanted_sums) {
+  for (const auto& [unused_wanted, wanted_sum] : wanted_sums) {
     cp_model_.AddEquality(wanted_sum, 1);
   }
 }
@@ -144,8 +114,8 @@ void TradeModel::BuildConstraints() {
 //            determined by the position of `j` in the wantlist of `i`.
 //            Self-trades are assigned an internal value: `cost >> 1`.
 void TradeModel::BuildItemTradingCost() {
-  for (const auto& assignment_row : assignments_) {
-    for (const auto& [wanted_id, assignment] : assignment_row) {
+  for (const auto& [offered, assignments_of_offered] : assignments_) {
+    for (const auto& [wanted, assignment] : assignments_of_offered) {
       total_cost_.AddTerm(/*var=*/assignment.var, /*coeff=*/assignment.cost);
     }
   }
@@ -172,13 +142,19 @@ void TradeModel::BuildNonTradingUserCosts() {
     // represents the item not trading (self-trade), so we take its inversion.
     LinearExpr trading_items_sum;
 
-    for (const int32_t item_id : owner_data.items) {
-      // Retrieves the self-trading assignment of the given item. Equivalent to:
-      // `assignment_[item_id][item_id]`.
-      const auto& assignment = assignments_[item_id].at(item_id);
+    for (const std::string_view item : owner_data.items) {
+      // Retrieves the self-trading assignment of the given item, if it exists.
+      // It is possible for the self-assignment cost not to exist if the item
+      // was never declared in any wantlist. In this case, the item is entirely
+      // ignored.
+      if (assignments_.contains(item)) {
+        // Equivalent to: `assignment_[item][item]`, but also checks that it
+        // actually exists.
+        const auto& assignment = assignments_[item].at(item);
 
-      // Adds the inversion of the self-trading variable.
-      trading_items_sum.AddVar(assignment.var.Not());
+        // Adds the inversion of the self-trading variable.
+        trading_items_sum.AddVar(assignment.var.Not());
+      }
     }
 
     // Intermediate boolean variable that represents whether the given user
@@ -201,26 +177,20 @@ void TradeModel::PopulateResponse(
     common::TradeResponse& trade_response) const {
   using ::operations_research::sat::SolutionBooleanValue;
 
-  // Avoids comparing signed with unsigned;
-  int offered_id = 0;
-
   // Iterates all boolean variables representing an offered->wanted assignment
   // to check whether they were chosen.
-  for (const auto& assignment_row : assignments_) {
-    for (const auto& [wanted_id, assignment] : assignment_row) {
+  for (const auto& [offered, assignments_of_offered] : assignments_) {
+    for (const auto& [wanted, assignment] : assignments_of_offered) {
       // Checks whether this offered->wanted trade was eventually chosen.
       // Ignores self-trades.
-      if ((offered_id != wanted_id) &&
+      if ((offered != wanted) &&
           SolutionBooleanValue(response, assignment.var)) {
         // Adds the trading pair to the trade_response.
-        const std::string& offered_item = indexer_.ValueOrDie(offered_id);
-        const std::string& wanted_item = indexer_.ValueOrDie(wanted_id);
         common::TradePair* const trade_pair = trade_response.add_trade_pairs();
-        trade_pair->set_offered(offered_item);
-        trade_pair->set_wanted(wanted_item);
+        trade_pair->set_offered(offered);
+        trade_pair->set_wanted(wanted);
       }
     }
-    ++offered_id;
   }
 
   // Sets the number of trading users. Iterates the `owners_` map and counts the
@@ -238,16 +208,14 @@ std::vector<TradeModel::Assignment> TradeModel::assignments() const {
 
   // The index of the offered item. We increment it within the loop to avoid
   // mixing signed with unsigned types.
-  int32_t offered_id = 0;
-  for (const auto& assignment_row : assignments_) {
-    for (const auto& [wanted_id, internal_assignment] : assignment_row) {
+  for (const auto& [offered, assignments_of_offered] : assignments_) {
+    for (const auto& [wanted, internal_assignment] : assignments_of_offered) {
       Assignment assignment;
-      assignment.offered = indexer_.ValueOrDie(offered_id);
-      assignment.wanted = indexer_.ValueOrDie(wanted_id);
+      assignment.offered = offered;
+      assignment.wanted = wanted;
       assignment.cost = internal_assignment.cost;
       assignments.emplace_back(std::move(assignment));
     }
-    ++offered_id;
   }
   return assignments;
 }
@@ -257,22 +225,23 @@ std::vector<TradeModel::Owner> TradeModel::owners() const {
   for (const auto& [owner_name, owner_data] : owners_) {
     Owner owner;
     owner.owner = owner_name;
-    for (const int32_t item_id : owner_data.items) {
-      owner.items.emplace_back(indexer_.ValueOrDie(item_id));
+    for (const std::string_view item : owner_data.items) {
+      owner.items.emplace_back(item);
     }
     owners.emplace_back(std::move(owner));
   }
   return owners;
 }
 
-void TradeModel::AddSelfAssignment(std::string_view item) {
-  // Calls the public API with a fixed cost for self-trades.
-  AddAssignment(item, item, kSelfTradeCost);
-}
+bool TradeModel::InternalAddAssignment(std::string_view offered,
+                                       std::string_view wanted, int64_t cost) {
+  // Registers the allowed assignment between the `offered` and the `wanted`
+  // items. Equivalent to calling `assignments_[offered][wanted] = assignment`,
+  // but checks the insertion. Creates a new BoolVar representing the allowed
+  // trade if the insertion is successful.
+  const auto [unused_it, was_inserted] = assignments_[offered].try_emplace(
+      wanted, InternalAssignment({cp_model_.NewBoolVar(), cost}));
 
-std::pair<int32_t, int32_t> TradeModel::MakeItemPair(
-    std::string_view offered, std::string_view wanted) const {
-  return std::make_pair(indexer_.IndexOrDie(offered),
-                        indexer_.IndexOrDie(wanted));
+  return was_inserted;
 }
 }  // namespace mathtrader::solver::internal

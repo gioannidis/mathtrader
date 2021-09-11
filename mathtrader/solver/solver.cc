@@ -53,10 +53,6 @@ std::vector<std::string_view> GetItemIds(const TradeRequest& trade_request) {
 }  // namespace
 
 void Solver::BuildModel(const TradeRequest& trade_request) {
-  // Retrieves the item ids and indexes them in the TradeModel.
-  const auto item_ids = GetItemIds(trade_request);
-  trade_model_.IndexItems(item_ids);
-
   // Adds the allowed assignment for each offered->wanted relationship.
   for (const common::Wantlist& wantlist : trade_request.wantlists()) {
     for (const auto& wanted_item : wantlist.wanted()) {

@@ -30,7 +30,6 @@ cc_library(
     hdrs = ["trade_model.h"],
     deps = [
         "//mathtrader/common:trade_response_cc_proto",
-        "//mathtrader/util:str_indexer",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/types:span",
         "@com_google_or_tools//ortools/sat:cp_model",

@@ -29,7 +29,6 @@
 #include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/trade_response.pb.h"
 #include "mathtrader/solver/internal/trade_model.h"
-#include "mathtrader/util/str_indexer.h"
 
 namespace mathtrader::solver {
 class Solver {
