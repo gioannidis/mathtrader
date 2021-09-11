@@ -25,6 +25,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "ortools/sat/cp_model.pb.h"
+#include "ortools/sat/model.h"
 #include "ortools/sat/sat_parameters.pb.h"
 
 #include "mathtrader/common/item.pb.h"
