@@ -68,9 +68,11 @@ void Solver::BuildModel(const TradeRequest& trade_request) {
   // Builds the cost of trading items.
   trade_model_.BuildItemTradingCost();
 
-  // Adds the usernames.
+  // Adds the usernames. No username constraint is added for usernames which
+  // traded an item in a previous strongly connected component, in order to
+  // favor users who have not traded any items yet.
   for (const auto& [id, item] : trade_request.items()) {
-    if (item.has_username()) {
+    if (item.has_username() && !trading_users_.contains(item.username())) {
       trade_model_.AddOwner(/*owner=*/item.username(), /*item=*/id);
     }
   }
@@ -139,9 +141,15 @@ absl::Status Solver::SolveModel() {
   // Populates the trade_response with the trading items.
   trade_model_.PopulateResponse(cp_solver_response, response_);
 
-  // Populates the trading users.
+  // Populates the trading users set with users who trade at least one item.
   for (const std::string_view user :
        trade_model_.GetTradingOwners(cp_solver_response)) {
+    trading_users_.emplace(user);
+  }
+
+  // Populates the trading users in the response from the trading users set.
+  // This simply converts the set to a repeated field.
+  for (const std::string_view user : trading_users_) {
     *response_.add_trading_users() = user;
   }
   return absl::OkStatus();
