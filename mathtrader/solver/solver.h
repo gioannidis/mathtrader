@@ -21,6 +21,8 @@
 #define MATHTRADER_SOLVER_SOLVER_H_
 
 #include <cstdint>
+#include <string>
+#include <utility>
 
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_set.h"
