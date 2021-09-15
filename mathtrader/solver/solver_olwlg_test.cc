@@ -110,7 +110,7 @@ void ExpectTrade(std::string_view filepath, int64_t expected_trading_items,
   // Verifies the expected metrics.
   const TradeResponse& response = solver.response();
   VerifyTradingItems(request, response, expected_trading_items);
-  EXPECT_EQ(response.trading_users(), expected_trading_users);
+  EXPECT_EQ(response.trading_users_size(), expected_trading_users);
 
   // Outputs statistics.
   LOG(INFO) << "Optimal: " << response.is_optimal();

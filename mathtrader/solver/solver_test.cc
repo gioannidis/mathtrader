@@ -300,7 +300,8 @@ TEST(DisconnectedChainsTest, WithUsernames) {
                   TradePairIs("U1G2", "U5G1"), TradePairIs("U5G1", "U1G2")));
 
   // Trading: Alice, Bob, Charlie, Daniel, Eve.
-  EXPECT_EQ(response.trading_users(), 5);
+  EXPECT_THAT(response.trading_users(),
+              UnorderedElementsAre("Alice", "Bob", "Charlie", "Daniel", "Eve"));
 }
 
 // Test suite: five small item chains or one bigger chain. Use case:
@@ -345,6 +346,7 @@ TEST(MultipleSmallAndOneBigChainTest, WithUsernames) {
                   TradePairIs("U2G5", "U3G1"), TradePairIs("U3G1", "U2G1")));
 
   // Trading: Alice, Bob, Charlie.
-  EXPECT_EQ(response.trading_users(), 3);
+  EXPECT_THAT(response.trading_users(),
+              UnorderedElementsAre("Alice", "Bob", "Charlie"));
 }
 }  // namespace

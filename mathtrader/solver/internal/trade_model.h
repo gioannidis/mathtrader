@@ -134,6 +134,11 @@ class TradeModel {
     return cp_model_;
   }
 
+  // Returns the trading owners for the given CpSolverResponse. The TradeModel
+  // must outlive the returned vector.
+  std::vector<std::string_view> GetTradingOwners(
+      const operations_research::sat::CpSolverResponse& response) const;
+
   // Returns all constructed assignments representing the item trades, including
   // self-trades. Intended to be used for debugging because it constructs a new
   // vector.

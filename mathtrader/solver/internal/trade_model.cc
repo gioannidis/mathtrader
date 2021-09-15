@@ -192,14 +192,17 @@ void TradeModel::PopulateResponse(
       }
     }
   }
+}
 
-  // Sets the number of trading users. Iterates the `owners_` map and counts the
-  // owners where the respective `is_trading` variable has been set by the
-  // CpSolverResponse.
-  trade_response.set_trading_users(std::count_if(
-      owners_.begin(), owners_.end(), [&response](const auto& owner_node) {
-        return SolutionBooleanValue(response, owner_node.second.is_trading);
-      }));
+std::vector<std::string_view> TradeModel::GetTradingOwners(
+    const operations_research::sat::CpSolverResponse& response) const {
+  std::vector<std::string_view> trading_users;
+  for (const auto& [owner, owner_data] : owners_) {
+    if (SolutionBooleanValue(response, owner_data.is_trading)) {
+      trading_users.emplace_back(owner);
+    }
+  }
+  return trading_users;
 }
 
 std::vector<TradeModel::Assignment> TradeModel::assignments() const {

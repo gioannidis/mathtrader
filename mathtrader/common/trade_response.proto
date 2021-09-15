@@ -35,9 +35,8 @@ message TradeResponse {
   // All successful trading pairs.
   repeated TradePair trade_pairs = 1;
 
-  // Number of trading users. This number can be computed by processing the
-  // `trade_pairs` field, but is explicitly provided for convenience.
-  optional int64 trading_users = 7;
+  // Users trading at least one item.
+  repeated string trading_users = 7;
 
   // Statistics on the internal CP model.
   optional string cp_model_stats = 2;

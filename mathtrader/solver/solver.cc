@@ -139,6 +139,11 @@ absl::Status Solver::SolveModel() {
   // Populates the trade_response with the trading items.
   trade_model_.PopulateResponse(cp_solver_response, response_);
 
+  // Populates the trading users.
+  for (const std::string_view user :
+       trade_model_.GetTradingOwners(cp_solver_response)) {
+    *response_.add_trading_users() = user;
+  }
   return absl::OkStatus();
 }
 }  // namespace mathtrader::solver
