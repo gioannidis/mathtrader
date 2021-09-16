@@ -54,20 +54,24 @@ std::vector<std::string_view> GetItemIds(const TradeRequest& trade_request) {
 }  // namespace
 
 void Solver::BuildModel(const TradeRequest& trade_request) {
+  // Builds exactly one model.
+  trade_models_.emplace_back();
+  auto& trade_model = trade_models_.front();
+
   // Adds the allowed assignment for each offered->wanted relationship.
   for (const common::Wantlist& wantlist : trade_request.wantlists()) {
     for (const auto& wanted_item : wantlist.wanted()) {
-      trade_model_.AddAssignment(wantlist.offered(), wanted_item.id(),
-                                 wanted_item.priority());
+      trade_model.AddAssignment(wantlist.offered(), wanted_item.id(),
+                                wanted_item.priority());
     }
   }
 
   // Builds the item constraints, mandating 1-1 matching between offered and
   // wanted items.
-  trade_model_.BuildConstraints();
+  trade_model.BuildConstraints();
 
   // Builds the cost of trading items.
-  trade_model_.BuildItemTradingCost();
+  trade_model.BuildItemTradingCost();
 
   // Builds the non-trading users map, storing for each user all owned items.
   // This map stores all users who have not traded any items yet.
@@ -80,10 +84,15 @@ void Solver::BuildModel(const TradeRequest& trade_request) {
 }
 
 absl::Status Solver::SolveModel() {
-  // Solves the individual strongly connected component.
-  if (absl::Status status = SolveIndividualModel(trade_model_); !status.ok()) {
-    return status;
+  // Solves each individual strongly connected component. Returns an error if
+  // the solver fails on any individual component.
+  for (auto& trade_model : trade_models_) {
+    if (absl::Status status = SolveIndividualModel(trade_model); !status.ok()) {
+      return status;
+    }
   }
+
+  // Denotes that a solution was found for all individual components.
   return absl::OkStatus();
 }
 

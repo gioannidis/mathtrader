@@ -44,6 +44,13 @@ class Solver {
 
   ~Solver() = default;
 
+  // Specifies whether the trade graph should be decomposed to strongly
+  // connected components in order to speed up the solution. Must be called
+  // before `BuildModel()`.
+  void set_decompose_components(bool decompose_components) {
+    decompose_components_ = decompose_components;
+  }
+
   // Builds the model that models the math trade from the given OLWLG-parser
   // generated input.
   void BuildModel(const common::TradeRequest& trade_request);
@@ -79,8 +86,15 @@ class Solver {
   ABSL_MUST_USE_RESULT absl::Status SolveIndividualModel(
       internal::TradeModel& trade_model);
 
-  // The model that represents the math trade.
-  internal::TradeModel trade_model_;
+  // Specifies whether the trade graph should be decomposed to strongly
+  // connected components.
+  bool decompose_components_{};
+
+  // The trade models that represent the math trade, populated by
+  // `BuildModel()`. If `decompose_components_` has been specified, this will
+  // contain multiple trade models, each representing a strongly connected
+  // component. Otherwise, this will contain exactly one trade model.
+  std::vector<internal::TradeModel> trade_models_;
 
   // Parameters to configure the solver.
   operations_research::sat::SatParameters sat_parameters_;
