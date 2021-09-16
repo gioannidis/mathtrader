@@ -51,6 +51,18 @@ std::vector<std::string_view> GetItemIds(const TradeRequest& trade_request) {
                  });
   return items;
 }
+
+// Builds a map: users -> items they own, from the given trade request.
+auto BuildUserMap(const TradeRequest& trade_request) {
+  absl::flat_hash_map<std::string, std::vector<std::string>> user_map;
+  for (const auto& [id, item] : trade_request.items()) {
+    if (item.has_username()) {
+      auto& owned_items = user_map[item.username()];
+      owned_items.push_back(item.id());
+    }
+  }
+  return user_map;
+}
 }  // namespace
 
 void Solver::BuildModel(const TradeRequest& trade_request) {
@@ -73,14 +85,9 @@ void Solver::BuildModel(const TradeRequest& trade_request) {
   // Builds the cost of trading items.
   trade_model.BuildItemTradingCost();
 
-  // Builds the non-trading users map, storing for each user all owned items.
-  // This map stores all users who have not traded any items yet.
-  for (const auto& [id, item] : trade_request.items()) {
-    if (item.has_username()) {
-      auto& owned_items = nontrading_users_[item.username()];
-      owned_items.push_back(item.id());
-    }
-  }
+  // Builds a map of users -> owned items. All users are included in the map,
+  // because none has traded any item yet.
+  nontrading_users_ = BuildUserMap(trade_request);
 }
 
 absl::Status Solver::SolveModel() {
