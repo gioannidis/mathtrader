@@ -73,6 +73,12 @@ class Solver {
   }
 
  private:
+  // Solves an individual CP model representing a strongly connected component
+  // of the trade graph. Returns `OkStatus` if an optimal or feasible solution
+  // has been found.
+  ABSL_MUST_USE_RESULT absl::Status SolveIndividualModel(
+      internal::TradeModel& trade_model);
+
   // The model that represents the math trade.
   internal::TradeModel trade_model_;
 

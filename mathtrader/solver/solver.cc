@@ -31,6 +31,7 @@
 #include "mathtrader/common/item.pb.h"
 #include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
+#include "mathtrader/solver/internal/trade_model.h"
 
 namespace mathtrader::solver {
 namespace {
@@ -82,18 +83,32 @@ void Solver::BuildModel(const TradeRequest& trade_request) {
 }
 
 absl::Status Solver::SolveModel() {
+  // Solves the individual strongly connected component.
+  if (absl::Status status = SolveIndividualModel(trade_model_); !status.ok()) {
+    return status;
+  }
+
+  // Populates the trading users in the response from the trading users set.
+  // This simply converts the set to a repeated field.
+  for (const std::string_view user : trading_users_) {
+    *response_.add_trading_users() = user;
+  }
+  return absl::OkStatus();
+}
+
+absl::Status Solver::SolveIndividualModel(internal::TradeModel& trade_model) {
   using ::operations_research::sat::CpSolverResponse;
   using ::operations_research::sat::CpSolverStatus;
 
   // First, commits the objective function.
-  trade_model_.CommitObjectiveFunction();
+  trade_model.CommitObjectiveFunction();
 
   // Declares a generic wrapper to wire the solver and the sat parameters.
   operations_research::sat::Model model;
   model.Add(operations_research::sat::NewSatParameters(sat_parameters_));
 
   // Solves the CP model objective.
-  const auto& cp_model = trade_model_.cp_model();
+  const auto& cp_model = trade_model.cp_model();
   const CpSolverResponse cp_solver_response =
       operations_research::sat::SolveCpModel(cp_model.Build(), &model);
 
@@ -139,18 +154,12 @@ absl::Status Solver::SolveModel() {
   }
 
   // Populates the trade_response with the trading items.
-  trade_model_.PopulateResponse(cp_solver_response, response_);
+  trade_model.PopulateResponse(cp_solver_response, response_);
 
   // Populates the trading users set with users who trade at least one item.
   for (const std::string_view user :
-       trade_model_.GetTradingOwners(cp_solver_response)) {
+       trade_model.GetTradingOwners(cp_solver_response)) {
     trading_users_.emplace(user);
-  }
-
-  // Populates the trading users in the response from the trading users set.
-  // This simply converts the set to a repeated field.
-  for (const std::string_view user : trading_users_) {
-    *response_.add_trading_users() = user;
   }
   return absl::OkStatus();
 }
