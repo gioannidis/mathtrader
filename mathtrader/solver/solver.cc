@@ -36,6 +36,7 @@
 namespace mathtrader::solver {
 namespace {
 using ::mathtrader::common::TradeRequest;
+using ::mathtrader::solver::internal::TradeModel;
 
 // Extracts the item ids from `trade_request`. Returns a vector with the
 // extracted item ids.
@@ -63,12 +64,12 @@ auto BuildUserMap(const TradeRequest& trade_request) {
   }
   return user_map;
 }
-}  // namespace
 
-void Solver::BuildModel(const TradeRequest& trade_request) {
-  // Builds exactly one model.
-  trade_models_.emplace_back();
-  auto& trade_model = trade_models_.front();
+// Builds a TradeModel from the given trade request. This represents the entire
+// trade graph with a single TradeModel, without decomposing it to strongly
+// connected components.
+TradeModel BuildModelFromTradeRequest(const TradeRequest& trade_request) {
+  TradeModel trade_model;
 
   // Adds the allowed assignment for each offered->wanted relationship.
   for (const common::Wantlist& wantlist : trade_request.wantlists()) {
@@ -84,6 +85,14 @@ void Solver::BuildModel(const TradeRequest& trade_request) {
 
   // Builds the cost of trading items.
   trade_model.BuildItemTradingCost();
+
+  return trade_model;
+}
+}  // namespace
+
+void Solver::BuildModel(const TradeRequest& trade_request) {
+  // Builds exactly one model.
+  trade_models_.emplace_back(BuildModelFromTradeRequest(trade_request));
 
   // Builds a map of users -> owned items. All users are included in the map,
   // because none has traded any item yet.
@@ -103,7 +112,7 @@ absl::Status Solver::SolveModel() {
   return absl::OkStatus();
 }
 
-absl::Status Solver::SolveIndividualModel(internal::TradeModel& trade_model) {
+absl::Status Solver::SolveIndividualModel(TradeModel& trade_model) {
   using ::operations_research::sat::CpSolverResponse;
   using ::operations_research::sat::CpSolverStatus;
 
