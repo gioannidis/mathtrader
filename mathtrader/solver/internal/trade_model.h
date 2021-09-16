@@ -73,6 +73,12 @@ class TradeModel {
 
   TradeModel() = default;
 
+  // Makes the TradeModel moveable (but not copyable). This is required to be
+  // storable in vectors, because vectors may need to reallocate memory, thus
+  // moving their contents.
+  TradeModel(TradeModel&& other) = default;
+  TradeModel& operator=(TradeModel&& other) = default;
+
   // Disables copy constructor and assignment operator.
   TradeModel(const TradeModel&) = delete;
   TradeModel& operator=(const TradeModel&) = delete;
