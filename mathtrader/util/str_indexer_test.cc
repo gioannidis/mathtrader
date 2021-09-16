@@ -48,6 +48,12 @@ TEST(StrIndexerTest, IndexerSizeEqualsInputSize) {
   EXPECT_EQ(indexer.size(), values.size());
 }
 
+// Verifies that the indexer builds as many indexes as the input size when the input is passed to the constructor.
+TEST(StrIndexerTest, IndexerSizeEqualsInputSizeWithConstructor) {
+  const StrIndexer indexer(values);
+  EXPECT_EQ(indexer.size(), values.size());
+}
+
 // Verifies that if we call `BuildIndexes` again, the older values are
 // discarded.
 TEST(StrIndexerTest, NewBuildDiscardsOldValues) {

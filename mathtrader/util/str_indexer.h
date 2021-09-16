@@ -45,6 +45,11 @@ class StrIndexer {
  public:
   StrIndexer() = default;
 
+  // Calls `BuildIndexes` with the `strings` argument after calling the constructor.
+  explicit StrIndexer(absl::Span<const std::string_view> strings) {
+    BuildIndexes(strings);
+  }
+
   // Disables copy constructor and assignment operator.
   StrIndexer(const StrIndexer&) = delete;
   StrIndexer& operator=(const StrIndexer&) = delete;
