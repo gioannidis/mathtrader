@@ -25,7 +25,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
-#include "absl/container/flat_hash_set.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "ortools/sat/sat_parameters.pb.h"
 
@@ -85,10 +85,11 @@ class Solver {
   // Parameters to configure the solver.
   operations_research::sat::SatParameters sat_parameters_;
 
-  // Stores the trading users in a hash set. This is used to avoid introducing
-  // username constraints in strongly connected components for usernames which
-  // traded items in a previous strongly connected component.
-  absl::flat_hash_set<std::string> trading_users_;
+  // Stores the users who have not yet traded any item. Maps each user to a
+  // vector with all owned items. This is used to introduce username constraints
+  // in strongly connected components for usernames which traded items in a
+  // previous strongly connected component.
+  absl::flat_hash_map<std::string, std::vector<std::string>> nontrading_users_;
 
   // The response with the solved trade.
   common::TradeResponse response_;

@@ -69,29 +69,20 @@ void Solver::BuildModel(const TradeRequest& trade_request) {
   // Builds the cost of trading items.
   trade_model_.BuildItemTradingCost();
 
-  // Adds the usernames. No username constraint is added for usernames which
-  // traded an item in a previous strongly connected component, in order to
-  // favor users who have not traded any items yet.
+  // Builds the non-trading users map, storing for each user all owned items.
+  // This map stores all users who have not traded any items yet.
   for (const auto& [id, item] : trade_request.items()) {
-    if (item.has_username() && !trading_users_.contains(item.username())) {
-      trade_model_.AddOwner(/*owner=*/item.username(), /*item=*/id);
+    if (item.has_username()) {
+      auto& owned_items = nontrading_users_[item.username()];
+      owned_items.push_back(item.id());
     }
   }
-
-  // Builds the cost of non-trading users.
-  trade_model_.BuildNonTradingUserCosts();
 }
 
 absl::Status Solver::SolveModel() {
   // Solves the individual strongly connected component.
   if (absl::Status status = SolveIndividualModel(trade_model_); !status.ok()) {
     return status;
-  }
-
-  // Populates the trading users in the response from the trading users set.
-  // This simply converts the set to a repeated field.
-  for (const std::string_view user : trading_users_) {
-    *response_.add_trading_users() = user;
   }
   return absl::OkStatus();
 }
@@ -100,7 +91,18 @@ absl::Status Solver::SolveIndividualModel(internal::TradeModel& trade_model) {
   using ::operations_research::sat::CpSolverResponse;
   using ::operations_research::sat::CpSolverStatus;
 
-  // First, commits the objective function.
+  // Before solving, builds the cost of non-trading users. Users who have traded
+  // at least one item in a previous TradeModel have already been removed from
+  // `nontrading_users_`.
+  for (const auto& [owner, items] : nontrading_users_) {
+    for (const std::string_view item : items) {
+      trade_model.AddOwner(owner, item);
+    }
+  }
+  trade_model.BuildNonTradingUserCosts();
+
+  // Commits the objective function which includes the costs of non-trading
+  // users and non-trading items.
   trade_model.CommitObjectiveFunction();
 
   // Declares a generic wrapper to wire the solver and the sat parameters.
@@ -156,10 +158,12 @@ absl::Status Solver::SolveIndividualModel(internal::TradeModel& trade_model) {
   // Populates the trade_response with the trading items.
   trade_model.PopulateResponse(cp_solver_response, response_);
 
-  // Populates the trading users set with users who trade at least one item.
+  // Removes users who have traded at least one item and populates the
+  // TradeResponse.
   for (const std::string_view user :
        trade_model.GetTradingOwners(cp_solver_response)) {
-    trading_users_.emplace(user);
+    nontrading_users_.erase(user);
+    *response_.add_trading_users() = user;
   }
   return absl::OkStatus();
 }
