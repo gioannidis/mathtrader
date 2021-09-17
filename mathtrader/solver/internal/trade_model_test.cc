@@ -56,6 +56,9 @@ TEST(TradeModelTest, OneAssignmentPerItem) {
                 Contains(FieldsAre(/*offered=*/kItems.at(i),
                                    /*wanted=*/kItems.at(next_i), /*cost=*/1)));
   }
+
+  // Verifies the number of items in the model.
+  EXPECT_EQ(model.items_size(), kItems.size());
 }
 
 TEST(TradeModelTest, MultipleAssignmentsPerItem) {
@@ -71,6 +74,9 @@ TEST(TradeModelTest, MultipleAssignmentsPerItem) {
   EXPECT_THAT(assignments, Contains(FieldsAre("Pandemic", "PuertoRico", 2)));
   EXPECT_THAT(assignments, Contains(FieldsAre("Pandemic", "a", 3)));
   EXPECT_THAT(assignments, Contains(FieldsAre("SanJuan", "Pandemic", 1)));
+
+  // Verifies the number of items in the trade model.
+  EXPECT_EQ(model.items_size(), 5);
 }
 
 // Tests an item with multiple assignments where there is a big gap (step) in
@@ -89,6 +95,9 @@ TEST(TradeModelTest, BigStepCost) {
               Contains(FieldsAre("Pandemic", "PuertoRico", kBigStepCost)));
   EXPECT_THAT(assignments,
               Contains(FieldsAre("Pandemic", "SanJuan", kBigStepCost + 1)));
+
+  // Verifies the number of items in the model.
+  EXPECT_EQ(model.items_size(), 4);
 }
 
 // Tests the cost coefficients for allowed trades.
@@ -121,6 +130,9 @@ TEST(TradeModelTest, AssignmentCoefficients) {
   // Tests that there are no more coefficients.
   EXPECT_THAT(model.cost_coefficients(),
               SizeIs(kItems.size() + kNumAssignments));
+
+  // Verifies the number of items in the model.
+  EXPECT_EQ(model.items_size(), kItems.size());
 }
 
 TEST(TradeModelTest, AddOwner) {

@@ -18,6 +18,7 @@
 #ifndef MATHTRADER_SOLVER_INTERNAL_TRADE_MODEL_H_
 #define MATHTRADER_SOLVER_INTERNAL_TRADE_MODEL_H_
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -144,6 +145,11 @@ class TradeModel {
   // must outlive the returned vector.
   std::vector<std::string_view> GetTradingOwners(
       const operations_research::sat::CpSolverResponse& response) const;
+
+  // Returns the number of items in the trade model.
+  int64_t items_size() const {
+    return static_cast<int64_t>(assignments_.size());
+  }
 
   // Returns all constructed assignments representing the item trades, including
   // self-trades. Intended to be used for debugging because it constructs a new
