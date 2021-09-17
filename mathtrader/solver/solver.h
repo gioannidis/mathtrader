@@ -39,6 +39,10 @@ class Solver {
  public:
   Solver() = default;
 
+  // Makes the Solver moveable (but not copyable).
+  Solver(Solver&& other) = default;
+  Solver& operator=(Solver&& other) = default;
+
   // Disables copy constructor and assignment operator.
   Solver(const Solver&) = delete;
   Solver& operator=(const Solver&) = delete;
