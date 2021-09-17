@@ -80,11 +80,9 @@ TradeRequest BuildTradeRequest(std::string_view text_proto) {
   return parser_proto;
 }
 
-// Solves the math trade defined by the input textproto, verifies that we have
-// found a solution and returns the response. If `has_usernames` has been given,
-// builds also an items map from the internal `TradeRequestExtensions`.
-TradeResponse SolveTrade(std::string_view textproto,
-                         bool has_usernames = false) {
+// Builds a Solver Model from the given textproto.
+Solver BuildModelFromTextProto(std::string_view textproto,
+                               bool has_usernames = false) {
   // Builds the trade request.
   TradeRequest trade_request = BuildTradeRequest(textproto);
 
@@ -104,9 +102,19 @@ TradeResponse SolveTrade(std::string_view textproto,
       }
     }
   }
-  // Solves the math trade problem.
+
+  // Builds the actual model.
   Solver solver;
   solver.BuildModel(trade_request);
+  return solver;
+}
+
+// Solves the math trade defined by the input textproto, verifies that we have
+// found a solution and returns the response. If `has_usernames` has been given,
+// builds also an items map from the internal `TradeRequestExtensions`.
+TradeResponse SolveTrade(std::string_view textproto,
+                         bool has_usernames = false) {
+  Solver solver = BuildModelFromTextProto(textproto, has_usernames);
 
   const auto status = solver.SolveModel();
   CHECK(status.ok()) << status.message();
