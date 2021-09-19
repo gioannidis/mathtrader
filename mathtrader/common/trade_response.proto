@@ -30,10 +30,16 @@ message TradePair {
 }
 
 // Message encapsulating the results of the math trade.
-// Next id: 8
+// Next id: 9
 message TradeResponse {
   // All successful trading pairs.
   repeated TradePair trade_pairs = 1;
+
+  // Contains the sizes of strongly connected components. The size of a strongly
+  // connected component is measured by the number of items, including dummy
+  // items, that it contains. If the solver did not decompose the trade graph to
+  // strongly connected components, this is empty.
+  repeated int64 component_sizes = 8;
 
   // Users trading at least one item.
   repeated string trading_users = 7;
