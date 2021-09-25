@@ -22,8 +22,10 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
+#include "ortools/graph/strongly_connected_components.h"
 #include "ortools/sat/cp_model.pb.h"
 #include "ortools/sat/model.h"
 #include "ortools/sat/sat_parameters.pb.h"
@@ -32,6 +34,7 @@
 #include "mathtrader/common/trade_request.pb.h"
 #include "mathtrader/common/wantlist.pb.h"
 #include "mathtrader/solver/internal/trade_model.h"
+#include "mathtrader/util/str_indexer.h"
 
 namespace mathtrader::solver {
 namespace {
@@ -65,10 +68,43 @@ auto BuildUserMap(const TradeRequest& trade_request) {
   return user_map;
 }
 
+// Converts the wantlists of the given `trade_request` to a graph, where integer
+// indexes represent each item. Returns the result. The returned graph is a
+// vector of adjacency lists, where `graph[i]` provides the adjacent vertices of
+// vertex `i`.
+auto ConvertWantlistsToGraph(const TradeRequest& trade_request,
+                             const util::StrIndexer& indexer) {
+  // Initializes one adjacency list for each item (vertex).
+  std::vector<std::vector<int32_t>> graph(trade_request.items_size());
+
+  for (const common::Wantlist& wantlist : trade_request.wantlists()) {
+    // Converts the offered item to its vertex index.
+    const int32_t offered = indexer.IndexOrDie(wantlist.offered());
+
+    for (const auto& wanted_item : wantlist.wanted()) {
+      // Converts the wanted item to its vertex index.
+      const int32_t wanted = indexer.IndexOrDie(wanted_item.id());
+      graph[offered].emplace_back(wanted);
+    }
+  }
+  return graph;
+}
+
+// Builds the item constraints and costs in a trade model.
+void BuildItemConstraintsAndCosts(TradeModel& trade_model) {
+  // Builds the item constraints, mandating 1-1 matching between offered and
+  // wanted items.
+  trade_model.BuildConstraints();
+
+  // Builds the cost of trading items.
+  trade_model.BuildItemTradingCost();
+}
+
 // Builds a TradeModel from the given trade request. This represents the entire
 // trade graph with a single TradeModel, without decomposing it to strongly
 // connected components.
 TradeModel BuildModelFromTradeRequest(const TradeRequest& trade_request) {
+  // The TradeModel to return.
   TradeModel trade_model;
 
   // Adds the allowed assignment for each offered->wanted relationship.
@@ -78,25 +114,91 @@ TradeModel BuildModelFromTradeRequest(const TradeRequest& trade_request) {
                                 wanted_item.priority());
     }
   }
-
-  // Builds the item constraints, mandating 1-1 matching between offered and
-  // wanted items.
-  trade_model.BuildConstraints();
-
-  // Builds the cost of trading items.
-  trade_model.BuildItemTradingCost();
-
+  BuildItemConstraintsAndCosts(trade_model);
   return trade_model;
+}
+
+auto BuildStronglyConnectedComponents(const TradeRequest& trade_request) {
+  // Builds an index of the N item ids. Index range: [0, N)
+  const util::StrIndexer indexer(GetItemIds(trade_request));
+
+  // Converts the wantlists to adjacency lists.
+  const auto graph = ConvertWantlistsToGraph(trade_request, indexer);
+
+  // Finds the strongly connected components. Runs in `O(nodes + edges)`.
+  std::vector<std::vector<int32_t>> components;
+  FindStronglyConnectedComponents(graph.size(), graph, &components);
+
+  // Sorts the strongly connected components by size in ascending order. This
+  // heuristic is applied to process smaller components first, so that trading
+  // users can be excluded from bigger components in favor of users who have not
+  // traded yet.
+  std::sort(components.begin(), components.end(),
+            [](const auto& a, const auto& b) { return a.size() < b.size(); });
+
+  // Builds a map: item -> component id. Component #0 is the smallest because
+  // they have been sorted by size. The trade_request must outlive the map.
+  absl::flat_hash_map<std::string_view, int32_t> item_to_component;
+  for (int32_t i = 0; i < static_cast<int32_t>(components.size()); ++i) {
+    for (const auto& item_index : components[i]) {
+      // Converts the `item_index` back to the string item and maps it to the
+      // component index.
+      const auto [unused_it, was_inserted] =
+          item_to_component.try_emplace(indexer.ValueOrDie(item_index), i);
+
+      // `FindStronglyConnectedComponents` should list each item once.
+      CHECK(was_inserted);
+    }
+  }
+
+  // The trade models to return. Each TradeModel represents a strongly connected
+  // component.
+  std::vector<TradeModel> trade_models(components.size());
+
+  // Adds item assignments to each TradeModel, ignoring item assignments between
+  // different strongly connected components.
+  for (const common::Wantlist& wantlist : trade_request.wantlists()) {
+    const std::string_view offered = wantlist.offered();
+    const int32_t component_id = item_to_component.at(offered);
+
+    // Processes the wanted items that belong to the same strongly connected
+    // component.
+    for (const auto& wanted_item : wantlist.wanted()) {
+      const std::string_view wanted = wanted_item.id();
+      if (item_to_component.at(wanted) == component_id) {
+        trade_models[component_id].AddAssignment(
+            offered, wanted, /*cost=*/wanted_item.priority());
+      }
+    }
+  }
+
+  // Finally, builds the item constraints and costs for each strongly connected
+  // component.
+  for (TradeModel& trade_model : trade_models) {
+    BuildItemConstraintsAndCosts(trade_model);
+  }
+  return trade_models;
 }
 }  // namespace
 
 void Solver::BuildModel(const TradeRequest& trade_request) {
-  // Builds exactly one model.
-  trade_models_.emplace_back(BuildModelFromTradeRequest(trade_request));
-
   // Builds a map of users -> owned items. All users are included in the map,
   // because none has traded any item yet.
   nontrading_users_ = BuildUserMap(trade_request);
+
+  // Builds exactly one model if we do not decompose the trade graph to strongly
+  // connected components.
+  if (!decompose_components_) {
+    trade_models_.emplace_back(BuildModelFromTradeRequest(trade_request));
+  } else {
+    trade_models_ = BuildStronglyConnectedComponents(trade_request);
+
+    // Also populates the TradeResponse with the sizes of the strongly connected
+    // components.
+    for (const TradeModel& trade_model : trade_models_) {
+      response_.add_component_sizes(trade_model.items_size());
+    }
+  }
 }
 
 absl::Status Solver::SolveModel() {

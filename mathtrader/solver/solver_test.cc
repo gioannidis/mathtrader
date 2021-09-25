@@ -40,13 +40,18 @@ using ::mathtrader::common::TradeResponse;
 using ::mathtrader::solver::Solver;
 using ::mathtrader::solver::internal::TradeRequestExtensions;
 using ::testing::AllOf;
+using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Property;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
+// ========== Constants ========== //
+
 // Maximum buffer length in bytes when reading an entire file to string.
 static constexpr int64_t kReadToStringMaxLength = 2'000;
+
+// ========== Matchers ========== //
 
 // Matches a TradePair message, encapsulating an offered and a wanted item.
 MATCHER_P2(TradePairIs, offered_id, wanted_id, "") {
@@ -54,6 +59,8 @@ MATCHER_P2(TradePairIs, offered_id, wanted_id, "") {
                                   Property(&TradePair::wanted, wanted_id)),
                             arg, result_listener);
 }
+
+// ========== Building a TradeRequest ========== //
 
 // Builds the item map from the TradeRequest::wantlists. This allows us to
 // define test protos in text format and auto-populate the map. No `Item` fields
@@ -80,9 +87,12 @@ TradeRequest BuildTradeRequest(std::string_view text_proto) {
   return parser_proto;
 }
 
+// ========== Building a Model ========== //
+
 // Builds a Solver Model from the given textproto.
 Solver BuildModelFromTextProto(std::string_view textproto,
-                               bool has_usernames = false) {
+                               bool has_usernames = false,
+                               bool decompose_components = false) {
   // Builds the trade request.
   TradeRequest trade_request = BuildTradeRequest(textproto);
 
@@ -102,28 +112,21 @@ Solver BuildModelFromTextProto(std::string_view textproto,
       }
     }
   }
+  // Sets whether the solver should decompose the trade graph to strongly
+  // connected components. This must be specified before `BuildModel()` is
+  // called.
+  Solver solver;
+  solver.set_decompose_components(decompose_components);
 
   // Builds the actual model.
-  Solver solver;
   solver.BuildModel(trade_request);
   return solver;
 }
 
-// Solves the math trade defined by the input textproto, verifies that we have
-// found a solution and returns the response. If `has_usernames` has been given,
-// builds also an items map from the internal `TradeRequestExtensions`.
-TradeResponse SolveTrade(std::string_view textproto,
-                         bool has_usernames = false) {
-  Solver solver = BuildModelFromTextProto(textproto, has_usernames);
-
-  const auto status = solver.SolveModel();
-  CHECK(status.ok()) << status.message();
-  return solver.response();
-}
-
-// As above, but reads the textproto from a file.
-TradeResponse SolveTradeFromFile(std::string_view textproto_pathname,
-                                 bool has_usernames = false) {
+// As above, but reads the textproto from a file instead.
+Solver BuildModelFromFile(std::string_view textproto_pathname,
+                          bool has_usernames = false,
+                          bool decompose_components = false) {
   // Opens the textproto file with default options.
   File* textproto_file =
       file::OpenOrDie(/*filename=*/textproto_pathname, /*mode=*/"r",
@@ -132,9 +135,46 @@ TradeResponse SolveTradeFromFile(std::string_view textproto_pathname,
   // Reads the textproto file to string.
   std::string textproto;
   textproto_file->ReadToString(&textproto, kReadToStringMaxLength);
-
-  return SolveTrade(textproto, has_usernames);
+  return BuildModelFromTextProto(textproto, has_usernames,
+                                 decompose_components);
 }
+
+// ========== Solving a Model ========== //
+
+// Solves an already-built model, returning the TradeResponse. Verifies that we
+// have found a solution and returns the response.
+TradeResponse SolveModel(Solver& solver) {
+  const auto status = solver.SolveModel();
+  CHECK(status.ok()) << status.message();
+  return solver.response();
+}
+
+// As above, but expects a rvalue.
+TradeResponse SolveModel(Solver&& solver) { return SolveModel(solver); }
+
+// As above, but solves the math trade defined by the input textproto. If
+// `has_usernames` has been given, builds also an items map from the internal
+// `TradeRequestExtensions`. If `decompose_components` has been given,
+// decomposes the trade graph to strongly connected components.
+TradeResponse SolveTrade(std::string_view textproto, bool has_usernames = false,
+                         bool decompose_components = false) {
+  return SolveModel(
+      BuildModelFromTextProto(textproto, has_usernames, decompose_components));
+}
+
+// As above, but reads the textproto from a file.
+TradeResponse SolveTradeFromFile(std::string_view textproto_pathname,
+                                 bool has_usernames = false,
+                                 bool decompose_components = false) {
+  Solver solver = BuildModelFromFile(textproto_pathname, has_usernames,
+                                     decompose_components);
+
+  const auto status = solver.SolveModel();
+  CHECK(status.ok()) << status.message();
+  return solver.response();
+}
+
+// ========== Test Suites ========== //
 
 // Tests that no items trade with empty wantlists.
 TEST(SolverTest, EmptyWantlists) {
@@ -312,6 +352,21 @@ TEST(DisconnectedChainsTest, WithUsernames) {
               UnorderedElementsAre("Alice", "Bob", "Charlie", "Daniel", "Eve"));
 }
 
+// Verifies the size of strongly connected components, when this option is
+// given.
+TEST(DisconnectedChainsTest, VerifyItemsInStronglyConnectedComponents) {
+  // Builds but does not solve the model.
+  const Solver solver = BuildModelFromFile(kDisconnectedChainsPathname,
+                                           /*has_usernames=*/false,
+                                           /*decompose_components=*/true);
+  // Components:
+  // 1. Alice and Bob trading with each other U1G1 <-> U2G1 (2 items).
+  // 2. Charlie and Daniel trading with each other U3G1 <-> U4G1 (2 items).
+  // 3. The loops: U5G1 <-> U1G2, U1G2 -> U2G2 -> U3G2 -> U4G2 -> U1G2
+  //    (5 items).
+  EXPECT_THAT(solver.response().component_sizes(), ElementsAre(2, 2, 5));
+}
+
 // Test suite: five small item chains or one bigger chain. Use case:
 // - Alice (U1) and Bob (U2) trade with each other their respective G1-G5 items.
 // U1GN -> U2GN -> U1GN
@@ -356,5 +411,20 @@ TEST(MultipleSmallAndOneBigChainTest, WithUsernames) {
   // Trading: Alice, Bob, Charlie.
   EXPECT_THAT(response.trading_users(),
               UnorderedElementsAre("Alice", "Bob", "Charlie"));
+}
+
+// Verifies that the entire graph is an entire strongly connected component.
+TEST(MultipleSmallAndOneBigChainTest,
+     VerifyItemsInStronglyConnectedComponents) {
+  // See `test_data/multiple_small_and_one_big_chain.pdf`.
+  static constexpr int64_t kItemCount = 11;
+
+  // Builds but does not solve the model.
+  const Solver solver = BuildModelFromFile(kMultipleSmallAndOneBigChainPathname,
+                                           /*has_usernames=*/false,
+                                           /*decompose_components=*/true);
+
+  // There is a single strongly connected component with `kItemCount` items.
+  EXPECT_THAT(solver.response().component_sizes(), ElementsAre(kItemCount));
 }
 }  // namespace

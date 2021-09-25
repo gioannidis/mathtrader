@@ -34,10 +34,12 @@ cc_library(
         "//mathtrader/common:trade_response_cc_proto",
         "//mathtrader/common:wantlist_cc_proto",
         "//mathtrader/solver/internal:trade_model",
+        "//mathtrader/util:str_indexer",
         "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_or_tools//ortools/graph:strongly_connected_components",
         "@com_google_or_tools//ortools/sat:cp_model",
     ],
 )
